@@ -1,0 +1,191 @@
+:root {
+  --ink: #0f172a;
+  --paper: #f8f6ef;
+  --paper-soft: #fffdf7;
+  --accent: #c24624;
+  --accent-soft: #f4d7c9;
+  --mint: #2d6a5f;
+  --muted: #6b7280;
+  --line: #d7d2c6;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at 20% 10%, rgba(194, 70, 36, 0.12), transparent 35%),
+    radial-gradient(circle at 80% 0%, rgba(45, 106, 95, 0.1), transparent 30%),
+    linear-gradient(160deg, var(--paper), var(--paper-soft));
+  color: var(--ink);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 2rem 1rem 3rem;
+}
+
+.card {
+  background: rgba(255, 253, 247, 0.92);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(15, 23, 42, 0.06);
+  padding: 1.1rem 1.2rem;
+}
+
+.stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.toolbar {
+  display: flex;
+  gap: 0.8rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.6rem, 4vw, 2.4rem);
+  line-height: 1.05;
+}
+
+.subtitle {
+  margin: 0;
+  color: var(--muted);
+}
+
+.grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  border-radius: 100px;
+  border: 1px solid var(--line);
+  font-size: 0.75rem;
+  letter-spacing: 0.01em;
+  background: white;
+}
+
+.button,
+button,
+input[type='submit'] {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  font-weight: 600;
+  padding: 0.55rem 0.95rem;
+  cursor: pointer;
+  background: var(--ink);
+  color: white;
+  transition: transform 0.15s ease, opacity 0.2s ease;
+}
+
+.button.secondary,
+button.secondary {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+button:disabled,
+input[type='submit']:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+button:hover,
+.button:hover,
+input[type='submit']:hover {
+  transform: translateY(-1px);
+}
+
+form {
+  display: grid;
+  gap: 0.8rem;
+}
+
+label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+  color: var(--ink);
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  font: inherit;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 0.6rem 0.75rem;
+  background: white;
+}
+
+textarea {
+  min-height: 220px;
+  resize: vertical;
+}
+
+header.app-header {
+  position: sticky;
+  top: 0;
+  backdrop-filter: blur(8px);
+  background: rgba(248, 246, 239, 0.87);
+  border-bottom: 1px solid var(--line);
+  z-index: 100;
+}
+
+header.app-header nav {
+  max-width: 1120px;
+  margin: 0 auto;
+  display: flex;
+  gap: 0.8rem;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 1rem;
+}
+
+.markdown p {
+  line-height: 1.65;
+}
+
+.markdown code {
+  background: var(--accent-soft);
+  padding: 0.1rem 0.28rem;
+  border-radius: 5px;
+}
+
+.notice {
+  border-left: 4px solid var(--accent);
+  padding: 0.55rem 0.75rem;
+  background: #fff4ef;
+  border-radius: 8px;
+}
+
+@media (max-width: 700px) {
+  main {
+    padding-top: 1.1rem;
+  }
+
+  .card {
+    padding: 0.95rem;
+  }
+}

@@ -1,0 +1,95 @@
+'use client'
+
+import { FormEvent, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAccount } from 'wagmi'
+import { createSpace } from '@/arkiv/mutations/spaces'
+import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
+import { slugify } from '@/lib/text'
+
+export function CreateSpaceForm() {
+  const router = useRouter()
+  const walletClient = useArkivWalletClient()
+  const { isConnected } = useAccount()
+  const [name, setName] = useState('')
+  const [slug, setSlug] = useState('')
+  const [description, setDescription] = useState('')
+  const [visibility, setVisibility] = useState<'public' | 'unlisted' | 'private'>('public')
+  const [statusText, setStatusText] = useState('')
+  const [pending, setPending] = useState(false)
+
+  async function onSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    if (!walletClient || !isConnected) {
+      setStatusText('Connect wallet to create a space.')
+      return
+    }
+
+    const finalSlug = slugify(slug || name)
+    if (!finalSlug) {
+      setStatusText('Provide a valid space name or slug.')
+      return
+    }
+
+    setPending(true)
+    setStatusText('')
+
+    try {
+      const result = await createSpace(walletClient, {
+        name,
+        description,
+        spaceSlug: finalSlug,
+        visibility
+      })
+      setStatusText(`Created (${result.txHash.slice(0, 10)}...)`)
+      router.push(`/spaces/${finalSlug}`)
+      router.refresh()
+    } catch (error) {
+      setStatusText(error instanceof Error ? error.message : 'Failed to create space')
+    } finally {
+      setPending(false)
+    }
+  }
+
+  return (
+    <form className="card stack" onSubmit={onSubmit}>
+      <h1 className="title">Create Space</h1>
+      <p className="subtitle">Writes require wallet signatures. Browsing remains public.</p>
+
+      <label>
+        Space name
+        <input required value={name} onChange={(event) => setName(event.target.value)} placeholder="Arkiv Architecture" />
+      </label>
+
+      <label>
+        Space slug
+        <input value={slug} onChange={(event) => setSlug(event.target.value)} placeholder="arkiv-architecture" />
+      </label>
+
+      <label>
+        Description
+        <textarea
+          required
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
+          placeholder="What this knowledge space contains"
+        />
+      </label>
+
+      <label>
+        Visibility
+        <select value={visibility} onChange={(event) => setVisibility(event.target.value as typeof visibility)}>
+          <option value="public">Public</option>
+          <option value="unlisted">Unlisted</option>
+          <option value="private">Private</option>
+        </select>
+      </label>
+
+      <div className="toolbar">
+        <input type="submit" disabled={pending} value={pending ? 'Creating...' : 'Create Space'} />
+        {statusText ? <span className="subtitle">{statusText}</span> : null}
+      </div>
+    </form>
+  )
+}
