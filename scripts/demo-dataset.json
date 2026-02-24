@@ -1,0 +1,24 @@
+{
+  "space": {
+    "slug": "arkiv-demo",
+    "name": "Arkiv Demo Space",
+    "description": "Seeded demo dataset for rubric walkthrough.",
+    "visibility": "public"
+  },
+  "pages": [
+    {
+      "slug": "getting-started",
+      "title": "Getting Started",
+      "summary": "Demo index page for judges.",
+      "status": "published",
+      "bodyMarkdown": "Welcome to the demo space. Visit [[presence-and-ttl]]."
+    },
+    {
+      "slug": "presence-and-ttl",
+      "title": "Presence and TTL",
+      "summary": "Shows short-lived presence entities and extension.",
+      "status": "published",
+      "bodyMarkdown": "Presence uses short-lived entities with heartbeats."
+    }
+  ]
+}
