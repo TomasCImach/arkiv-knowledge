@@ -4,43 +4,56 @@
 3–5 minutes.
 
 ## Demo Objective
-Prove that the product is a real knowledge base **and** deeply Arkiv-native.
+Prove this is a usable knowledge base **and** deeply Arkiv-native.
 
-## Script (Judge-Oriented)
-1. **Public Browse (No Wallet)**
-   - Open app in logged-out mode.
-   - Browse spaces and open a page.
-   - Run a search/filter that maps to Arkiv query predicates.
+## Pre-Demo Setup
+1. Run `pnpm install`.
+2. Run `pnpm verify`.
+3. If you want deterministic data, run `pnpm seed:demo` with a funded key.
+4. Open two browser sessions (Tab A and Tab B).
 
-2. **Wallet Write Flow**
-   - Connect wallet.
-   - Create a new space and page.
-   - Show entity key/result confirmation.
+## Judge-Oriented Walkthrough
 
-3. **Lifecycle Depth**
-   - Edit the same page.
-   - Show canonical page is updated (same identity) and revision list grows.
+### 1) Public Browse (No Wallet)
+- Open `/` in Tab A with wallet disconnected.
+- Open one space and a page from `/spaces/[spaceSlug]/[pageSlug]`.
+- Verbalize: “Read paths are public and query Arkiv directly.”
 
-4. **Relationships**
-   - Add wiki-style links in page content.
-   - Show backlinks view driven by link entities.
+### 2) Wallet-Gated Write
+- Connect wallet.
+- Create a new space at `/new/space`.
+- Create a page at `/spaces/[spaceSlug]/new`.
+- Verbalize: “Wallet is required only for writes.”
 
-5. **Expiration/Presence**
-   - Join page presence with short TTL.
-   - Show active viewers.
-   - Stop extension and show presence expiry.
+### 3) Lifecycle Depth (Canonical + Revisions)
+- Open page edit at `/spaces/[spaceSlug]/[pageSlug]/edit`.
+- Edit and save twice.
+- Show canonical page key stays constant while revision list grows.
+- Verbalize: “Saves use mutate flow: canonical update + append-only revision.”
 
-6. **Real-Time Signal**
-   - Open second tab/session.
-   - Edit in one tab; show update reflected in the other via events.
+### 4) Relationships (Backlinks)
+- In page body, add wiki-style link `[[another-page]]` and save.
+- Open the linked page and show backlinks section populated.
+- Verbalize: “Backlinks are persisted as `kb.link` entities and queried, not computed only in UI.”
 
-## Required Backups (If Live Step Fails)
-- Pre-seeded demo dataset.
-- Recorded short clip/gif for presence expiration.
-- Fallback manual refresh flow if live events are degraded.
+### 5) Expiration + Presence
+- On page detail, click `Join Presence`.
+- Show live viewers list with TTL behavior.
+- Use extension button on near-expiry entity (if visible) or explain trigger threshold.
+- Verbalize: “Expiration and extension are intentional per entity class.”
 
-## What to Verbalize
-- “Core data is stored as Arkiv entities.”
-- “Edits use update flow plus append-only revisions.”
-- “Relationships and search are query-driven.”
-- “Expiration and presence are intentional, not incidental.”
+### 6) Realtime Signal + Resilience
+- Keep same page open in Tab A and Tab B.
+- Edit in Tab A, show refresh in Tab B from event subscription.
+- Mention fallback polling path if event stream degrades.
+
+## Required Verbal Points
+- “Core domain data is stored as Arkiv entities.”
+- “Canonical pages are updated, revisions are append-only.”
+- “Search and relationships are Arkiv-query-driven.”
+- “Presence and expiration are product features, not incidental metadata.”
+
+## Backup Paths (If Live Demo Fails)
+- Run `pnpm restore:demo` to recover dataset.
+- Show unit/integration/e2e evidence with `pnpm verify` output.
+- Use deterministic seeded pages (`arkiv-demo/getting-started`, `arkiv-demo/presence-and-ttl`).

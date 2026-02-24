@@ -1,74 +1,82 @@
 # EXPLANATIONS.md
 
 ## Purpose
-This file explains **why** we are making architecture/product decisions, with explicit linkage to scoring impact.
+This file explains **why** architecture/product decisions were made, with explicit linkage to scoring impact.
 
 ---
 
-## 1) Why Arkiv-First, Not Framework-First
-A winning submission is primarily judged on integration depth. Therefore, core entities, relationships, and lifecycle behavior must be first-class in the design.
+## 1) Arkiv-First Storage Boundary
+All core domain records (spaces, pages, revisions, links, presence) are Arkiv entities. There is no SQL fallback for authoritative KB data.
 
-**Scoring impact:** Directly strengthens integration depth across schema, query usage, ownership, relationships, and expiration.
+**Scoring impact:** Directly supports Arkiv integration depth and avoids disqualification risk for core-data storage requirements.
 
 ---
 
-## 2) Why Canonical Page + Revision Entities
-We keep one stable `kb.page` as canonical state and append `kb.revision` on edits. Saves should favor update operations over generating a new canonical entity each edit.
+## 2) Canonical Page + Append-Only Revisions
+A page edit updates one stable `kb.page` canonical entity and appends a new `kb.revision` entity in the same `mutateEntities` write path.
 
 **Why this matters:**
-- preserves stable URLs/query targets,
-- keeps history auditable,
-- demonstrates mature entity lifecycle handling.
+- canonical route identity remains stable,
+- history remains auditable,
+- lifecycle maturity is explicit and demoable.
 
-**Scoring impact:** Higher confidence in lifecycle design and data modeling quality.
+**Scoring impact:** High impact for lifecycle design and advanced Arkiv write usage.
 
 ---
 
-## 3) Why Relationship Entities (`kb.link`) Instead of Derived-Only Client State
-Backlinks and graph views should be queryable data, not only ephemeral UI computations.
+## 3) Queryable Relationship Graph via `kb.link`
+Wiki-style links are parsed from markdown and persisted as `kb.link` edge entities. Backlinks are rendered from Arkiv queries only.
 
 **Why this matters:**
-- explicit inter-entity structure,
-- easier judge verification,
-- supports future graph features without schema rewrite.
+- relationships are first-class entities,
+- judges can verify edges directly,
+- client cache-only graph anti-pattern is avoided.
 
-**Scoring impact:** Improves relationship-depth and query usage categories.
-
----
-
-## 4) Why Presence + Expiration Is a Signature Feature
-`kb.presence` entities with short TTL and active extension show Arkiv-native temporal behavior (similar to ephemeral coordination patterns).
-
-**Why this matters:**
-- demonstrates intentional expiration strategy,
-- creates a visible live feature judges can quickly understand,
-- differentiates from generic CRUD demos.
-
-**Scoring impact:** Boosts expiration strategy and advanced features.
+**Scoring impact:** High impact for relationship modeling and query usage depth.
 
 ---
 
-## 5) Why Public Read + Wallet Write Boundary
-No-wallet browsing lowers friction and aligns with “documentation product” expectations, while wallet-gated writes enforce ownership semantics.
+## 4) Intentional Expiration + Extension
+Expiration policy is explicit by entity type:
+- space/published page: long-lived,
+- revision/link: medium-lived,
+- presence: short-lived (90s) with heartbeat extension.
 
-**Scoring impact:** Improves functionality + UX while preserving integration integrity.
+UI exposes near-expiry owner extension for space/page/revision.
 
----
-
-## 6) Why Query-First Search/Filtering
-Search/filter behavior should be represented as Arkiv query predicates, not only post-query client filtering.
-
-**Why this matters:**
-- makes data access strategy inspectable,
-- proves query capability use in real UX flows.
-
-**Scoring impact:** Directly supports query usage rubric components.
+**Scoring impact:** High impact for expiration strategy and Arkiv-native lifecycle behavior.
 
 ---
 
-## 7) Score Delta Template (Use per Iteration)
-For every merged change, append a short note in `ITERATION_LOG.md`:
-- **Change:** what shipped.
-- **Rubric target:** which scoring bullets it advances.
-- **Expected delta:** low/medium/high.
-- **Evidence:** tests, screenshots, demo step.
+## 5) Public Read / Wallet Write UX Contract
+Browse routes are fully public. Write actions (create/edit/presence/extend) require wallet connection.
+
+**Scoring impact:** Improves UX and functionality without sacrificing ownership semantics.
+
+---
+
+## 6) Realtime + Resilience
+Entity events are subscribed through Arkiv, with automatic polling fallback to preserve demo continuity under degraded subscriptions.
+
+**Scoring impact:** Supports advanced feature scoring while reducing live-demo fragility.
+
+---
+
+## 7) Deterministic Verification and Evidence
+The project now has:
+- phase-agnostic verify command (`pnpm verify`),
+- skip-safe live smoke (`pnpm test:live`),
+- demo seed/restore scripts,
+- unit/integration/e2e coverage aligned with rubric-critical paths.
+
+**Scoring impact:** Strengthens code quality/docs category and increases confidence in judge reproducibility.
+
+---
+
+## 8) Score Delta Notes (Current Build)
+- **Integration depth:** strong coverage (schema, update/mutate path, relationships, expiration, events).
+- **Functionality:** strong CRUD + search/backlinks/presence.
+- **UX:** compliant no-wallet browsing and explicit ownership boundaries.
+- **Code quality/docs:** improved by CI, tests, README, and walkthrough updates.
+
+Expected weighted outcome: materially above planning baseline, with strongest lift from integration depth proof.
