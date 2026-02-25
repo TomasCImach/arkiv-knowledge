@@ -40,6 +40,7 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - On page detail, click `Join Presence`.
 - Show live viewers list with TTL behavior.
 - Use extension button on near-expiry entity (if visible) or explain trigger threshold.
+- Optional debug proof: open browser console and show `[presence-heartbeat]` + `[arkiv-tx:*]` logs for each periodic extension prompt.
 - Verbalize: “Expiration and extension are intentional per entity class.”
 
 ### 6) Realtime Signal + Resilience

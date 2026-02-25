@@ -73,6 +73,7 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Last full pass: `pnpm verify` on 2026-02-25.
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
 - Live write proof: `pnpm seed:demo` completed on Kaolin with funded key, creating/reading `arkiv-demo` and demo pages.
+- Client tx observability: browser console now logs each wallet prompt under `[arkiv-tx:*]` and presence heartbeat lifecycle under `[presence-heartbeat]`.
 
 ## Next Bottlenecks (Optional Improvements)
 1. Add a deterministic browser E2E multi-tab realtime test (Playwright) for stronger phase 5 evidence.

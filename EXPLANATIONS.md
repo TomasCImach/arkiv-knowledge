@@ -106,3 +106,15 @@ Browser wallet writes now harden two weak points seen in live usage:
 Opaque SDK failures (`Transaction failed: undefined`) are now converted to actionable UI guidance.
 
 **Scoring impact:** Medium uplift for demo reliability, error clarity, and judge-observable robustness under real wallet conditions.
+
+---
+
+## 11) Transaction Prompt Observability
+Wallet transaction prompts are now explicitly logged in the browser console on each prompt/submit/failure:
+- `[arkiv-tx:prompt]` includes target, chain, value, payload size, and full tx data blob,
+- `[arkiv-tx:submitted]` includes tx hash,
+- `[arkiv-tx:failed]` includes normalized provider rejection message.
+
+Presence heartbeat activity is also logged (`[presence-heartbeat]`) so periodic prompts can be attributed immediately to presence extension.
+
+**Scoring impact:** Medium uplift for debugability and judge confidence in deterministic lifecycle behavior.

@@ -41,6 +41,10 @@ export function CreateSpaceForm() {
 
     setPending(true)
     setStatusText('')
+    console.info('[create-space] requesting wallet signature', {
+      spaceSlug: finalSlug,
+      visibility
+    })
 
     try {
       const result = await createSpace(walletClient, {

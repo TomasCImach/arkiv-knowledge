@@ -98,6 +98,18 @@ function buildProviderFailureMessage(error: unknown): string {
   return `Wallet provider rejected transaction: ${primary}`
 }
 
+function logTxPrompt(stage: 'prompt' | 'submitted' | 'failed', data: Record<string, unknown>) {
+  if (typeof window === 'undefined') {
+    return
+  }
+
+  const timestamp = new Date().toISOString()
+  console.info(`[arkiv-tx:${stage}]`, {
+    timestamp,
+    ...data
+  })
+}
+
 export function getArkivPublicClient() {
   if (!publicClientSingleton) {
     const config = getArkivConfig()
@@ -142,10 +154,30 @@ export function createConnectedArkivWalletClient(account: Hex, provider: EIP1193
   ;(walletClient as unknown as { sendTransaction: typeof walletClient.sendTransaction }).sendTransaction = async (
     parameters
   ) => {
+    const txData = typeof parameters?.data === 'string' ? parameters.data : undefined
+    const dataBytes = txData ? Math.max(0, (txData.length - 2) / 2) : 0
+    logTxPrompt('prompt', {
+      account: walletClient.account?.address,
+      chainId: parameters?.chain?.id ?? config.chain.id,
+      to: parameters?.to,
+      value: parameters?.value ? parameters.value.toString() : '0',
+      dataBytes,
+      data: txData,
+      pathname: typeof window !== 'undefined' ? window.location.pathname : undefined
+    })
+
     try {
-      return await originalSendTransaction(parameters)
+      const txHash = await originalSendTransaction(parameters)
+      logTxPrompt('submitted', {
+        txHash
+      })
+      return txHash
     } catch (error) {
-      throw new EntityMutationError(buildProviderFailureMessage(error))
+      const message = buildProviderFailureMessage(error)
+      logTxPrompt('failed', {
+        message
+      })
+      throw new EntityMutationError(message)
     }
   }
 

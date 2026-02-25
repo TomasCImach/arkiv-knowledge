@@ -17,7 +17,21 @@ export function usePresenceHeartbeat({ client, entityKey, intervalMs = 30000 }: 
       return
     }
 
+    if (typeof window !== 'undefined') {
+      console.info('[presence-heartbeat] started', {
+        entityKey,
+        intervalMs,
+        pathname: window.location.pathname
+      })
+    }
+
     const interval = setInterval(() => {
+      if (typeof window !== 'undefined') {
+        console.info('[presence-heartbeat] extending presence', {
+          entityKey,
+          pathname: window.location.pathname
+        })
+      }
       void heartbeatPresence(client, entityKey).catch(() => {
         // Keep heartbeat failure non-fatal for UX; panel shows stale viewers until refresh.
       })
@@ -25,6 +39,12 @@ export function usePresenceHeartbeat({ client, entityKey, intervalMs = 30000 }: 
 
     return () => {
       clearInterval(interval)
+      if (typeof window !== 'undefined') {
+        console.info('[presence-heartbeat] stopped', {
+          entityKey,
+          pathname: window.location.pathname
+        })
+      }
     }
   }, [client, entityKey, intervalMs])
 }

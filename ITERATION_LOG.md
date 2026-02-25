@@ -160,3 +160,14 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: connected wallet flow now uses selected connector provider for all writes.
   - notes/screenshots: browser automation confirmed contexts without injected provider surface no connector provider.
 - **Next bottleneck:** execute full browser write flow with an automation-capable wallet extension fixture.
+
+### 2026-02-25 — Iteration 13 (Tx Prompt Logging)
+- **Objective:** make every wallet popup attributable and debuggable from browser console.
+- **Implemented:** added centralized tx prompt logs (`[arkiv-tx:prompt|submitted|failed]`) and presence heartbeat lifecycle logs (`[presence-heartbeat]`), plus intent logs on create-space/join/leave actions.
+- **Rubric targets:** functionality / UX / code quality.
+- **Expected score delta:** medium.
+- **Evidence:**
+  - tests: `pnpm verify` pass with logging-enabled components.
+  - demo step: open console during presence join to see periodic heartbeat-triggered tx prompts.
+  - notes/screenshots: tx payload and hash now visible for every wallet prompt path.
+- **Next bottleneck:** add per-operation IDs in logs to correlate UI action -> tx hash across multi-step mutation flows.

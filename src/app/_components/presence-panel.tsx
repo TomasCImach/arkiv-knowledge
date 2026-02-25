@@ -72,6 +72,11 @@ export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps
 
     setPending(true)
     setStatusText('')
+    console.info('[presence] requesting join signature', {
+      spaceKey,
+      pageKey,
+      sessionId
+    })
 
     try {
       const result = await joinPresence(walletClient, {
@@ -99,6 +104,9 @@ export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps
 
     setPending(true)
     setStatusText('')
+    console.info('[presence] requesting leave signature', {
+      joinedEntityKey
+    })
 
     try {
       const result = await leavePresence(walletClient, joinedEntityKey)
