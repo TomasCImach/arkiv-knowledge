@@ -204,3 +204,14 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: create root + child pages, reparent safely, and show nested sidebar + ancestor breadcrumbs + parent filter behavior.
   - notes/screenshots: hierarchy tree now renders in both `/spaces/[spaceSlug]` and `/spaces/[spaceSlug]/[pageSlug]` sidebars.
 - **Next bottleneck:** implement ownership transfer depth for canonical entities (iteration 17).
+
+### 2026-02-25 — Iteration 18 (Query + Discovery Depth)
+- **Objective:** expand judge-visible query power with sort/owner controls and cross-space page discovery while keeping Arkiv-first reads.
+- **Implemented:** added sort-aware page query model, global page search input + Arkiv predicate builder, cross-space search route (`/search/pages`), owner/sort filters in space and global search UI, and dev-only query debug panel.
+- **Rubric targets:** functionality (primary) / integration (secondary) / UX (secondary).
+- **Expected score delta:** medium-high.
+- **Evidence:**
+  - tests: `tests/integration/search-predicates.test.ts` (global + parent-mode predicate coverage), `tests/e2e/space-search-form-filters.test.tsx` (query param serialization for q/status/parent/owner/sort).
+  - demo step: run `/search/pages` with owner + status + parent + sort controls, then open `/spaces/[spaceSlug]` and show the same filter semantics in space scope.
+  - notes/screenshots: global search entry is available in top navigation; query debug panel prints normalized predicates in dev mode.
+- **Next bottleneck:** ownership transfer depth for `kb.space` and canonical `kb.page` (iteration 17), then evidence-pack automation.

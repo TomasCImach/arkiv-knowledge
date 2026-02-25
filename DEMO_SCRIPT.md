@@ -37,22 +37,29 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 ### 4) Hierarchy + Query
 - On space route, show nested page tree in sidebar (parent -> child).
 - Open child page and show ancestor breadcrumb chain.
-- Apply search `parent` filter (`root` then `child`) and show Arkiv-query-backed result changes.
-- Verbalize: “Hierarchy is persisted on canonical pages and queried, not client-only grouping.”
+- Apply search filters (`parent`, `owner`, `sort`) and show Arkiv-query-backed result changes.
+- Verbalize: “Hierarchy and filter logic are query-driven from Arkiv predicates, not client-only grouping.”
 
-### 5) Relationships (Backlinks)
+### 5) Global Discovery (Cross-Space Query)
+- Open `/search/pages`.
+- Search with at least two controls (example: `status=published`, `parent=root`, `sort=title_asc`, optional `owner=<0x...>`).
+- Open one result and show route target works across spaces.
+- Optional debug proof: in dev mode, show query debug panel with normalized predicate summary.
+- Verbalize: “Cross-space discovery is Arkiv-query-first and remains fully public for read paths.”
+
+### 6) Relationships (Backlinks)
 - In page body, add wiki-style link `[[another-page]]` and save.
 - Open the linked page and show backlinks section populated.
 - Verbalize: “Backlinks are persisted as `kb.link` entities and queried, not computed only in UI.”
 
-### 6) Expiration + Presence
+### 7) Expiration + Presence
 - On page detail, click `Join Presence`.
 - Show live viewers list with TTL behavior.
 - Use extension button on near-expiry entity (if visible) or explain trigger threshold.
 - Optional debug proof: open browser console and show `[presence-heartbeat]` + `[arkiv-tx:*]` logs for each periodic extension prompt.
 - Verbalize: “Expiration and extension are intentional per entity class.”
 
-### 7) Realtime Signal + Resilience
+### 8) Realtime Signal + Resilience
 - Keep same page open in Tab A and Tab B.
 - Edit in Tab A, show refresh in Tab B from event subscription.
 - Mention fallback polling path if event stream degrades.
@@ -61,7 +68,7 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - “Core domain data is stored as Arkiv entities.”
 - “Navigation and IA follow documentation UX conventions (sidebar hierarchy + breadcrumbs).”
 - “Canonical pages are updated, revisions are append-only.”
-- “Search and relationships are Arkiv-query-driven.”
+- “Search, filters, sorting, and relationships are Arkiv-query-driven.”
 - “Presence and expiration are product features, not incidental metadata.”
 
 ## Backup Paths (If Live Demo Fails)

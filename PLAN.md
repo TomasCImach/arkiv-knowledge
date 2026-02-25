@@ -99,16 +99,27 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Breadcrumbs include ancestor chain on page detail routes.
 - Unit/integration/e2e coverage added for tree behavior and parent guardrails.
 
+### Phase 10 — Query + Discovery Depth (Iteration 18)
+- [x] Sort-aware page search model (`updated desc`, `updated asc`, `title asc`) in Arkiv query paths.
+- [x] Owner filter wiring in both space-scoped and global page search routes.
+- [x] Cross-space search route at `/search/pages` using Arkiv query predicates only.
+- [x] Dev-only query debug panel exposing normalized predicate behavior in UI.
+
+**Exit criteria status:** met.
+- Judges can demonstrate filter+sort behavior without relying on client-only post-processing.
+- Cross-space page discovery is available from global navigation and remains read-path public.
+- Query predicates are test-covered for local and global search builders.
+
 ## Current Verification Snapshot
-- Last full pass: `pnpm verify` on 2026-02-25 (post iteration 16 hierarchy rollout).
+- Last full pass: `pnpm verify` on 2026-02-25 (post iteration 18 query/discovery rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
 - Live write proof: `pnpm seed:demo` completed on Kaolin with funded key, creating/reading `arkiv-demo` and demo pages.
 - Client tx observability: browser console now logs each wallet prompt under `[arkiv-tx:*]` and presence heartbeat lifecycle under `[presence-heartbeat]`.
 
 ## Next Bottlenecks (Optional Improvements)
-1. Implement ownership transfer depth for `kb.space` and canonical `kb.page`.
-2. Add query/discovery depth (sort controls, owner filters, cross-space query route).
-3. Add deterministic browser E2E multi-tab realtime artifact for stronger phase 5 evidence.
+1. Implement ownership transfer depth for `kb.space` and canonical `kb.page` (planned iteration 17).
+2. Add deterministic browser E2E multi-tab realtime artifact for stronger phase 5 evidence.
+3. Package deterministic judge evidence artifacts (screenshots/video/checklist) with fail-soft CI capture.
 
 ## Plan V1 (2026-02-25)
 - See [planV1.md](/Users/tomas/Dev/Personal/arkiv-knowledge/planV1.md) for the next rubric-weighted iteration sequence.

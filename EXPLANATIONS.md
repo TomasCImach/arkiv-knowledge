@@ -164,3 +164,20 @@ Hierarchy features now fully operational around the existing `parentPageKey` sch
 - keeps hierarchy lifecycle canonical by updating existing `kb.page` entities rather than creating parallel structures.
 
 **Scoring impact:** High uplift on functionality, with medium-high uplift on integration-depth query and relationship modeling.
+
+---
+
+## 15) Query + Discovery Depth (Iteration 18)
+Query and browse paths now expose richer Arkiv-driven discovery controls without introducing non-Arkiv storage:
+- sort modes are first-class query inputs (`updated_desc`, `updated_asc`, `title_asc`),
+- owner filter is supported in both space-scoped and global page search,
+- global cross-space page search route (`/search/pages`) uses Arkiv predicates directly,
+- dev-only query debug panel shows normalized predicate intent for judge/debug transparency.
+
+**Why this matters:**
+- closes a functionality gap (`advanced querying/filtering`) with deterministic, UI-visible behavior,
+- increases Arkiv integration depth by expanding reusable query builder contracts beyond one route,
+- keeps read paths public while preserving wallet-gated write boundary,
+- improves demo clarity by making query behavior explicit and inspectable during walkthroughs.
+
+**Scoring impact:** Medium-high uplift on functionality and medium uplift on integration-depth/query sophistication.
