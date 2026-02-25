@@ -2,15 +2,27 @@
 
 import { ReactNode, useState } from 'react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { mendoza } from '@arkiv-network/sdk/chains'
+import { chainFromName } from '@arkiv-network/sdk'
+import { kaolin } from '@arkiv-network/sdk/chains'
 import { WagmiProvider, createConfig, http } from 'wagmi'
 import { injected } from 'wagmi/connectors'
 
+const resolvedChain = (() => {
+  const chainName = process.env.NEXT_PUBLIC_ARKIV_CHAIN ?? 'kaolin'
+  try {
+    return chainFromName(chainName)
+  } catch {
+    return kaolin
+  }
+})()
+
 const wagmiConfig = createConfig({
-  chains: [mendoza],
+  chains: [resolvedChain],
   connectors: [injected()],
   transports: {
-    [mendoza.id]: http(process.env.NEXT_PUBLIC_ARKIV_RPC_URL)
+    [resolvedChain.id]: http(
+      process.env.NEXT_PUBLIC_ARKIV_RPC_URL ?? resolvedChain.rpcUrls.default.http[0]
+    )
   },
   ssr: true
 })

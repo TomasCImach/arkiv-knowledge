@@ -12,9 +12,9 @@ vi.mock('@/arkiv/clients', () => ({
 
 vi.mock('@/arkiv/config', () => ({
   getArkivConfig: () => ({
-    chainName: 'Mendoza',
+    chainName: 'Kaolin',
     chain: {
-      id: 60138453056,
+      id: 60138453025,
       nativeCurrency: {
         symbol: 'ETH'
       }
@@ -62,18 +62,18 @@ describe('wallet error handling', () => {
     mocks.getBalanceMock.mockResolvedValueOnce(0n)
     const blocked = await runWritePreflight(
       '0x1111111111111111111111111111111111111111',
-      60138453056
+      60138453025
     )
 
     expect(blocked.ok).toBe(false)
     if (!blocked.ok) {
-      expect(blocked.message).toContain('No ETH on Mendoza')
+      expect(blocked.message).toContain('No ETH on Kaolin')
     }
 
     mocks.getBalanceMock.mockResolvedValueOnce(10n)
     const allowed = await runWritePreflight(
       '0x1111111111111111111111111111111111111111',
-      60138453056
+      60138453025
     )
 
     expect(allowed).toEqual({ ok: true })

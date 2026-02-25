@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { createPublicClient, createWalletClient, http, chainFromName } from '@arkiv-network/sdk'
 import { privateKeyToAccount } from '@arkiv-network/sdk/accounts'
-import { mendoza } from '@arkiv-network/sdk/chains'
+import { kaolin } from '@arkiv-network/sdk/chains'
 import type { Chain, Hex } from 'viem'
 import { createPage } from '../src/arkiv/mutations/pages'
 import { createSpace } from '../src/arkiv/mutations/spaces'
@@ -53,14 +53,14 @@ async function main() {
   }
 
   const dataset = loadDataset()
-  const chainName = process.env.ARKIV_CHAIN ?? process.env.NEXT_PUBLIC_ARKIV_CHAIN ?? 'mendoza'
+  const chainName = process.env.ARKIV_CHAIN ?? process.env.NEXT_PUBLIC_ARKIV_CHAIN ?? 'kaolin'
   const rpcUrl = process.env.ARKIV_RPC_URL ?? process.env.NEXT_PUBLIC_ARKIV_RPC_URL
 
-  let chain: Chain = mendoza
+  let chain: Chain = kaolin
   try {
     chain = chainFromName(chainName)
   } catch {
-    chain = mendoza
+    chain = kaolin
   }
 
   const transport = http(rpcUrl)

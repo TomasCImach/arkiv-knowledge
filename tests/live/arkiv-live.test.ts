@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto'
 import { createPublicClient, createWalletClient, http, jsonToPayload, chainFromName } from '@arkiv-network/sdk'
 import { privateKeyToAccount } from '@arkiv-network/sdk/accounts'
-import { mendoza } from '@arkiv-network/sdk/chains'
+import { kaolin } from '@arkiv-network/sdk/chains'
 import type { Hex } from 'viem'
 
 async function main() {
@@ -11,13 +11,13 @@ async function main() {
     return
   }
 
-  const chainName = process.env.ARKIV_CHAIN ?? process.env.NEXT_PUBLIC_ARKIV_CHAIN ?? 'mendoza'
+  const chainName = process.env.ARKIV_CHAIN ?? process.env.NEXT_PUBLIC_ARKIV_CHAIN ?? 'kaolin'
   const rpcUrl = process.env.ARKIV_RPC_URL ?? process.env.NEXT_PUBLIC_ARKIV_RPC_URL
   const chain = (() => {
     try {
       return chainFromName(chainName)
     } catch {
-      return mendoza
+      return kaolin
     }
   })()
 

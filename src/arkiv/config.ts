@@ -1,8 +1,8 @@
 import { chainFromName } from '@arkiv-network/sdk'
-import { mendoza } from '@arkiv-network/sdk/chains'
+import { kaolin } from '@arkiv-network/sdk/chains'
 import type { Chain } from 'viem'
 
-export const DEFAULT_ARKIV_CHAIN_NAME = 'mendoza'
+export const DEFAULT_ARKIV_CHAIN_NAME = 'kaolin'
 
 export type ArkivConfig = {
   chain: Chain
@@ -24,7 +24,7 @@ export function getArkivConfig(): ArkivConfig {
   try {
     chain = chainFromName(chainName)
   } catch {
-    chain = mendoza
+    chain = kaolin
   }
 
   cachedConfig = {

@@ -22,7 +22,7 @@ vi.mock('wagmi', () => ({
   useAccount: () => ({
     isConnected: true,
     address: '0x1111111111111111111111111111111111111111',
-    chainId: 60138453056
+    chainId: 60138453025
   })
 }))
 
