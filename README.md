@@ -27,7 +27,6 @@ Open `http://localhost:3000`.
 ## Environment Variables
 ```bash
 NEXT_PUBLIC_ARKIV_CHAIN=kaolin
-NEXT_PUBLIC_ARKIV_RPC_URL=https://kaolin.hoodi.arkiv.network/rpc
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<walletconnect-project-id>
 
 # Optional live write tests / seed scripts
@@ -35,6 +34,9 @@ ARKIV_LIVE_TEST_PRIVATE_KEY=<0x...>
 ARKIV_DEMO_PRIVATE_KEY=<0x...>
 ARKIV_CHAIN=kaolin
 ARKIV_RPC_URL=https://kaolin.hoodi.arkiv.network/rpc
+
+# Optional browser override. If unset, wallet reads use same-origin /api/arkiv-rpc proxy.
+# NEXT_PUBLIC_ARKIV_RPC_URL=https://kaolin.hoodi.arkiv.network/rpc
 ```
 
 ## Entity Schema

@@ -89,6 +89,7 @@ Arkiv rejects duplicate annotation keys in a single entity write. To keep page s
 **Why this matters:**
 - resolves real on-chain write failures during page creation/edit,
 - keeps search fully Arkiv-predicate-driven,
-- improves demo reliability under live judge conditions.
+- improves demo reliability under live judge conditions,
+- removes browser-side RPC CORS fragility via same-origin `/api/arkiv-rpc` proxy for wallet read transport.
 
 **Scoring impact:** Medium-high uplift to integration reliability and deterministic functionality.

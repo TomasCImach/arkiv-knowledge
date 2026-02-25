@@ -119,7 +119,7 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
 
 ### 2026-02-25 — Iteration 9 (Live Write Regression Fixes)
 - **Objective:** make real wallet/create flows deterministic under live chain conditions.
-- **Implemented:** replaced duplicate `token` annotations with deterministic token slots (`token_0..token_19`), updated query predicates, fixed near-expiry bigint/number crash path, and verified browser routing with seeded dataset.
+- **Implemented:** replaced duplicate `token` annotations with deterministic token slots (`token_0..token_19`), updated query predicates, fixed near-expiry bigint/number crash path, added same-origin Arkiv RPC proxy for wallet read transport, and verified browser routing with seeded dataset.
 - **Rubric targets:** integration / functionality / UX / code quality.
 - **Expected score delta:** high.
 - **Evidence:**
