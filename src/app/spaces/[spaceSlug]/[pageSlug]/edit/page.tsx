@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { EditPageForm } from '@/app/_components/edit-page-form'
 import { getPageBySlug, getSpaceBySlug } from '@/arkiv/queries'
+import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,7 +14,7 @@ export default async function EditPageRoute({ params }: { params: Promise<{ spac
   try {
     ;[space, page] = await Promise.all([getSpaceBySlug(spaceSlug), getPageBySlug(spaceSlug, pageSlug)])
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown Arkiv RPC error'
+    const message = formatReadError(error)
     return (
       <div className="card stack">
         <h1 className="title">Page temporarily unavailable</h1>

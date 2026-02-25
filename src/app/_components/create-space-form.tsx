@@ -6,11 +6,12 @@ import { useAccount } from 'wagmi'
 import { createSpace } from '@/arkiv/mutations/spaces'
 import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
 import { slugify } from '@/lib/text'
+import { formatWalletError, runWritePreflight } from '@/lib/wallet'
 
 export function CreateSpaceForm() {
   const router = useRouter()
   const walletClient = useArkivWalletClient()
-  const { isConnected } = useAccount()
+  const { address, chainId, isConnected } = useAccount()
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [description, setDescription] = useState('')
@@ -21,8 +22,14 @@ export function CreateSpaceForm() {
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    if (!walletClient || !isConnected) {
+    if (!walletClient || !isConnected || !address) {
       setStatusText('Connect wallet to create a space.')
+      return
+    }
+
+    const preflight = await runWritePreflight(address, chainId)
+    if (!preflight.ok) {
+      setStatusText(preflight.message)
       return
     }
 
@@ -46,7 +53,8 @@ export function CreateSpaceForm() {
       router.push(`/spaces/${finalSlug}`)
       router.refresh()
     } catch (error) {
-      setStatusText(error instanceof Error ? error.message : 'Failed to create space')
+      console.error('create-space failed', error)
+      setStatusText(formatWalletError(error, 'Failed to create space.'))
     } finally {
       setPending(false)
     }

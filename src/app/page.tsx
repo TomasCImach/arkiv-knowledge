@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { listSpaces } from '@/arkiv/queries'
 import type { ParsedSpace } from '@/arkiv/types'
+import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,7 +12,7 @@ export default async function HomePage() {
   try {
     spaces = await listSpaces(100)
   } catch (error) {
-    loadError = error instanceof Error ? error.message : 'Failed to load spaces from Arkiv.'
+    loadError = formatReadError(error, 'Failed to load spaces from Arkiv.')
   }
 
   return (

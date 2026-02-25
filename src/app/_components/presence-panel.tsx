@@ -8,6 +8,7 @@ import type { ParsedPresence } from '@/arkiv/types'
 import { joinPresence, leavePresence } from '@/arkiv/mutations/presence'
 import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
 import { usePresenceHeartbeat } from '@/features/presence/usePresenceHeartbeat'
+import { formatWalletError, runWritePreflight } from '@/lib/wallet'
 
 type PresencePanelProps = {
   spaceKey: Hex
@@ -22,7 +23,7 @@ function shortAddress(address: Hex): string {
 export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps) {
   const router = useRouter()
   const walletClient = useArkivWalletClient()
-  const { address } = useAccount()
+  const { address, chainId } = useAccount()
   const [joinedEntityKey, setJoinedEntityKey] = useState<Hex | undefined>()
   const [statusText, setStatusText] = useState('')
   const [pending, setPending] = useState(false)
@@ -63,6 +64,12 @@ export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps
       return
     }
 
+    const preflight = await runWritePreflight(address, chainId)
+    if (!preflight.ok) {
+      setStatusText(preflight.message)
+      return
+    }
+
     setPending(true)
     setStatusText('')
 
@@ -78,7 +85,8 @@ export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps
       setStatusText(`Joined (${result.txHash.slice(0, 10)}...)`)
       router.refresh()
     } catch (error) {
-      setStatusText(error instanceof Error ? error.message : 'Could not join presence')
+      console.error('join-presence failed', error)
+      setStatusText(formatWalletError(error, 'Could not join presence.'))
     } finally {
       setPending(false)
     }
@@ -98,7 +106,8 @@ export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps
       setJoinedEntityKey(undefined)
       router.refresh()
     } catch (error) {
-      setStatusText(error instanceof Error ? error.message : 'Could not leave presence')
+      console.error('leave-presence failed', error)
+      setStatusText(formatWalletError(error, 'Could not leave presence.'))
     } finally {
       setPending(false)
     }

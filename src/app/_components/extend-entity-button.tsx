@@ -7,6 +7,7 @@ import { extendOwnedEntity, type ExtendKind } from '@/arkiv/mutations/extensions
 import { isNearExpiry } from '@/arkiv/schema/expiration'
 import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
 import { canExtendOwnedEntity } from '@/features/extensions/can-extend'
+import { formatWalletError, runWritePreflight } from '@/lib/wallet'
 
 type ExtendEntityButtonProps = {
   entityKey: Hex
@@ -20,14 +21,20 @@ export function ExtendEntityButton({ entityKey, owner, expiresAtBlock, currentBl
   const [pending, setPending] = useState(false)
   const [message, setMessage] = useState('')
   const walletClient = useArkivWalletClient()
-  const { address } = useAccount()
+  const { address, chainId } = useAccount()
 
   const canExtend = useMemo(() => {
     return isNearExpiry(expiresAtBlock, currentBlock) && canExtendOwnedEntity(owner, address)
   }, [address, currentBlock, expiresAtBlock, owner])
 
   async function onExtend() {
-    if (!walletClient || !canExtend) {
+    if (!walletClient || !canExtend || !address) {
+      return
+    }
+
+    const preflight = await runWritePreflight(address, chainId)
+    if (!preflight.ok) {
+      setMessage(preflight.message)
       return
     }
 
@@ -38,7 +45,8 @@ export function ExtendEntityButton({ entityKey, owner, expiresAtBlock, currentBl
       const result = await extendOwnedEntity(walletClient, entityKey, kind)
       setMessage(`Extended (${result.txHash.slice(0, 10)}...)`)
     } catch (error) {
-      setMessage(error instanceof Error ? error.message : 'Failed to extend entity')
+      console.error('extend-entity failed', error)
+      setMessage(formatWalletError(error, 'Failed to extend entity.'))
     } finally {
       setPending(false)
     }

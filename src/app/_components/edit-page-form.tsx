@@ -7,6 +7,7 @@ import { useAccount } from 'wagmi'
 import { editPage } from '@/arkiv/mutations/pages'
 import type { ParsedPage } from '@/arkiv/types'
 import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
+import { formatWalletError, runWritePreflight } from '@/lib/wallet'
 
 export type EditPageFormProps = {
   spaceKey: Hex
@@ -17,7 +18,7 @@ export type EditPageFormProps = {
 export function EditPageForm({ spaceKey, spaceSlug, page }: EditPageFormProps) {
   const router = useRouter()
   const walletClient = useArkivWalletClient()
-  const { address, isConnected } = useAccount()
+  const { address, chainId, isConnected } = useAccount()
 
   const [title, setTitle] = useState(page.payload.title)
   const [summary, setSummary] = useState(page.payload.summary)
@@ -32,6 +33,12 @@ export function EditPageForm({ spaceKey, spaceSlug, page }: EditPageFormProps) {
 
     if (!walletClient || !address || !isConnected) {
       setStatusText('Connect wallet to update pages.')
+      return
+    }
+
+    const preflight = await runWritePreflight(address, chainId)
+    if (!preflight.ok) {
+      setStatusText(preflight.message)
       return
     }
 
@@ -56,7 +63,8 @@ export function EditPageForm({ spaceKey, spaceSlug, page }: EditPageFormProps) {
       router.push(`/spaces/${spaceSlug}/${page.pageSlug}`)
       router.refresh()
     } catch (error) {
-      setStatusText(error instanceof Error ? error.message : 'Failed to save page')
+      console.error('edit-page failed', error)
+      setStatusText(formatWalletError(error, 'Failed to save page.'))
     } finally {
       setPending(false)
     }

@@ -5,6 +5,7 @@ import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
 import { SpaceSearchForm } from '@/app/_components/space-search-form'
 import { fetchCurrentBlock, getSpaceBySlug, listPagesBySpace, searchPages } from '@/arkiv/queries'
 import type { PageStatus, ParsedPage } from '@/arkiv/types'
+import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
 
@@ -25,7 +26,7 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
   try {
     space = await getSpaceBySlug(spaceSlug)
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown Arkiv RPC error'
+    const message = formatReadError(error)
     return (
       <section className="stack">
         <div className="card stack">
@@ -53,7 +54,7 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
     currentBlock = await fetchCurrentBlock()
     pages = q || status ? await searchPages({ spaceSlug, q, status: status || undefined }) : await listPagesBySpace(spaceSlug)
   } catch (error) {
-    queryError = error instanceof Error ? error.message : 'Failed to query pages'
+    queryError = formatReadError(error, 'Failed to query pages.')
   }
 
   return (

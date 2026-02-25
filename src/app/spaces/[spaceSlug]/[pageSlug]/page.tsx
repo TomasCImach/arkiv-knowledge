@@ -5,6 +5,7 @@ import { PageMarkdown } from '@/app/_components/page-markdown'
 import { PresencePanel } from '@/app/_components/presence-panel'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
 import { fetchCurrentBlock, getPageBySlug, getSpaceBySlug, listBacklinks, listPresenceForPage, listRevisionsByPage } from '@/arkiv/queries'
+import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,7 +17,7 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
   try {
     ;[space, page] = await Promise.all([getSpaceBySlug(spaceSlug), getPageBySlug(spaceSlug, pageSlug)])
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown Arkiv RPC error'
+    const message = formatReadError(error)
     return (
       <section className="stack">
         <div className="card stack">
@@ -53,7 +54,7 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
     blockResult.status === 'rejected' ? blockResult.reason : null
   ]
     .filter(Boolean)
-    .map((reason) => (reason instanceof Error ? reason.message : String(reason)))
+    .map((reason) => formatReadError(reason))
 
   return (
     <section className="stack">

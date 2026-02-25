@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { CreatePageForm } from '@/app/_components/create-page-form'
 import { getSpaceBySlug } from '@/arkiv/queries'
+import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
 
@@ -11,7 +12,7 @@ export default async function NewPageRoute({ params }: { params: Promise<{ space
   try {
     space = await getSpaceBySlug(spaceSlug)
   } catch (error) {
-    const message = error instanceof Error ? error.message : 'Unknown Arkiv RPC error'
+    const message = formatReadError(error)
     return (
       <div className="card stack">
         <h1 className="title">Space temporarily unavailable</h1>

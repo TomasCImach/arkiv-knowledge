@@ -7,6 +7,7 @@ import { useAccount } from 'wagmi'
 import { createPage } from '@/arkiv/mutations/pages'
 import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
 import { slugify } from '@/lib/text'
+import { formatWalletError, runWritePreflight } from '@/lib/wallet'
 
 export type CreatePageFormProps = {
   spaceKey: Hex
@@ -16,7 +17,7 @@ export type CreatePageFormProps = {
 export function CreatePageForm({ spaceKey, spaceSlug }: CreatePageFormProps) {
   const router = useRouter()
   const walletClient = useArkivWalletClient()
-  const { address, isConnected } = useAccount()
+  const { address, chainId, isConnected } = useAccount()
 
   const [title, setTitle] = useState('')
   const [pageSlug, setPageSlug] = useState('')
@@ -31,6 +32,12 @@ export function CreatePageForm({ spaceKey, spaceSlug }: CreatePageFormProps) {
 
     if (!walletClient || !address || !isConnected) {
       setStatusText('Connect wallet to create pages.')
+      return
+    }
+
+    const preflight = await runWritePreflight(address, chainId)
+    if (!preflight.ok) {
+      setStatusText(preflight.message)
       return
     }
 
@@ -58,7 +65,8 @@ export function CreatePageForm({ spaceKey, spaceSlug }: CreatePageFormProps) {
       router.push(`/spaces/${spaceSlug}/${finalSlug}`)
       router.refresh()
     } catch (error) {
-      setStatusText(error instanceof Error ? error.message : 'Failed to create page')
+      console.error('create-page failed', error)
+      setStatusText(formatWalletError(error, 'Failed to create page.'))
     } finally {
       setPending(false)
     }
