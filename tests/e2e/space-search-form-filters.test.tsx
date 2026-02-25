@@ -1,7 +1,7 @@
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   pushMock: vi.fn()
@@ -17,11 +17,22 @@ vi.mock('next/navigation', () => ({
   })
 }))
 
+vi.mock('wagmi', () => ({
+  useAccount: () => ({
+    isConnected: true,
+    address: '0x1111111111111111111111111111111111111111'
+  })
+}))
+
 import { SpaceSearchForm } from '@/app/_components/space-search-form'
 
 describe('space search form filters', () => {
   beforeEach(() => {
     mocks.pushMock.mockReset()
+  })
+
+  afterEach(() => {
+    cleanup()
   })
 
   it('serializes q/status/parent/owner/sort into URL params', async () => {
@@ -37,5 +48,14 @@ describe('space search form filters', () => {
     expect(mocks.pushMock).toHaveBeenCalledWith(
       '/spaces/alpha?q=arkiv&status=published&parent=child&owner=0x1111111111111111111111111111111111111111&sort=title_asc'
     )
+  })
+
+  it('applies owned-by-me chip using connected wallet address', async () => {
+    render(<SpaceSearchForm initialQ="" initialParentMode="all" initialSort="updated_desc" />)
+
+    await userEvent.click(screen.getByRole('button', { name: 'Owned by me' }))
+    await userEvent.click(screen.getByRole('button', { name: 'Apply query' }))
+
+    expect(mocks.pushMock).toHaveBeenCalledWith('/spaces/alpha?owner=0x1111111111111111111111111111111111111111')
   })
 })

@@ -61,6 +61,7 @@ describe('create page parent selector', () => {
       <CreatePageForm
         spaceKey="0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
         spaceSlug="space"
+        spaceOwner="0x1111111111111111111111111111111111111111"
         availableParents={[
           {
             entityKey: '0x2222222222222222222222222222222222222222222222222222222222222222',
