@@ -4,7 +4,7 @@ import { ExtendEntityButton } from '@/app/_components/extend-entity-button'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
 import { SpaceSearchForm } from '@/app/_components/space-search-form'
 import { fetchCurrentBlock, getSpaceBySlug, listPagesBySpace, searchPages } from '@/arkiv/queries'
-import type { PageStatus } from '@/arkiv/types'
+import type { PageStatus, ParsedPage } from '@/arkiv/types'
 
 export const dynamic = 'force-dynamic'
 
@@ -21,16 +21,40 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
   const { spaceSlug } = await params
   const query = await searchParams
 
-  const space = await getSpaceBySlug(spaceSlug)
+  let space
+  try {
+    space = await getSpaceBySlug(spaceSlug)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown Arkiv RPC error'
+    return (
+      <section className="stack">
+        <div className="card stack">
+          <h1 className="title">Space temporarily unavailable</h1>
+          <p className="notice">Could not read this space from Arkiv: {message}</p>
+          <Link href="/" className="button secondary">
+            Back to spaces
+          </Link>
+        </div>
+      </section>
+    )
+  }
+
   if (!space) {
     notFound()
   }
 
   const q = firstValue(query.q)
   const status = firstValue(query.status) as PageStatus | ''
-  const currentBlock = await fetchCurrentBlock()
+  let currentBlock: bigint | undefined
+  let pages: ParsedPage[] = []
+  let queryError = ''
 
-  const pages = q || status ? await searchPages({ spaceSlug, q, status: status || undefined }) : await listPagesBySpace(spaceSlug)
+  try {
+    currentBlock = await fetchCurrentBlock()
+    pages = q || status ? await searchPages({ spaceSlug, q, status: status || undefined }) : await listPagesBySpace(spaceSlug)
+  } catch (error) {
+    queryError = error instanceof Error ? error.message : 'Failed to query pages'
+  }
 
   return (
     <section className="stack">
@@ -49,14 +73,17 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
             New Page
           </Link>
           <span className="badge">Space key: {space.entityKey.slice(0, 14)}...</span>
-          <ExtendEntityButton
-            entityKey={space.entityKey}
-            owner={space.owner}
-            expiresAtBlock={space.expiresAtBlock}
-            currentBlock={currentBlock}
-            kind="space"
-          />
+          {currentBlock ? (
+            <ExtendEntityButton
+              entityKey={space.entityKey}
+              owner={space.owner}
+              expiresAtBlock={space.expiresAtBlock}
+              currentBlock={currentBlock}
+              kind="space"
+            />
+          ) : null}
         </div>
+        {queryError ? <p className="notice">Page query degraded: {queryError}</p> : null}
       </div>
 
       <SpaceSearchForm initialQ={q} initialStatus={status || undefined} />

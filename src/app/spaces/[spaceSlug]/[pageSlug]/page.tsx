@@ -11,18 +11,49 @@ export const dynamic = 'force-dynamic'
 export default async function PageRoute({ params }: { params: Promise<{ spaceSlug: string; pageSlug: string }> }) {
   const { spaceSlug, pageSlug } = await params
 
-  const [space, page] = await Promise.all([getSpaceBySlug(spaceSlug), getPageBySlug(spaceSlug, pageSlug)])
+  let space
+  let page
+  try {
+    ;[space, page] = await Promise.all([getSpaceBySlug(spaceSlug), getPageBySlug(spaceSlug, pageSlug)])
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown Arkiv RPC error'
+    return (
+      <section className="stack">
+        <div className="card stack">
+          <h1 className="title">Page temporarily unavailable</h1>
+          <p className="notice">Could not load page data from Arkiv: {message}</p>
+          <Link href={`/spaces/${spaceSlug}`} className="button secondary">
+            Back to space
+          </Link>
+        </div>
+      </section>
+    )
+  }
 
   if (!space || !page) {
     notFound()
   }
 
-  const [revisions, backlinks, activePresence, currentBlock] = await Promise.all([
+  const [revisionsResult, backlinksResult, presenceResult, blockResult] = await Promise.allSettled([
     listRevisionsByPage(page.entityKey),
     listBacklinks(page.entityKey),
     listPresenceForPage(page.entityKey),
     fetchCurrentBlock()
   ])
+
+  const revisions = revisionsResult.status === 'fulfilled' ? revisionsResult.value : []
+  const backlinks = backlinksResult.status === 'fulfilled' ? backlinksResult.value : []
+  const activePresence = presenceResult.status === 'fulfilled' ? presenceResult.value : []
+  const currentBlock = blockResult.status === 'fulfilled' ? blockResult.value : undefined
+
+  const queryErrors = [
+    revisionsResult.status === 'rejected' ? revisionsResult.reason : null,
+    backlinksResult.status === 'rejected' ? backlinksResult.reason : null,
+    presenceResult.status === 'rejected' ? presenceResult.reason : null,
+    blockResult.status === 'rejected' ? blockResult.reason : null
+  ]
+    .filter(Boolean)
+    .map((reason) => (reason instanceof Error ? reason.message : String(reason)))
 
   return (
     <section className="stack">
@@ -43,15 +74,20 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
             Edit Page
           </Link>
           <span className="badge">Canonical key: {page.entityKey.slice(0, 14)}...</span>
-          <ExtendEntityButton
-            entityKey={page.entityKey}
-            owner={page.owner}
-            expiresAtBlock={page.expiresAtBlock}
-            currentBlock={currentBlock}
-            kind="page"
-          />
+          {currentBlock ? (
+            <ExtendEntityButton
+              entityKey={page.entityKey}
+              owner={page.owner}
+              expiresAtBlock={page.expiresAtBlock}
+              currentBlock={currentBlock}
+              kind="page"
+            />
+          ) : null}
         </div>
       </div>
+      {queryErrors.length > 0 ? (
+        <div className="notice">Some live Arkiv data is temporarily unavailable. Retry to refresh relationship/presence panels.</div>
+      ) : null}
 
       <PageMarkdown markdown={page.payload.bodyMarkdown} />
 
@@ -86,13 +122,15 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
                   <span className="badge">editor {revision.editor.slice(0, 10)}...</span>
                 </div>
                 <p className="subtitle">{revision.payload.editSummary}</p>
-                <ExtendEntityButton
-                  entityKey={revision.entityKey}
-                  owner={revision.owner}
-                  expiresAtBlock={revision.expiresAtBlock}
-                  currentBlock={currentBlock}
-                  kind="revision"
-                />
+                {currentBlock ? (
+                  <ExtendEntityButton
+                    entityKey={revision.entityKey}
+                    owner={revision.owner}
+                    expiresAtBlock={revision.expiresAtBlock}
+                    currentBlock={currentBlock}
+                    kind="revision"
+                  />
+                ) : null}
               </div>
             ))
         )}

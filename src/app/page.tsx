@@ -1,10 +1,18 @@
 import Link from 'next/link'
 import { listSpaces } from '@/arkiv/queries'
+import type { ParsedSpace } from '@/arkiv/types'
 
 export const dynamic = 'force-dynamic'
 
 export default async function HomePage() {
-  const spaces = await listSpaces(100)
+  let spaces: ParsedSpace[] = []
+  let loadError = ''
+
+  try {
+    spaces = await listSpaces(100)
+  } catch (error) {
+    loadError = error instanceof Error ? error.message : 'Failed to load spaces from Arkiv.'
+  }
 
   return (
     <section className="stack">
@@ -21,6 +29,7 @@ export default async function HomePage() {
           </Link>
           <span className="badge">Core data is stored as Arkiv entities</span>
         </div>
+        {loadError ? <p className="notice">Arkiv read is temporarily unavailable: {loadError}</p> : null}
       </div>
 
       {spaces.length === 0 ? (
