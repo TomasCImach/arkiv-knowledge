@@ -131,7 +131,13 @@ export function createConnectedArkivWalletClient(account: Hex, provider: EIP1193
   })
 
   ;(walletClient as unknown as { waitForTransactionReceipt: typeof receiptClient.waitForTransactionReceipt })
-    .waitForTransactionReceipt = receiptClient.waitForTransactionReceipt
+    .waitForTransactionReceipt = async (parameters) => {
+      try {
+        return await receiptClient.waitForTransactionReceipt(parameters)
+      } catch (error) {
+        throw new EntityMutationError(`Wallet receipt polling failed: ${buildProviderFailureMessage(error)}`)
+      }
+    }
   const originalSendTransaction = walletClient.sendTransaction.bind(walletClient)
   ;(walletClient as unknown as { sendTransaction: typeof walletClient.sendTransaction }).sendTransaction = async (
     parameters

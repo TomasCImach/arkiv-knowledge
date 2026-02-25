@@ -1,23 +1,48 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useEffect, useState } from 'react'
 import type { EIP1193Provider, Hex } from 'viem'
 import { useAccount } from 'wagmi'
 import { createConnectedArkivWalletClient } from '@/arkiv/clients'
 
 export function useArkivWalletClient() {
-  const { address, isConnected } = useAccount()
+  const { address, chainId, connector, isConnected } = useAccount()
+  const [walletClient, setWalletClient] = useState<ReturnType<typeof createConnectedArkivWalletClient> | undefined>()
 
-  return useMemo(() => {
-    if (typeof window === 'undefined' || !isConnected || !address) {
-      return undefined
+  useEffect(() => {
+    let active = true
+
+    if (typeof window === 'undefined' || !isConnected || !address || !connector) {
+      setWalletClient(undefined)
+      return () => {
+        active = false
+      }
     }
 
-    const provider = (window as Window & { ethereum?: EIP1193Provider }).ethereum
-    if (!provider) {
-      return undefined
-    }
+    void (async () => {
+      try {
+        const provider = (await connector.getProvider({
+          chainId
+        })) as EIP1193Provider | undefined
+        if (!active || !provider) {
+          if (active) {
+            setWalletClient(undefined)
+          }
+          return
+        }
 
-    return createConnectedArkivWalletClient(address as Hex, provider)
-  }, [address, isConnected])
+        setWalletClient(createConnectedArkivWalletClient(address as Hex, provider))
+      } catch {
+        if (active) {
+          setWalletClient(undefined)
+        }
+      }
+    })()
+
+    return () => {
+      active = false
+    }
+  }, [address, chainId, connector, isConnected])
+
+  return walletClient
 }

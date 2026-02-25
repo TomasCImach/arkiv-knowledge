@@ -149,3 +149,14 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: failed writes now report provider-level reason text when available.
   - notes/screenshots: user-reported generic fallback flow addressed in transaction send path.
 - **Next bottleneck:** add connected-wallet browser automation fixture to assert full write success path in CI-like runs.
+
+### 2026-02-25 — Iteration 12 (Connector Provider Alignment)
+- **Objective:** ensure writes use the exact wallet provider selected in RainbowKit/wagmi.
+- **Implemented:** `useArkivWalletClient` now resolves provider via active wagmi connector (`connector.getProvider`) instead of global `window.ethereum`, preventing multi-wallet provider mismatch failures.
+- **Rubric targets:** functionality / UX / integration.
+- **Expected score delta:** medium.
+- **Evidence:**
+  - tests: `pnpm verify` pass after connector-provider refactor.
+  - demo step: connected wallet flow now uses selected connector provider for all writes.
+  - notes/screenshots: browser automation confirmed contexts without injected provider surface no connector provider.
+- **Next bottleneck:** execute full browser write flow with an automation-capable wallet extension fixture.
