@@ -193,3 +193,14 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: open settings route, show non-owner read-only guard, switch to owner wallet and update space metadata.
   - notes/screenshots: settings route breadcrumbs and owner-only messaging are visible without wallet for read path.
 - **Next bottleneck:** implement true page hierarchy UX (`parentPageKey` authoring + nested rendering) for iteration 16.
+
+### 2026-02-25 — Iteration 16 (True Page Hierarchy)
+- **Objective:** deliver full hierarchy authoring, navigation, and query behavior around `parentPageKey`.
+- **Implemented:** added reusable hierarchy tree utilities and nested nav component; wired parent selectors into create/edit flows with cycle-safe guards; rendered nested tree sidebars; added ancestor breadcrumbs; and introduced hierarchy-aware space search predicates (`all`, `root`, `child`).
+- **Rubric targets:** functionality (primary) / integration (secondary) / UX (secondary).
+- **Expected score delta:** high.
+- **Evidence:**
+  - tests: `tests/unit/tree.test.ts`, `tests/integration/page-parent-write-path.test.ts`, `tests/integration/search-predicates.test.ts`, `tests/e2e/create-page-parent-selector.test.tsx`, `tests/e2e/edit-page-parent-guard.test.tsx`.
+  - demo step: create root + child pages, reparent safely, and show nested sidebar + ancestor breadcrumbs + parent filter behavior.
+  - notes/screenshots: hierarchy tree now renders in both `/spaces/[spaceSlug]` and `/spaces/[spaceSlug]/[pageSlug]` sidebars.
+- **Next bottleneck:** implement ownership transfer depth for canonical entities (iteration 17).

@@ -24,7 +24,8 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - Create a new space at `/new/space`.
 - Open `/spaces/[spaceSlug]/settings` and update description/visibility.
 - Verbalize: “Settings are readable by anyone, but only owner wallet can update.”
-- Create a page at `/spaces/[spaceSlug]/new`.
+- Create a root page at `/spaces/[spaceSlug]/new`.
+- Create a second page and set parent to the first page.
 - Verbalize: “Wallet is required only for writes.”
 
 ### 3) Lifecycle Depth (Canonical + Revisions)
@@ -33,19 +34,25 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - Show canonical page key stays constant while revision list grows.
 - Verbalize: “Saves use mutate flow: canonical update + append-only revision.”
 
-### 4) Relationships (Backlinks)
+### 4) Hierarchy + Query
+- On space route, show nested page tree in sidebar (parent -> child).
+- Open child page and show ancestor breadcrumb chain.
+- Apply search `parent` filter (`root` then `child`) and show Arkiv-query-backed result changes.
+- Verbalize: “Hierarchy is persisted on canonical pages and queried, not client-only grouping.”
+
+### 5) Relationships (Backlinks)
 - In page body, add wiki-style link `[[another-page]]` and save.
 - Open the linked page and show backlinks section populated.
 - Verbalize: “Backlinks are persisted as `kb.link` entities and queried, not computed only in UI.”
 
-### 5) Expiration + Presence
+### 6) Expiration + Presence
 - On page detail, click `Join Presence`.
 - Show live viewers list with TTL behavior.
 - Use extension button on near-expiry entity (if visible) or explain trigger threshold.
 - Optional debug proof: open browser console and show `[presence-heartbeat]` + `[arkiv-tx:*]` logs for each periodic extension prompt.
 - Verbalize: “Expiration and extension are intentional per entity class.”
 
-### 6) Realtime Signal + Resilience
+### 7) Realtime Signal + Resilience
 - Keep same page open in Tab A and Tab B.
 - Edit in Tab A, show refresh in Tab B from event subscription.
 - Mention fallback polling path if event stream degrades.

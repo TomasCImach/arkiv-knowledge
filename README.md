@@ -51,7 +51,7 @@ ARKIV_RPC_URL=https://kaolin.hoodi.arkiv.network/rpc
 - Page revisions: `type=kb.revision && schemaVersion=1 && pageKey=<pageKey>`
 - Backlinks: `type=kb.link && schemaVersion=1 && toPageKey=<pageKey>`
 - Presence: `type=kb.presence && schemaVersion=1 && pageKey=<pageKey>`
-- Search (query-first): `type=kb.page && schemaVersion=1 && spaceSlug=<slug> && status? && (token_0=<t> OR ... OR token_19=<t>)`
+- Search (query-first): `type=kb.page && schemaVersion=1 && spaceSlug=<slug> && status? && parentMode(all|root|child) && (token_0=<t> OR ... OR token_19=<t>)`
 
 ## Example Query Builder Usage
 ```ts
@@ -101,17 +101,19 @@ pnpm verify:phase all      # file-level phase verification
 ```
 
 ## Testing
-- Unit: schema contracts, parser behavior, expiration policy, link extraction
-- Integration: query predicate generation, canonical update + revision + link rewrite mutation path
-- E2E (component-level): no-wallet read / wallet-gated write boundary + owner/non-owner settings gating
+- Unit: schema contracts, parser behavior, expiration policy, link extraction, hierarchy tree logic
+- Integration: query predicate generation (including parent-mode filters), canonical update + revision + link rewrite mutation path, parentPageKey write path
+- E2E (component-level): no-wallet read / wallet-gated write boundary + owner/non-owner settings gating + parent selector/guard behavior
 - Live smoke (optional): create + read-back against Arkiv network
 
 ## Demo Flow (3–5 min)
 1. Browse spaces publicly from `/` without wallet.
 2. Connect wallet and create a space (`/new/space`).
 3. Open space settings (`/spaces/<slug>/settings`) and update description/visibility as owner.
-4. Create a page (`/spaces/<slug>/new`), then edit it.
-5. Show canonical page key stability + growing revision list.
-6. Add wiki links and show backlinks sourced from `kb.link` queries.
-7. Join presence and show short-lived active viewers.
-8. Show realtime refresh with two sessions.
+4. Create root + child pages with parent selector (`/spaces/<slug>/new`).
+5. Show nested sidebar tree and ancestor breadcrumbs on child page.
+6. Apply parent filters (`all`, `root`, `child`) and show Arkiv-query-driven result changes.
+7. Edit page and show canonical page key stability + growing revision list.
+8. Add wiki links and show backlinks sourced from `kb.link` queries.
+9. Join presence and show short-lived active viewers.
+10. Show realtime refresh with two sessions.

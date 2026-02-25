@@ -88,15 +88,26 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Space detail now links to settings with explicit ownership semantics.
 - Integration/e2e coverage added for update path and owner gating.
 
+### Phase 9 — True Page Hierarchy (Iteration 16)
+- [x] Parent selector + `parentPageKey` wiring in create/edit forms.
+- [x] Nested page hierarchy rendering in space/page sidebars with deterministic ordering.
+- [x] Parent-aware query filters (`all`, `root`, `child`) in space search UI and predicates.
+
+**Exit criteria status:** met.
+- Hierarchy authoring (set/reparent) is exposed in wallet write flows.
+- Sidebar navigation reflects page tree depth and active context.
+- Breadcrumbs include ancestor chain on page detail routes.
+- Unit/integration/e2e coverage added for tree behavior and parent guardrails.
+
 ## Current Verification Snapshot
-- Last full pass: `pnpm verify` on 2026-02-25 (post iteration 15 space-settings rollout).
+- Last full pass: `pnpm verify` on 2026-02-25 (post iteration 16 hierarchy rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
 - Live write proof: `pnpm seed:demo` completed on Kaolin with funded key, creating/reading `arkiv-demo` and demo pages.
 - Client tx observability: browser console now logs each wallet prompt under `[arkiv-tx:*]` and presence heartbeat lifecycle under `[presence-heartbeat]`.
 
 ## Next Bottlenecks (Optional Improvements)
-1. Implement true page hierarchy UX (parent selector + nested tree rendering) from `parentPageKey`.
-2. Implement ownership transfer depth for `kb.space` and canonical `kb.page`.
+1. Implement ownership transfer depth for `kb.space` and canonical `kb.page`.
+2. Add query/discovery depth (sort controls, owner filters, cross-space query route).
 3. Add deterministic browser E2E multi-tab realtime artifact for stronger phase 5 evidence.
 
 ## Plan V1 (2026-02-25)

@@ -146,3 +146,21 @@ Space management now includes an explicit settings route (`/spaces/[spaceSlug]/s
 - improves live demo reliability with explicit guardrails for disconnected/non-owner states.
 
 **Scoring impact:** High uplift on functionality with medium uplift on integration-depth ownership clarity.
+
+---
+
+## 14) True Page Hierarchy (Iteration 16)
+Hierarchy features now fully operational around the existing `parentPageKey` schema:
+- create/edit flows can set or change parent pages,
+- reparenting blocks self/descendant cycles before mutation,
+- side navigation renders nested tree structure with deterministic ordering (`updatedAtMs desc`, tie-breakers by title/slug),
+- page breadcrumbs include full ancestor path,
+- space search supports hierarchy-aware filtering (`all`, `root`, `child`) through Arkiv predicates.
+
+**Why this matters:**
+- closes a functionality gap (`page hierarchies`) with judge-observable behavior,
+- strengthens Arkiv query depth by adding parent-aware predicate modes,
+- improves information scent in documentation navigation without adding non-Arkiv persistence,
+- keeps hierarchy lifecycle canonical by updating existing `kb.page` entities rather than creating parallel structures.
+
+**Scoring impact:** High uplift on functionality, with medium-high uplift on integration-depth query and relationship modeling.
