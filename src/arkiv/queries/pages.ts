@@ -1,10 +1,10 @@
-import { and, asc, eq, neq, not, or } from '@arkiv-network/sdk/query'
+import { and, asc, desc, eq, neq, not, or } from '@arkiv-network/sdk/query'
 import type { Predicate } from '@arkiv-network/sdk/query'
 import type { Hex } from 'viem'
 import { getQueryClient, type QueryContext, updatedDesc } from '@/arkiv/queries/base'
 import { PAGE_SEARCH_TOKEN_LIMIT, pageSearchTokenKey } from '@/arkiv/schema/page'
 import { parsePageEntity, parseRevisionEntity } from '@/arkiv/schema/parser'
-import { ENTITY_TYPES, type PageSearchInput, type ParsedPage, type ParsedRevision } from '@/arkiv/types'
+import { ENTITY_TYPES, type GlobalPageSearchInput, type PageSearchInput, type PageSortMode, type ParsedPage, type ParsedRevision } from '@/arkiv/types'
 import { tokenizeForSearch } from '@/lib/text'
 
 export async function listPagesBySpace(spaceSlug: string, context?: QueryContext): Promise<ParsedPage[]> {
@@ -59,12 +59,15 @@ export async function listRevisionsByPage(pageKey: Hex, context?: QueryContext):
   return result.entities.map(parseRevisionEntity).slice(0, 200)
 }
 
-export function buildPageSearchPredicates(input: PageSearchInput): Predicate[] {
+export function buildGlobalPageSearchPredicates(input: GlobalPageSearchInput): Predicate[] {
   const predicates: Predicate[] = [
     eq('type', ENTITY_TYPES.page),
-    eq('schemaVersion', '1'),
-    eq('spaceSlug', input.spaceSlug)
+    eq('schemaVersion', '1')
   ]
+
+  if (input.spaceSlug) {
+    predicates.push(eq('spaceSlug', input.spaceSlug))
+  }
 
   if (input.status) {
     predicates.push(eq('status', input.status))
@@ -87,6 +90,30 @@ export function buildPageSearchPredicates(input: PageSearchInput): Predicate[] {
   return predicates
 }
 
+export function buildPageSearchPredicates(input: PageSearchInput): Predicate[] {
+  return buildGlobalPageSearchPredicates(input)
+}
+
+function applyPageSort<T extends { orderBy: (value: ReturnType<typeof desc>) => T }>(builder: T, sort: PageSortMode | undefined): T {
+  const resolvedSort = sort ?? 'updated_desc'
+
+  if (resolvedSort === 'updated_asc') {
+    builder.orderBy(asc('updatedAtMs', 'number'))
+    builder.orderBy(asc('title', 'string'))
+    return builder
+  }
+
+  if (resolvedSort === 'title_asc') {
+    builder.orderBy(asc('title', 'string'))
+    builder.orderBy(desc('updatedAtMs', 'number'))
+    return builder
+  }
+
+  builder.orderBy(updatedDesc())
+  builder.orderBy(asc('title', 'string'))
+  return builder
+}
+
 export async function searchPages(input: PageSearchInput, context?: QueryContext): Promise<ParsedPage[]> {
   const client = getQueryClient(context)
   const builder = client
@@ -95,12 +122,32 @@ export async function searchPages(input: PageSearchInput, context?: QueryContext
     .withPayload(true)
     .withMetadata(true)
     .where(and(buildPageSearchPredicates(input)))
-    .orderBy(updatedDesc())
 
   if (input.owner) {
     builder.ownedBy(input.owner)
   }
 
+  applyPageSort(builder, input.sort)
+
   const result = await builder.fetch()
-  return result.entities.map(parsePageEntity).slice(0, 50)
+  return result.entities.map(parsePageEntity).slice(0, 100)
+}
+
+export async function searchPagesGlobal(input: GlobalPageSearchInput, context?: QueryContext): Promise<ParsedPage[]> {
+  const client = getQueryClient(context)
+  const builder = client
+    .buildQuery()
+    .withAttributes(true)
+    .withPayload(true)
+    .withMetadata(true)
+    .where(and(buildGlobalPageSearchPredicates(input)))
+
+  if (input.owner) {
+    builder.ownedBy(input.owner)
+  }
+
+  applyPageSort(builder, input.sort)
+
+  const result = await builder.fetch()
+  return result.entities.map(parsePageEntity).slice(0, 120)
 }
