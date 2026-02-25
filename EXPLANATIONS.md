@@ -198,3 +198,20 @@ Ownership semantics are now explicit across canonical entities and authoring sur
 - preserves Arkiv-first architecture by handling ownership changes through native wallet mutations.
 
 **Scoring impact:** High uplift on integration depth and medium-high uplift on functionality/permission clarity.
+
+---
+
+## 17) Judge Evidence Pack + Fail-Soft Capture (Iteration 19)
+Iteration 19 shifts from pure feature work to reproducible proof quality:
+- deterministic evidence capture script now records route screenshots for required judging states (`home`, `space`, `page`, `settings`, `hierarchy`, `ownership-transfer`, `global-search`),
+- two-tab realtime artifact path is automated when demo key is available and clearly reported as `skipped` when unavailable,
+- CI now runs evidence capture in fail-soft mode and uploads artifacts without blocking merge on environment limitations,
+- `SUBMISSION_EVIDENCE.md` maps rubric categories to concrete code paths, tests, and demo steps.
+
+**Why this matters:**
+- increases judge confidence by turning claims into repeatable artifacts,
+- avoids brittle CI behavior while still collecting high-value proof when credentials are present,
+- shortens judging time by centralizing rubric traceability in one document,
+- keeps engineering rigor: evidence-doc existence is now validated in `pnpm verify`.
+
+**Scoring impact:** Medium-high uplift on code quality/docs and medium uplift on demo reliability.

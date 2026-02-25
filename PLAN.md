@@ -121,17 +121,29 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Cross-space page discovery is available from global navigation and remains read-path public.
 - Query predicates are test-covered for local and global search builders.
 
+### Phase 12 — Judge Evidence Pack (Iteration 19)
+- [x] Added deterministic Playwright evidence capture script for key routes (`home`, `space`, `page`, `settings`, `hierarchy`, `ownership-transfer`, `global-search`).
+- [x] Added optional two-tab realtime proof capture path with explicit skip reporting when no funded demo key is available.
+- [x] Added submission mapping doc (`SUBMISSION_EVIDENCE.md`) linking rubric -> code -> tests -> demo proof.
+- [x] Added fail-soft CI evidence capture + artifact upload and integrated evidence-doc verification into `pnpm verify`.
+
+**Exit criteria status:** met.
+- Evidence artifacts are generated at `output/playwright/evidence-pack/`.
+- CI uploads evidence artifacts when present without failing the main verify gate.
+- Submission traceability is explicit and maintained with project docs.
+
 ## Current Verification Snapshot
-- Last full pass: `pnpm verify` on 2026-02-25 (post iteration 17 ownership-depth rollout).
+- Last full pass: `pnpm verify` on 2026-02-25 (post iteration 19 evidence-pack rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
 - Live write proof: `pnpm seed:demo` completed on Kaolin with funded key, creating/reading `arkiv-demo` and demo pages.
 - Client tx observability: browser console now logs each wallet prompt under `[arkiv-tx:*]` and presence heartbeat lifecycle under `[presence-heartbeat]`.
+- Evidence capture proof: `pnpm evidence:capture` generated deterministic screenshots and status report (`ARTIFACT_INDEX.md` + `report.json`).
 
 ## Next Bottlenecks (Optional Improvements)
-1. Add deterministic browser E2E multi-tab realtime artifact for stronger phase 5 evidence.
-2. Package deterministic judge evidence artifacts (screenshots/video/checklist) with fail-soft CI capture.
-3. Add submission-focused rubric traceability sheet (`SUBMISSION_EVIDENCE.md`) mapped to code/tests/demo steps.
+1. Add wallet-extension-backed CI fixture to convert realtime proof from skip-soft to always-on.
+2. Add auto-generated short video clips in evidence capture (`mp4`) for judge walkthrough packaging.
+3. Add signed artifact manifest (hash list) for reproducibility claims.
 
 ## Plan V1 (2026-02-25)
 - See [planV1.md](/Users/tomas/Dev/Personal/arkiv-knowledge/planV1.md) for the next rubric-weighted iteration sequence.
-- Priority order executed: space settings -> true page hierarchy -> query/discovery depth -> ownership transfer depth -> judge evidence pack.
+- Priority order executed: space settings -> true page hierarchy -> query/discovery depth -> ownership transfer depth -> judge evidence pack (complete).

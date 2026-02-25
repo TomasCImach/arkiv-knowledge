@@ -10,7 +10,8 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 1. Run `pnpm install`.
 2. Run `pnpm verify`.
 3. Ensure your demo key has Kaolin test ETH, then run `pnpm seed:demo` for deterministic data.
-4. Open two browser sessions (Tab A and Tab B).
+4. Run `pnpm evidence:capture` to pre-generate screenshot/report artifacts.
+5. Open two browser sessions (Tab A and Tab B).
 
 ## Judge-Oriented Walkthrough
 
@@ -70,6 +71,12 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - Edit in Tab A, show refresh in Tab B from event subscription.
 - Mention fallback polling path if event stream degrades.
 
+### 10) Evidence Pack (Submission Reliability)
+- Open `output/playwright/evidence-pack/ARTIFACT_INDEX.md`.
+- Show captured screenshots for home/space/page/settings/hierarchy/ownership-transfer/global-search.
+- Show `report.json` realtime entry (`captured` when funded key exists, `skipped` when missing key).
+- Verbalize: “Evidence capture is deterministic and CI-uploaded in fail-soft mode.”
+
 ## Required Verbal Points
 - “Core domain data is stored as Arkiv entities.”
 - “Navigation and IA follow documentation UX conventions (sidebar hierarchy + breadcrumbs).”
@@ -81,4 +88,5 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 ## Backup Paths (If Live Demo Fails)
 - Run `pnpm restore:demo` to recover dataset.
 - Show unit/integration/e2e evidence with `pnpm verify` output.
+- Show deterministic artifact pack from `pnpm evidence:capture`.
 - Use deterministic seeded pages (`arkiv-demo/getting-started`, `arkiv-demo/presence-and-ttl`).

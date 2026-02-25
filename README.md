@@ -104,6 +104,8 @@ const transfer = await walletClient.changeOwnership({
 ## Scripts
 ```bash
 pnpm verify                # lint + typecheck + tests + build + live smoke (skip-safe)
+pnpm verify:evidence       # checks required submission/evidence docs and capture script presence
+pnpm evidence:capture      # deterministic Playwright screenshot/report artifact pack (fail-soft realtime)
 pnpm seed:demo             # idempotent demo data seed (requires key)
 pnpm restore:demo          # re-run seed script for fallback dataset
 pnpm verify:phase all      # file-level phase verification
@@ -114,6 +116,11 @@ pnpm verify:phase all      # file-level phase verification
 - Integration: query predicate generation (including parent-mode + global search filters), canonical update + revision + link rewrite mutation path, parentPageKey write path, ownership transfer mutation contract
 - E2E (component-level): no-wallet read / wallet-gated write boundary + owner/non-owner settings gating + parent selector/guard behavior + ownership transfer handoff + filter serialization (`owner`, `sort`, `parent`, `status`, `q`)
 - Live smoke (optional): create + read-back against Arkiv network
+
+## Submission Evidence
+- Rubric mapping file: `SUBMISSION_EVIDENCE.md`
+- Deterministic artifacts: `output/playwright/evidence-pack/`
+- CI policy: evidence capture runs fail-soft and uploads artifacts when available.
 
 ## Demo Flow (3–5 min)
 1. Browse spaces publicly from `/` without wallet.
@@ -128,3 +135,4 @@ pnpm verify:phase all      # file-level phase verification
 10. Add wiki links and show backlinks sourced from `kb.link` queries.
 11. Join presence and show short-lived active viewers.
 12. Show realtime refresh with two sessions.
+13. Show generated evidence pack (`ARTIFACT_INDEX.md` + screenshots + realtime status report).

@@ -226,3 +226,14 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: run `/search/pages` with owner + status + parent + sort controls, then open `/spaces/[spaceSlug]` and show the same filter semantics in space scope.
   - notes/screenshots: global search entry is available in top navigation; query debug panel prints normalized predicates in dev mode.
 - **Next bottleneck:** deterministic realtime + screenshot evidence pack automation (iteration 19).
+
+### 2026-02-25 — Iteration 19 (Judge Evidence Pack)
+- **Objective:** convert rubric claims into deterministic artifacts and reduce judge/demo ambiguity.
+- **Implemented:** added `scripts/capture-evidence.ts` for deterministic Playwright capture, added optional two-tab realtime mutation proof with skip-safe reporting, added `SUBMISSION_EVIDENCE.md`, added `verify:evidence` gate in `pnpm verify`, and added fail-soft CI artifact upload.
+- **Rubric targets:** code quality/docs (primary) / UX demo reliability (secondary) / integration evidence (secondary).
+- **Expected score delta:** medium.
+- **Evidence:**
+  - tests/verification: `pnpm verify` (includes `pnpm verify:evidence`) and `pnpm evidence:capture`.
+  - demo step: open `output/playwright/evidence-pack/ARTIFACT_INDEX.md` and show route screenshots + realtime status entry.
+  - notes/screenshots: captured artifacts in `output/playwright/evidence-pack/screenshots/`; realtime marked skip-safe without funded key.
+- **Next bottleneck:** automate wallet-extension-backed realtime proof in CI to eliminate skip path.
