@@ -2,6 +2,7 @@
 
 import { FormEvent, useState } from 'react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
+import { useAccount } from 'wagmi'
 import type { PageParentMode, PageSortMode } from '@/arkiv/types'
 
 export function SpaceSearchForm({
@@ -22,6 +23,7 @@ export function SpaceSearchForm({
   const [parentMode, setParentMode] = useState<PageParentMode>(initialParentMode)
   const [owner, setOwner] = useState(initialOwner)
   const [sort, setSort] = useState<PageSortMode>(initialSort)
+  const { address, isConnected } = useAccount()
   const router = useRouter()
   const pathname = usePathname()
   const current = useSearchParams()
@@ -79,6 +81,27 @@ export function SpaceSearchForm({
         <option value="child">Has parent</option>
       </select>
       <input value={owner} onChange={(event) => setOwner(event.target.value)} placeholder="Owner 0x..." />
+      <button
+        type="button"
+        className="secondary"
+        onClick={() => {
+          if (address) {
+            setOwner(address)
+          }
+        }}
+        disabled={!isConnected || !address}
+      >
+        Owned by me
+      </button>
+      <button
+        type="button"
+        className="secondary"
+        onClick={() => {
+          setOwner('')
+        }}
+      >
+        Any owner
+      </button>
       <select value={sort} onChange={(event) => setSort(event.target.value as PageSortMode)}>
         <option value="updated_desc">Updated (newest)</option>
         <option value="updated_asc">Updated (oldest)</option>
