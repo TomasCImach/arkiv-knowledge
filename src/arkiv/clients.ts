@@ -21,12 +21,21 @@ import { getArkivConfig } from '@/arkiv/config'
 
 let publicClientSingleton: ReturnType<typeof createPublicClient> | undefined
 
+function resolvedRpcUrl() {
+  const config = getArkivConfig()
+  if (typeof window !== 'undefined') {
+    return config.rpcUrl ?? '/api/arkiv-rpc'
+  }
+
+  return config.rpcUrl ?? config.chain.rpcUrls.default.http[0]
+}
+
 export function getArkivPublicClient() {
   if (!publicClientSingleton) {
     const config = getArkivConfig()
     publicClientSingleton = createPublicClient({
       chain: config.chain,
-      transport: http(config.rpcUrl, {
+      transport: http(resolvedRpcUrl(), {
         retryCount: 1,
         retryDelay: 250,
         timeout: 10000
@@ -39,11 +48,24 @@ export function getArkivPublicClient() {
 
 export function createConnectedArkivWalletClient(account: Hex, provider: EIP1193Provider) {
   const config = getArkivConfig()
-  return createWalletClient({
+  const walletClient = createWalletClient({
     account,
     chain: config.chain,
     transport: custom(provider)
   })
+  const receiptClient = createPublicClient({
+    chain: config.chain,
+    transport: http(resolvedRpcUrl(), {
+      retryCount: 1,
+      retryDelay: 250,
+      timeout: 10000
+    })
+  })
+
+  ;(walletClient as unknown as { waitForTransactionReceipt: typeof receiptClient.waitForTransactionReceipt })
+    .waitForTransactionReceipt = receiptClient.waitForTransactionReceipt
+
+  return walletClient
 }
 
 export type ArkivPublicClient = ReturnType<typeof getArkivPublicClient>

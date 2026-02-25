@@ -93,3 +93,14 @@ Arkiv rejects duplicate annotation keys in a single entity write. To keep page s
 - removes browser-side RPC CORS fragility via same-origin `/api/arkiv-rpc` proxy for wallet read transport.
 
 **Scoring impact:** Medium-high uplift to integration reliability and deterministic functionality.
+
+---
+
+## 10) Wallet Write Reliability Guardrails
+Browser wallet writes now harden two weak points seen in live usage:
+- wallet tx receipt polling is routed through Arkiv RPC public transport to avoid provider-specific receipt instability,
+- write preflight verifies wallet network and balance with provider-first checks, then Arkiv RPC fallback, and blocks writes when balance cannot be verified.
+
+Opaque SDK failures (`Transaction failed: undefined`) are now converted to actionable UI guidance.
+
+**Scoring impact:** Medium uplift for demo reliability, error clarity, and judge-observable robustness under real wallet conditions.

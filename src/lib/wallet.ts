@@ -56,7 +56,7 @@ function collectErrorDetails(error: unknown, depth = 0): string[] {
 }
 
 function normalizeDetail(detail: string): string {
-  return detail.replace(/\s+/g, ' ').replace(/: undefined\b/g, '').trim()
+  return detail.replace(/\s+/g, ' ').replace(/: undefined\b/gi, '').trim()
 }
 
 function isUsefulDetail(detail: string): boolean {
@@ -97,14 +97,20 @@ function friendlyHint(detail: string): string {
 }
 
 export function formatWalletError(error: unknown, fallback = 'Transaction failed. Please try again.'): string {
-  const details = collectErrorDetails(error)
-    .map(normalizeDetail)
-    .filter(isUsefulDetail)
+  const rawDetails = collectErrorDetails(error).map(normalizeDetail)
+  const details = rawDetails.filter(isUsefulDetail)
 
   const uniqueDetails = Array.from(new Set(details))
   const primary = uniqueDetails[0]
 
+  const sawOpaqueTxFailure = rawDetails.some((detail) => detail.toLowerCase() === 'transaction failed')
+
   if (!primary) {
+    if (sawOpaqueTxFailure) {
+      const config = getArkivConfig()
+      return `Transaction failed before Arkiv returned a reason. Verify ${config.chainName} network and wallet funding, then retry.`
+    }
+
     return fallback
   }
 
@@ -145,6 +151,33 @@ export type WritePreflightResult =
   | { ok: true }
   | { ok: false; message: string }
 
+async function readProviderBalance(address: Hex): Promise<bigint | undefined> {
+  if (typeof window === 'undefined') {
+    return undefined
+  }
+
+  const provider = (window as Window & {
+    ethereum?: {
+      request: (args: { method: string; params?: unknown[] }) => Promise<unknown>
+    }
+  }).ethereum
+
+  if (!provider) {
+    return undefined
+  }
+
+  const result = await provider.request({
+    method: 'eth_getBalance',
+    params: [address, 'latest']
+  })
+
+  if (typeof result !== 'string' || result.length === 0) {
+    return undefined
+  }
+
+  return BigInt(result)
+}
+
 export async function runWritePreflight(address: Hex, chainId: number | undefined): Promise<WritePreflightResult> {
   const config = getArkivConfig()
 
@@ -162,6 +195,22 @@ export async function runWritePreflight(address: Hex, chainId: number | undefine
     }
   }
 
+  let providerBalanceKnown = false
+  try {
+    const providerBalance = await readProviderBalance(address)
+    if (providerBalance !== undefined) {
+      providerBalanceKnown = true
+      if (providerBalance <= 0n) {
+        return {
+          ok: false,
+          message: `No ${config.chain.nativeCurrency.symbol} on ${config.chainName}. Fund wallet before writing.`
+        }
+      }
+    }
+  } catch {
+    // Fall through to public-client balance check.
+  }
+
   try {
     const balance = await getArkivPublicClient().getBalance({ address })
 
@@ -172,7 +221,12 @@ export async function runWritePreflight(address: Hex, chainId: number | undefine
       }
     }
   } catch {
-    // Keep preflight non-blocking when balance RPC is temporarily degraded.
+    if (!providerBalanceKnown) {
+      return {
+        ok: false,
+        message: `Could not verify balance on ${config.chainName}. Check wallet network/RPC health and retry.`
+      }
+    }
   }
 
   return { ok: true }

@@ -127,3 +127,14 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: `pnpm seed:demo` succeeds on Kaolin and `/` -> `/spaces/arkiv-demo` -> page routes render in Playwright.
   - notes/screenshots: Playwright snapshots confirm public browse with seeded space/pages.
 - **Next bottleneck:** add deterministic two-tab realtime browser artifact for final proof strength.
+
+### 2026-02-25 — Iteration 10 (Wallet Failure Hardening)
+- **Objective:** eliminate opaque browser wallet failures for create-space and join-presence flows.
+- **Implemented:** switched wallet write flow to use injected wallet for signing plus Arkiv public receipt polling, strengthened write preflight with provider/public balance checks, and added explicit actionable messaging for `Transaction failed: undefined`.
+- **Rubric targets:** integration / functionality / UX.
+- **Expected score delta:** medium-high.
+- **Evidence:**
+  - tests: `pnpm verify` pass with added wallet preflight/error unit coverage.
+  - demo step: create/join flows now block early with explicit network/funding errors instead of opaque tx failure.
+  - notes/screenshots: failure mode reproduced from user report and addressed in wallet pipeline.
+- **Next bottleneck:** add dedicated browser automation covering wallet-connected write flows when a test wallet is available.

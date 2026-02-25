@@ -46,6 +46,12 @@ describe('wallet error handling', () => {
     expect(formatWalletError({ message: '' })).toBe('Transaction failed. Please try again.')
   })
 
+  it('returns actionable guidance for opaque transaction failures', () => {
+    expect(formatWalletError({ message: 'Transaction failed: undefined' })).toContain(
+      'Verify Kaolin network and wallet funding'
+    )
+  })
+
   it('blocks writes on wrong network', async () => {
     const result = await runWritePreflight(
       '0x1111111111111111111111111111111111111111',
@@ -77,5 +83,19 @@ describe('wallet error handling', () => {
     )
 
     expect(allowed).toEqual({ ok: true })
+  })
+
+  it('blocks writes when balance checks are unavailable', async () => {
+    mocks.getBalanceMock.mockRejectedValueOnce(new Error('rpc down'))
+
+    const result = await runWritePreflight(
+      '0x1111111111111111111111111111111111111111',
+      60138453025
+    )
+
+    expect(result.ok).toBe(false)
+    if (!result.ok) {
+      expect(result.message).toContain('Could not verify balance on Kaolin')
+    }
   })
 })
