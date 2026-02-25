@@ -22,4 +22,26 @@ describe('query-first search predicate builder', () => {
       ])
     })
   })
+
+  it('adds root-only hierarchy predicate when parent mode is root', () => {
+    const predicates = buildPageSearchPredicates({
+      spaceSlug: 'alpha',
+      parentMode: 'root'
+    })
+
+    expect(predicates).toEqual(
+      expect.arrayContaining([{ type: 'not', key: 'parentPageKey', value: '' }])
+    )
+  })
+
+  it('adds has-parent hierarchy predicate when parent mode is child', () => {
+    const predicates = buildPageSearchPredicates({
+      spaceSlug: 'alpha',
+      parentMode: 'child'
+    })
+
+    expect(predicates).toEqual(
+      expect.arrayContaining([{ type: 'neq', key: 'parentPageKey', value: '' }])
+    )
+  })
 })

@@ -97,6 +97,9 @@ export function buildPageTree(pages: ParsedPage[]): PageTreeNode[] {
 
   const remaining = pages.filter((page) => !visited.has(page.entityKey)).sort(comparePages)
   for (const orphan of remaining) {
+    if (visited.has(orphan.entityKey)) {
+      continue
+    }
     roots.push(buildNode(orphan, new Set<Hex>()))
   }
 
