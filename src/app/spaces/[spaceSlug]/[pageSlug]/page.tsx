@@ -1,10 +1,20 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { ExtendEntityButton } from '@/app/_components/extend-entity-button'
 import { PageMarkdown } from '@/app/_components/page-markdown'
 import { PresencePanel } from '@/app/_components/presence-panel'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
-import { fetchCurrentBlock, getPageBySlug, getSpaceBySlug, listBacklinks, listPresenceForPage, listRevisionsByPage } from '@/arkiv/queries'
+import {
+  fetchCurrentBlock,
+  getPageBySlug,
+  getSpaceBySlug,
+  listBacklinks,
+  listPagesBySpace,
+  listPresenceForPage,
+  listRevisionsByPage
+} from '@/arkiv/queries'
+import type { ParsedPage } from '@/arkiv/types'
 import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
@@ -14,8 +24,13 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
 
   let space
   let page
+  let spacePages: ParsedPage[] = []
   try {
-    ;[space, page] = await Promise.all([getSpaceBySlug(spaceSlug), getPageBySlug(spaceSlug, pageSlug)])
+    ;[space, page, spacePages] = await Promise.all([
+      getSpaceBySlug(spaceSlug),
+      getPageBySlug(spaceSlug, pageSlug),
+      listPagesBySpace(spaceSlug)
+    ])
   } catch (error) {
     const message = formatReadError(error)
     return (
@@ -57,87 +72,117 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
     .map((reason) => formatReadError(reason))
 
   return (
-    <section className="stack">
+    <section className="doc-layout">
       <RealtimeRefresh spaceKey={space.entityKey} pageKey={page.entityKey} />
 
-      <div className="card stack">
+      <aside className="card stack doc-aside">
         <div className="toolbar" style={{ justifyContent: 'space-between' }}>
-          <h1 className="title" style={{ fontFamily: 'var(--font-heading)' }}>
-            {page.payload.title}
-          </h1>
-          <span className="badge">{page.status}</span>
-        </div>
-
-        <p className="subtitle">{page.payload.summary}</p>
-
-        <div className="toolbar">
-          <Link href={`/spaces/${spaceSlug}/${pageSlug}/edit`} className="button">
-            Edit Page
+          <strong>{space.payload.name}</strong>
+          <Link href={`/spaces/${spaceSlug}/new`} className="badge">
+            New Page
           </Link>
-          <span className="badge">Canonical key: {page.entityKey.slice(0, 14)}...</span>
-          {currentBlock ? (
-            <ExtendEntityButton
-              entityKey={page.entityKey}
-              owner={page.owner}
-              expiresAtBlock={page.expiresAtBlock}
-              currentBlock={currentBlock}
-              kind="page"
-            />
-          ) : null}
         </div>
-      </div>
-      {queryErrors.length > 0 ? (
-        <div className="notice">Some live Arkiv data is temporarily unavailable. Retry to refresh relationship/presence panels.</div>
-      ) : null}
+        <div className="nav-tree">
+          {spacePages.map((spacePage) => (
+            <Link
+              key={spacePage.entityKey}
+              href={`/spaces/${spaceSlug}/${spacePage.pageSlug}`}
+              className={`nav-tree-item ${spacePage.pageSlug === pageSlug ? 'active' : ''}`}
+            >
+              <span>{spacePage.payload.title}</span>
+              <span className="nav-tree-meta">{spacePage.status}</span>
+            </Link>
+          ))}
+        </div>
+      </aside>
 
-      <PageMarkdown markdown={page.payload.bodyMarkdown} />
+      <div className="stack doc-column">
+        <Breadcrumbs
+          items={[
+            { href: '/', label: 'Knowledge Base' },
+            { href: `/spaces/${spaceSlug}`, label: space.payload.name },
+            { label: page.payload.title }
+          ]}
+        />
 
-      <div className="card stack">
-        <h3 style={{ margin: 0 }}>Backlinks (from `kb.link` entities)</h3>
-        {backlinks.length === 0 ? (
-          <p className="subtitle">No backlinks currently indexed.</p>
-        ) : (
-          backlinks.map((link) => (
-            <div key={link.entityKey} className="toolbar" style={{ justifyContent: 'space-between' }}>
-              <Link href={`/spaces/${spaceSlug}/${link.payload.sourceSlug}`} className="button secondary">
-                {link.payload.sourceSlug}
-              </Link>
-              <span className="subtitle">edge {link.entityKey.slice(0, 10)}...</span>
-            </div>
-          ))
-        )}
-      </div>
+        <div className="card stack">
+          <div className="toolbar" style={{ justifyContent: 'space-between' }}>
+            <h1 className="title">{page.payload.title}</h1>
+            <span className="badge">{page.status}</span>
+          </div>
 
-      <div className="card stack">
-        <h3 style={{ margin: 0 }}>Revision Log</h3>
-        {revisions.length === 0 ? (
-          <p className="subtitle">No revisions found.</p>
-        ) : (
-          revisions
-            .slice()
-            .reverse()
-            .map((revision) => (
-              <div key={revision.entityKey} className="card stack" style={{ padding: '0.8rem' }}>
-                <div className="toolbar" style={{ justifyContent: 'space-between' }}>
-                  <strong>Revision #{revision.revisionNo}</strong>
-                  <span className="badge">editor {revision.editor.slice(0, 10)}...</span>
+          <p className="subtitle">{page.payload.summary}</p>
+
+          <div className="toolbar">
+            <Link href={`/spaces/${spaceSlug}/${pageSlug}/edit`} className="button">
+              Edit Page
+            </Link>
+            <span className="badge">Canonical key: {page.entityKey.slice(0, 14)}...</span>
+            {currentBlock ? (
+              <ExtendEntityButton
+                entityKey={page.entityKey}
+                owner={page.owner}
+                expiresAtBlock={page.expiresAtBlock}
+                currentBlock={currentBlock}
+                kind="page"
+              />
+            ) : null}
+          </div>
+        </div>
+        {queryErrors.length > 0 ? (
+          <div className="notice">Some live Arkiv data is temporarily unavailable. Retry to refresh relationship/presence panels.</div>
+        ) : null}
+
+        <PageMarkdown markdown={page.payload.bodyMarkdown} />
+
+        <div className="card stack">
+          <h3 style={{ margin: 0 }}>Backlinks (from `kb.link` entities)</h3>
+          {backlinks.length === 0 ? (
+            <p className="subtitle">No backlinks currently indexed.</p>
+          ) : (
+            backlinks.map((link) => (
+              <Link key={link.entityKey} href={`/spaces/${spaceSlug}/${link.payload.sourceSlug}`} className="doc-list-item">
+                <div className="toolbar doc-list-head">
+                  <strong>{link.payload.sourceSlug}</strong>
+                  <span className="badge">backlink</span>
                 </div>
-                <p className="subtitle">{revision.payload.editSummary}</p>
-                {currentBlock ? (
-                  <ExtendEntityButton
-                    entityKey={revision.entityKey}
-                    owner={revision.owner}
-                    expiresAtBlock={revision.expiresAtBlock}
-                    currentBlock={currentBlock}
-                    kind="revision"
-                  />
-                ) : null}
-              </div>
+                <span className="subtitle">edge {link.entityKey.slice(0, 10)}...</span>
+              </Link>
             ))
-        )}
-      </div>
+          )}
+        </div>
 
-      <PresencePanel spaceKey={space.entityKey} pageKey={page.entityKey} records={activePresence} />
+        <div className="card stack">
+          <h3 style={{ margin: 0 }}>Revision Log</h3>
+          {revisions.length === 0 ? (
+            <p className="subtitle">No revisions found.</p>
+          ) : (
+            revisions
+              .slice()
+              .reverse()
+              .map((revision) => (
+                <div key={revision.entityKey} className="doc-list-item">
+                  <div className="toolbar doc-list-head">
+                    <strong>Revision #{revision.revisionNo}</strong>
+                    <span className="badge">editor {revision.editor.slice(0, 10)}...</span>
+                  </div>
+                  <p className="subtitle">{revision.payload.editSummary}</p>
+                  {currentBlock ? (
+                    <ExtendEntityButton
+                      entityKey={revision.entityKey}
+                      owner={revision.owner}
+                      expiresAtBlock={revision.expiresAtBlock}
+                      currentBlock={currentBlock}
+                      kind="revision"
+                    />
+                  ) : null}
+                </div>
+              ))
+          )}
+        </div>
+
+        <PresencePanel spaceKey={space.entityKey} pageKey={page.entityKey} records={activePresence} />
+      </div>
     </section>
   )
 }

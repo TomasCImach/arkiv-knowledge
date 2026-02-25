@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { ExtendEntityButton } from '@/app/_components/extend-entity-button'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
 import { SpaceSearchForm } from '@/app/_components/space-search-form'
@@ -47,69 +48,101 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
   const q = firstValue(query.q)
   const status = firstValue(query.status) as PageStatus | ''
   let currentBlock: bigint | undefined
+  let allPages: ParsedPage[] = []
   let pages: ParsedPage[] = []
   let queryError = ''
 
   try {
-    currentBlock = await fetchCurrentBlock()
-    pages = q || status ? await searchPages({ spaceSlug, q, status: status || undefined }) : await listPagesBySpace(spaceSlug)
+    const [block, indexedPages, filteredPages] = await Promise.all([
+      fetchCurrentBlock(),
+      listPagesBySpace(spaceSlug),
+      q || status ? searchPages({ spaceSlug, q, status: status || undefined }) : Promise.resolve<ParsedPage[] | null>(null)
+    ])
+    currentBlock = block
+    allPages = indexedPages
+    pages = filteredPages ?? indexedPages
   } catch (error) {
     queryError = formatReadError(error, 'Failed to query pages.')
   }
 
   return (
-    <section className="stack">
+    <section className="doc-layout">
       <RealtimeRefresh spaceKey={space.entityKey} />
 
-      <div className="card stack">
+      <aside className="card stack doc-aside">
         <div className="toolbar" style={{ justifyContent: 'space-between' }}>
-          <h1 className="title" style={{ fontFamily: 'var(--font-heading)' }}>
-            {space.payload.name}
-          </h1>
-          <span className="badge">{space.visibility}</span>
+          <strong>Space Contents</strong>
+          <span className="badge">{allPages.length} pages</span>
         </div>
-        <p className="subtitle">{space.payload.description}</p>
-        <div className="toolbar">
-          <Link href={`/spaces/${spaceSlug}/new`} className="button">
-            New Page
-          </Link>
-          <span className="badge">Space key: {space.entityKey.slice(0, 14)}...</span>
-          {currentBlock ? (
-            <ExtendEntityButton
-              entityKey={space.entityKey}
-              owner={space.owner}
-              expiresAtBlock={space.expiresAtBlock}
-              currentBlock={currentBlock}
-              kind="space"
-            />
-          ) : null}
-        </div>
-        {queryError ? <p className="notice">Page query degraded: {queryError}</p> : null}
-      </div>
+        {allPages.length === 0 ? (
+          <p className="subtitle">No pages created yet.</p>
+        ) : (
+          <div className="nav-tree">
+            {allPages.map((page) => (
+              <Link key={page.entityKey} href={`/spaces/${spaceSlug}/${page.pageSlug}`} className="nav-tree-item">
+                <span>{page.payload.title}</span>
+                <span className="nav-tree-meta">{page.status}</span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </aside>
 
-      <SpaceSearchForm initialQ={q} initialStatus={status || undefined} />
+      <div className="stack doc-column">
+        <Breadcrumbs items={[{ href: '/', label: 'Knowledge Base' }, { label: space.payload.name }]} />
 
-      {pages.length === 0 ? (
         <div className="card stack">
-          <p className="subtitle">No pages match the current Arkiv query.</p>
-        </div>
-      ) : (
-        <div className="grid">
-          {pages.map((page) => (
-            <Link key={page.entityKey} href={`/spaces/${spaceSlug}/${page.pageSlug}`} className="card stack">
-              <div className="toolbar" style={{ justifyContent: 'space-between' }}>
-                <strong>{page.payload.title}</strong>
-                <span className="badge">{page.status}</span>
-              </div>
-              <p className="subtitle">{page.payload.summary}</p>
-              <div className="toolbar" style={{ justifyContent: 'space-between' }}>
-                <span className="badge">slug: {page.pageSlug}</span>
-                {page.parentPageKey ? <span className="badge">child</span> : <span className="badge">root</span>}
-              </div>
+          <div className="toolbar" style={{ justifyContent: 'space-between' }}>
+            <h1 className="title">{space.payload.name}</h1>
+            <span className="badge">{space.visibility}</span>
+          </div>
+          <p className="subtitle">{space.payload.description}</p>
+          <div className="toolbar">
+            <Link href={`/spaces/${spaceSlug}/new`} className="button">
+              New Page
             </Link>
-          ))}
+            <span className="badge">Space key: {space.entityKey.slice(0, 14)}...</span>
+            {currentBlock ? (
+              <ExtendEntityButton
+                entityKey={space.entityKey}
+                owner={space.owner}
+                expiresAtBlock={space.expiresAtBlock}
+                currentBlock={currentBlock}
+                kind="space"
+              />
+            ) : null}
+          </div>
+          {queryError ? <p className="notice">Page query degraded: {queryError}</p> : null}
         </div>
-      )}
+
+        <SpaceSearchForm initialQ={q} initialStatus={status || undefined} />
+
+        {pages.length === 0 ? (
+          <div className="card stack">
+            <p className="subtitle">No pages match the current Arkiv query.</p>
+          </div>
+        ) : (
+          <div className="card stack">
+            <div className="toolbar" style={{ justifyContent: 'space-between' }}>
+              <h2 style={{ margin: 0 }}>Pages</h2>
+              <span className="badge">{pages.length} results</span>
+            </div>
+            {pages.map((page) => (
+              <Link key={page.entityKey} href={`/spaces/${spaceSlug}/${page.pageSlug}`} className="doc-list-item">
+                <div className="toolbar doc-list-head">
+                  <strong>{page.payload.title}</strong>
+                  <span className="badge">{page.status}</span>
+                </div>
+                <p className="subtitle">{page.payload.summary}</p>
+                <div className="toolbar doc-list-meta">
+                  <span className="badge">slug: {page.pageSlug}</span>
+                  {page.parentPageKey ? <span className="badge">child</span> : <span className="badge">root</span>}
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
     </section>
   )
 }

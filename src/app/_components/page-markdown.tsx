@@ -3,7 +3,7 @@ import remarkGfm from 'remark-gfm'
 
 export function PageMarkdown({ markdown }: { markdown: string }) {
   return (
-    <article className="card markdown">
+    <article className="card markdown doc-reader">
       <Markdown remarkPlugins={[remarkGfm]}>{markdown}</Markdown>
     </article>
   )

@@ -31,7 +31,7 @@ export function SpaceSearchForm({ initialQ, initialStatus }: { initialQ: string;
   }
 
   return (
-    <form className="card toolbar" onSubmit={onSubmit}>
+    <form className="card toolbar search-strip" onSubmit={onSubmit}>
       <input value={q} onChange={(event) => setQ(event.target.value)} placeholder="Search by indexed tokens" />
       <select value={status} onChange={(event) => setStatus(event.target.value)}>
         <option value="">Any status</option>

@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { CreatePageForm } from '@/app/_components/create-page-form'
 import { getSpaceBySlug } from '@/arkiv/queries'
 import { formatReadError } from '@/lib/wallet'
@@ -25,5 +26,16 @@ export default async function NewPageRoute({ params }: { params: Promise<{ space
     notFound()
   }
 
-  return <CreatePageForm spaceKey={space.entityKey} spaceSlug={spaceSlug} />
+  return (
+    <section className="stack doc-column">
+      <Breadcrumbs
+        items={[
+          { href: '/', label: 'Knowledge Base' },
+          { href: `/spaces/${spaceSlug}`, label: space.payload.name },
+          { label: 'Create Page' }
+        ]}
+      />
+      <CreatePageForm spaceKey={space.entityKey} spaceSlug={spaceSlug} />
+    </section>
+  )
 }
