@@ -2,10 +2,11 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { ExtendEntityButton } from '@/app/_components/extend-entity-button'
+import { PageTreeNav } from '@/app/_components/page-tree-nav'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
 import { SpaceSearchForm } from '@/app/_components/space-search-form'
 import { fetchCurrentBlock, getSpaceBySlug, listPagesBySpace, searchPages } from '@/arkiv/queries'
-import type { PageStatus, ParsedPage } from '@/arkiv/types'
+import type { PageParentMode, PageStatus, ParsedPage } from '@/arkiv/types'
 import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
@@ -47,6 +48,9 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
 
   const q = firstValue(query.q)
   const status = firstValue(query.status) as PageStatus | ''
+  const parentRaw = firstValue(query.parent)
+  const parentMode: PageParentMode =
+    parentRaw === 'root' || parentRaw === 'child' ? (parentRaw as PageParentMode) : 'all'
   let currentBlock: bigint | undefined
   let allPages: ParsedPage[] = []
   let pages: ParsedPage[] = []
@@ -56,7 +60,9 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
     const [block, indexedPages, filteredPages] = await Promise.all([
       fetchCurrentBlock(),
       listPagesBySpace(spaceSlug),
-      q || status ? searchPages({ spaceSlug, q, status: status || undefined }) : Promise.resolve<ParsedPage[] | null>(null)
+      q || status || parentMode !== 'all'
+        ? searchPages({ spaceSlug, q, status: status || undefined, parentMode })
+        : Promise.resolve<ParsedPage[] | null>(null)
     ])
     currentBlock = block
     allPages = indexedPages
@@ -74,18 +80,7 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
           <strong>Space Contents</strong>
           <span className="badge">{allPages.length} pages</span>
         </div>
-        {allPages.length === 0 ? (
-          <p className="subtitle">No pages created yet.</p>
-        ) : (
-          <div className="nav-tree">
-            {allPages.map((page) => (
-              <Link key={page.entityKey} href={`/spaces/${spaceSlug}/${page.pageSlug}`} className="nav-tree-item">
-                <span>{page.payload.title}</span>
-                <span className="nav-tree-meta">{page.status}</span>
-              </Link>
-            ))}
-          </div>
-        )}
+        <PageTreeNav spaceSlug={spaceSlug} pages={allPages} />
       </aside>
 
       <div className="stack doc-column">
@@ -119,7 +114,7 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
           {queryError ? <p className="notice">Page query degraded: {queryError}</p> : null}
         </div>
 
-        <SpaceSearchForm initialQ={q} initialStatus={status || undefined} />
+        <SpaceSearchForm initialQ={q} initialStatus={status || undefined} initialParentMode={parentMode} />
 
         {pages.length === 0 ? (
           <div className="card stack">

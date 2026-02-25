@@ -1,4 +1,4 @@
-import { and, asc, eq, or } from '@arkiv-network/sdk/query'
+import { and, asc, eq, neq, not, or } from '@arkiv-network/sdk/query'
 import type { Predicate } from '@arkiv-network/sdk/query'
 import type { Hex } from 'viem'
 import { getQueryClient, type QueryContext, updatedDesc } from '@/arkiv/queries/base'
@@ -68,6 +68,12 @@ export function buildPageSearchPredicates(input: PageSearchInput): Predicate[] {
 
   if (input.status) {
     predicates.push(eq('status', input.status))
+  }
+
+  if (input.parentMode === 'root') {
+    predicates.push(not('parentPageKey'))
+  } else if (input.parentMode === 'child') {
+    predicates.push(neq('parentPageKey', ''))
   }
 
   const tokens = tokenizeForSearch(input.q ?? '')

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { ExtendEntityButton } from '@/app/_components/extend-entity-button'
+import { PageTreeNav } from '@/app/_components/page-tree-nav'
 import { PageMarkdown } from '@/app/_components/page-markdown'
 import { PresencePanel } from '@/app/_components/presence-panel'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
@@ -15,6 +16,7 @@ import {
   listRevisionsByPage
 } from '@/arkiv/queries'
 import type { ParsedPage } from '@/arkiv/types'
+import { buildAncestorChain } from '@/features/hierarchy/tree'
 import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
@@ -70,6 +72,7 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
   ]
     .filter(Boolean)
     .map((reason) => formatReadError(reason))
+  const ancestors = buildAncestorChain(spacePages, page)
 
   return (
     <section className="doc-layout">
@@ -82,18 +85,7 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
             New Page
           </Link>
         </div>
-        <div className="nav-tree">
-          {spacePages.map((spacePage) => (
-            <Link
-              key={spacePage.entityKey}
-              href={`/spaces/${spaceSlug}/${spacePage.pageSlug}`}
-              className={`nav-tree-item ${spacePage.pageSlug === pageSlug ? 'active' : ''}`}
-            >
-              <span>{spacePage.payload.title}</span>
-              <span className="nav-tree-meta">{spacePage.status}</span>
-            </Link>
-          ))}
-        </div>
+        <PageTreeNav spaceSlug={spaceSlug} pages={spacePages} activePageSlug={pageSlug} />
       </aside>
 
       <div className="stack doc-column">
@@ -101,6 +93,10 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
           items={[
             { href: '/', label: 'Knowledge Base' },
             { href: `/spaces/${spaceSlug}`, label: space.payload.name },
+            ...ancestors.map((ancestor) => ({
+              href: `/spaces/${spaceSlug}/${ancestor.pageSlug}`,
+              label: ancestor.payload.title
+            })),
             { label: page.payload.title }
           ]}
         />

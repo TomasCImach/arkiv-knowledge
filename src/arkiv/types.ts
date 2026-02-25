@@ -114,9 +114,12 @@ export type ParsedPresence = {
   payload: PresencePayload
 }
 
+export type PageParentMode = 'all' | 'root' | 'child'
+
 export type PageSearchInput = {
   spaceSlug: string
   status?: PageStatus
   q?: string
   owner?: Hex
+  parentMode?: PageParentMode
 }
