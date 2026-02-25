@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { buildPageSearchPredicates } from '@/arkiv/queries/pages'
+import { buildGlobalPageSearchPredicates, buildPageSearchPredicates } from '@/arkiv/queries/pages'
 
 describe('query-first search predicate builder', () => {
   it('includes type, schema, space, status, and token predicates', () => {
@@ -42,6 +42,36 @@ describe('query-first search predicate builder', () => {
 
     expect(predicates).toEqual(
       expect.arrayContaining([{ type: 'neq', key: 'parentPageKey', value: '' }])
+    )
+  })
+
+  it('builds global predicates without space slug when omitted', () => {
+    const predicates = buildGlobalPageSearchPredicates({
+      status: 'published',
+      q: 'arkiv'
+    })
+
+    expect(predicates).toEqual(
+      expect.arrayContaining([
+        { type: 'eq', key: 'type', value: 'kb.page' },
+        { type: 'eq', key: 'schemaVersion', value: '1' },
+        { type: 'eq', key: 'status', value: 'published' }
+      ])
+    )
+    expect(predicates).not.toEqual(expect.arrayContaining([{ type: 'eq', key: 'spaceSlug', value: 'alpha' }]))
+  })
+
+  it('includes space slug in global predicates when provided', () => {
+    const predicates = buildGlobalPageSearchPredicates({
+      spaceSlug: 'alpha',
+      parentMode: 'root'
+    })
+
+    expect(predicates).toEqual(
+      expect.arrayContaining([
+        { type: 'eq', key: 'spaceSlug', value: 'alpha' },
+        { type: 'not', key: 'parentPageKey', value: '' }
+      ])
     )
   })
 })
