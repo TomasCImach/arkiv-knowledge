@@ -1,21 +1,23 @@
 'use client'
 
-import { FormEvent, useState } from 'react'
+import { FormEvent, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Hex } from 'viem'
 import { useAccount } from 'wagmi'
 import { editPage } from '@/arkiv/mutations/pages'
 import type { ParsedPage } from '@/arkiv/types'
 import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
+import { collectDescendantKeys, listPagesInTreeOrder } from '@/features/hierarchy/tree'
 import { formatWalletError, runWritePreflight } from '@/lib/wallet'
 
 export type EditPageFormProps = {
   spaceKey: Hex
   spaceSlug: string
   page: ParsedPage
+  availableParents: ParsedPage[]
 }
 
-export function EditPageForm({ spaceKey, spaceSlug, page }: EditPageFormProps) {
+export function EditPageForm({ spaceKey, spaceSlug, page, availableParents }: EditPageFormProps) {
   const router = useRouter()
   const walletClient = useArkivWalletClient()
   const { address, chainId, isConnected } = useAccount()
@@ -25,8 +27,22 @@ export function EditPageForm({ spaceKey, spaceSlug, page }: EditPageFormProps) {
   const [status, setStatus] = useState(page.status)
   const [bodyMarkdown, setBodyMarkdown] = useState(page.payload.bodyMarkdown)
   const [editSummary, setEditSummary] = useState('Content update')
+  const [parentPageKey, setParentPageKey] = useState(page.parentPageKey ?? '')
   const [statusText, setStatusText] = useState('')
   const [pending, setPending] = useState(false)
+
+  const invalidParentKeys = useMemo(() => {
+    const descendants = collectDescendantKeys(availableParents, page.entityKey)
+    return new Set<Hex>([page.entityKey, ...descendants])
+  }, [availableParents, page.entityKey])
+
+  const parentOptions = useMemo(() => {
+    return listPagesInTreeOrder(availableParents).filter(({ page: candidate }) => !invalidParentKeys.has(candidate.entityKey))
+  }, [availableParents, invalidParentKeys])
+
+  const parentOptionKeys = useMemo(() => {
+    return new Set(parentOptions.map(({ page: candidate }) => candidate.entityKey))
+  }, [parentOptions])
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -34,6 +50,14 @@ export function EditPageForm({ spaceKey, spaceSlug, page }: EditPageFormProps) {
     if (!walletClient || !address || !isConnected) {
       setStatusText('Connect wallet to update pages.')
       return
+    }
+
+    if (parentPageKey) {
+      const selectedParent = parentPageKey as Hex
+      if (invalidParentKeys.has(selectedParent) || !parentOptionKeys.has(selectedParent)) {
+        setStatusText('Invalid parent selection. Refresh and choose a different parent.')
+        return
+      }
     }
 
     const preflight = await runWritePreflight(address, chainId)
@@ -56,7 +80,8 @@ export function EditPageForm({ spaceKey, spaceSlug, page }: EditPageFormProps) {
         status,
         bodyMarkdown,
         editor: address,
-        editSummary
+        editSummary,
+        parentPageKey: parentPageKey ? (parentPageKey as Hex) : undefined
       })
 
       setStatusText(`Saved (${result.txHash.slice(0, 10)}...)`)
@@ -97,6 +122,21 @@ export function EditPageForm({ spaceKey, spaceSlug, page }: EditPageFormProps) {
       <label>
         Edit summary
         <input required value={editSummary} onChange={(event) => setEditSummary(event.target.value)} />
+      </label>
+
+      <label>
+        Parent page
+        <select value={parentPageKey} onChange={(event) => setParentPageKey(event.target.value)}>
+          <option value="">Root (no parent)</option>
+          {parentPageKey && !parentOptionKeys.has(parentPageKey as Hex) ? (
+            <option value={parentPageKey}>Invalid parent (refresh required)</option>
+          ) : null}
+          {parentOptions.map(({ page: candidate, depth }) => (
+            <option key={candidate.entityKey} value={candidate.entityKey}>
+              {`${'-- '.repeat(depth)}${candidate.payload.title}`}
+            </option>
+          ))}
+        </select>
       </label>
 
       <label>

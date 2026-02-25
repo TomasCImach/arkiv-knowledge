@@ -5,16 +5,19 @@ import { useRouter } from 'next/navigation'
 import type { Hex } from 'viem'
 import { useAccount } from 'wagmi'
 import { createPage } from '@/arkiv/mutations/pages'
+import type { ParsedPage } from '@/arkiv/types'
 import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
+import { listPagesInTreeOrder } from '@/features/hierarchy/tree'
 import { slugify } from '@/lib/text'
 import { formatWalletError, runWritePreflight } from '@/lib/wallet'
 
 export type CreatePageFormProps = {
   spaceKey: Hex
   spaceSlug: string
+  availableParents: ParsedPage[]
 }
 
-export function CreatePageForm({ spaceKey, spaceSlug }: CreatePageFormProps) {
+export function CreatePageForm({ spaceKey, spaceSlug, availableParents }: CreatePageFormProps) {
   const router = useRouter()
   const walletClient = useArkivWalletClient()
   const { address, chainId, isConnected } = useAccount()
@@ -24,8 +27,10 @@ export function CreatePageForm({ spaceKey, spaceSlug }: CreatePageFormProps) {
   const [summary, setSummary] = useState('')
   const [status, setStatus] = useState<'draft' | 'published' | 'archived'>('published')
   const [bodyMarkdown, setBodyMarkdown] = useState('')
+  const [parentPageKey, setParentPageKey] = useState('')
   const [statusText, setStatusText] = useState('')
   const [pending, setPending] = useState(false)
+  const parentOptions = listPagesInTreeOrder(availableParents)
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
@@ -59,7 +64,8 @@ export function CreatePageForm({ spaceKey, spaceSlug }: CreatePageFormProps) {
         summary,
         status,
         bodyMarkdown,
-        editor: address
+        editor: address,
+        parentPageKey: parentPageKey ? (parentPageKey as Hex) : undefined
       })
       setStatusText(`Created page ${result.pageKey.slice(0, 10)}...`)
       router.push(`/spaces/${spaceSlug}/${finalSlug}`)
@@ -98,6 +104,18 @@ export function CreatePageForm({ spaceKey, spaceSlug }: CreatePageFormProps) {
           <option value="published">Published</option>
           <option value="draft">Draft</option>
           <option value="archived">Archived</option>
+        </select>
+      </label>
+
+      <label>
+        Parent page
+        <select value={parentPageKey} onChange={(event) => setParentPageKey(event.target.value)}>
+          <option value="">Root (no parent)</option>
+          {parentOptions.map(({ page, depth }) => (
+            <option key={page.entityKey} value={page.entityKey}>
+              {`${'-- '.repeat(depth)}${page.payload.title}`}
+            </option>
+          ))}
         </select>
       </label>
 

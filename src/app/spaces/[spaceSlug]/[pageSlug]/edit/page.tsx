@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { EditPageForm } from '@/app/_components/edit-page-form'
-import { getPageBySlug, getSpaceBySlug } from '@/arkiv/queries'
+import { getPageBySlug, getSpaceBySlug, listPagesBySpace } from '@/arkiv/queries'
 import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
@@ -11,9 +11,14 @@ export default async function EditPageRoute({ params }: { params: Promise<{ spac
 
   let space
   let page
+  let spacePages = []
 
   try {
-    ;[space, page] = await Promise.all([getSpaceBySlug(spaceSlug), getPageBySlug(spaceSlug, pageSlug)])
+    ;[space, page, spacePages] = await Promise.all([
+      getSpaceBySlug(spaceSlug),
+      getPageBySlug(spaceSlug, pageSlug),
+      listPagesBySpace(spaceSlug)
+    ])
   } catch (error) {
     const message = formatReadError(error)
     return (
@@ -38,7 +43,7 @@ export default async function EditPageRoute({ params }: { params: Promise<{ spac
           { label: 'Edit' }
         ]}
       />
-      <EditPageForm spaceKey={space.entityKey} spaceSlug={spaceSlug} page={page} />
+      <EditPageForm spaceKey={space.entityKey} spaceSlug={spaceSlug} page={page} availableParents={spacePages} />
     </section>
   )
 }
