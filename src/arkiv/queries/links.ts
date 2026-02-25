@@ -13,10 +13,9 @@ export async function listOutgoingLinks(fromPageKey: Hex, context?: QueryContext
     .withMetadata(true)
     .where(and([eq('type', ENTITY_TYPES.link), eq('schemaVersion', '1'), eq('fromPageKey', fromPageKey)]))
     .orderBy(updatedDesc())
-    .limit(200)
     .fetch()
 
-  return result.entities.map(parseLinkEntity)
+  return result.entities.map(parseLinkEntity).slice(0, 200)
 }
 
 export async function listBacklinks(toPageKey: Hex, context?: QueryContext): Promise<ParsedLink[]> {
@@ -28,8 +27,7 @@ export async function listBacklinks(toPageKey: Hex, context?: QueryContext): Pro
     .withMetadata(true)
     .where(and([eq('type', ENTITY_TYPES.link), eq('schemaVersion', '1'), eq('toPageKey', toPageKey)]))
     .orderBy(updatedDesc())
-    .limit(200)
     .fetch()
 
-  return result.entities.map(parseLinkEntity)
+  return result.entities.map(parseLinkEntity).slice(0, 200)
 }

@@ -15,10 +15,9 @@ export async function listPagesBySpace(spaceSlug: string, context?: QueryContext
     .withMetadata(true)
     .where(and([eq('type', ENTITY_TYPES.page), eq('schemaVersion', '1'), eq('spaceSlug', spaceSlug)]))
     .orderBy(updatedDesc())
-    .limit(100)
     .fetch()
 
-  return result.entities.map(parsePageEntity)
+  return result.entities.map(parsePageEntity).slice(0, 100)
 }
 
 export async function getPageBySlug(spaceSlug: string, pageSlug: string, context?: QueryContext): Promise<ParsedPage | null> {
@@ -36,7 +35,6 @@ export async function getPageBySlug(spaceSlug: string, pageSlug: string, context
         eq('pageSlug', pageSlug)
       ])
     )
-    .limit(1)
     .fetch()
 
   if (result.entities.length === 0) {
@@ -55,10 +53,9 @@ export async function listRevisionsByPage(pageKey: Hex, context?: QueryContext):
     .withMetadata(true)
     .where(and([eq('type', ENTITY_TYPES.revision), eq('schemaVersion', '1'), eq('pageKey', pageKey)]))
     .orderBy(asc('revisionNo', 'number'))
-    .limit(200)
     .fetch()
 
-  return result.entities.map(parseRevisionEntity)
+  return result.entities.map(parseRevisionEntity).slice(0, 200)
 }
 
 export function buildPageSearchPredicates(input: PageSearchInput): Predicate[] {
@@ -89,12 +86,11 @@ export async function searchPages(input: PageSearchInput, context?: QueryContext
     .withMetadata(true)
     .where(and(buildPageSearchPredicates(input)))
     .orderBy(updatedDesc())
-    .limit(50)
 
   if (input.owner) {
     builder.ownedBy(input.owner)
   }
 
   const result = await builder.fetch()
-  return result.entities.map(parsePageEntity)
+  return result.entities.map(parsePageEntity).slice(0, 50)
 }

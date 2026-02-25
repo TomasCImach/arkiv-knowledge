@@ -12,10 +12,9 @@ export async function listSpaces(limit = 50, context?: QueryContext): Promise<Pa
     .withMetadata(true)
     .orderBy(updatedDesc())
     .where(and([eq('type', ENTITY_TYPES.space), eq('schemaVersion', '1')]))
-    .limit(limit)
     .fetch()
 
-  return result.entities.map(parseSpaceEntity)
+  return result.entities.map(parseSpaceEntity).slice(0, limit)
 }
 
 export async function getSpaceBySlug(spaceSlug: string, context?: QueryContext): Promise<ParsedSpace | null> {
@@ -26,7 +25,6 @@ export async function getSpaceBySlug(spaceSlug: string, context?: QueryContext):
     .withPayload(true)
     .withMetadata(true)
     .where(and([eq('type', ENTITY_TYPES.space), eq('schemaVersion', '1'), eq('spaceSlug', spaceSlug)]))
-    .limit(1)
     .fetch()
 
   if (result.entities.length === 0) {

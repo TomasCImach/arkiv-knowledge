@@ -26,7 +26,11 @@ export function getArkivPublicClient() {
     const config = getArkivConfig()
     publicClientSingleton = createPublicClient({
       chain: config.chain,
-      transport: http(config.rpcUrl)
+      transport: http(config.rpcUrl, {
+        retryCount: 1,
+        retryDelay: 250,
+        timeout: 10000
+      })
     })
   }
 

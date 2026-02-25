@@ -12,8 +12,7 @@ export async function listPresenceForPage(pageKey: Hex, context?: QueryContext):
     .withPayload(true)
     .withMetadata(true)
     .where(and([eq('type', ENTITY_TYPES.presence), eq('schemaVersion', '1'), eq('pageKey', pageKey)]))
-    .limit(200)
     .fetch()
 
-  return result.entities.map(parsePresenceEntity)
+  return result.entities.map(parsePresenceEntity).slice(0, 200)
 }
