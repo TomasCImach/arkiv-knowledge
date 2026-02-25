@@ -171,3 +171,14 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: open console during presence join to see periodic heartbeat-triggered tx prompts.
   - notes/screenshots: tx payload and hash now visible for every wallet prompt path.
 - **Next bottleneck:** add per-operation IDs in logs to correlate UI action -> tx hash across multi-step mutation flows.
+
+### 2026-02-25 — Iteration 14 (BookStack UX Migration)
+- **Objective:** raise judged usability by aligning IA and visual hierarchy with BookStack-style documentation UX.
+- **Implemented:** refactored global shell to persistent left navigation (space hierarchy), added breadcrumbs across browse/create/edit routes, converted space/page views from loose cards into denser list-first documentation layouts, and tuned typography/styling toward content-first reading.
+- **Rubric targets:** UX (primary) / functionality (secondary).
+- **Expected score delta:** medium-high.
+- **Evidence:**
+  - tests: `pnpm verify` pass after full layout refactor.
+  - demo step: show fast navigation using sidebar + breadcrumbs from `/` -> `/spaces/[spaceSlug]` -> `/spaces/[spaceSlug]/[pageSlug]`.
+  - notes/screenshots: BookStack-like IA now visible directly in app shell and route layouts.
+- **Next bottleneck:** capture and attach deterministic UI screenshots/video artifact for submission package.

@@ -69,13 +69,22 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Full verification loop passes (`pnpm verify`).
 - Live smoke suite is skip-safe without key and actionable with key.
 
+### Phase 7 — UX Benchmark Alignment (BookStack-Inspired)
+- [x] Persistent left navigation with space hierarchy in global shell.
+- [x] Breadcrumb-first information scent across home/space/page/edit/create routes.
+- [x] Dense page/space list presentation and content-first reading pane styling.
+
+**Exit criteria status:** met.
+- Judge can browse hierarchy quickly in 3–5 minute demo.
+- UX remains no-wallet browse / wallet-only writes.
+
 ## Current Verification Snapshot
-- Last full pass: `pnpm verify` on 2026-02-25.
+- Last full pass: `pnpm verify` on 2026-02-25 (post BookStack UX migration).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
 - Live write proof: `pnpm seed:demo` completed on Kaolin with funded key, creating/reading `arkiv-demo` and demo pages.
 - Client tx observability: browser console now logs each wallet prompt under `[arkiv-tx:*]` and presence heartbeat lifecycle under `[presence-heartbeat]`.
 
 ## Next Bottlenecks (Optional Improvements)
-1. Add a deterministic browser E2E multi-tab realtime test (Playwright) for stronger phase 5 evidence.
-2. Add screenshot artifacts to docs for presence expiry and backlinks.
+1. Add screenshot artifacts (home, space, page) to prove BookStack-like IA in submission package.
+2. Add a deterministic browser E2E multi-tab realtime test (Playwright) for stronger phase 5 evidence.
 3. Add automated query-latency telemetry for demo diagnostics.

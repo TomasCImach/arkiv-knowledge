@@ -16,8 +16,8 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 
 ### 1) Public Browse (No Wallet)
 - Open `/` in Tab A with wallet disconnected.
-- Open one space and a page from `/spaces/[spaceSlug]/[pageSlug]`.
-- Verbalize: “Read paths are public and query Arkiv directly.”
+- Use left navigation + breadcrumbs to move from home -> one space -> one page (`/spaces/[spaceSlug]/[pageSlug]`).
+- Verbalize: “Read paths are public, and navigation hierarchy is optimized for documentation browsing.”
 
 ### 2) Wallet-Gated Write
 - Connect wallet.
@@ -50,6 +50,7 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 
 ## Required Verbal Points
 - “Core domain data is stored as Arkiv entities.”
+- “Navigation and IA follow documentation UX conventions (sidebar hierarchy + breadcrumbs).”
 - “Canonical pages are updated, revisions are append-only.”
 - “Search and relationships are Arkiv-query-driven.”
 - “Presence and expiration are product features, not incidental metadata.”
