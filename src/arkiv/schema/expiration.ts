@@ -15,10 +15,39 @@ export function pageExpirationSeconds(status: PageStatus): number {
   return status === 'draft' ? EXPIRATION_SECONDS.pageDraft : EXPIRATION_SECONDS.pagePublished
 }
 
-export function isNearExpiry(expiresAtBlock: bigint | undefined, currentBlock: bigint): boolean {
-  if (!expiresAtBlock) {
+function normalizeBlock(value: bigint | number | string | undefined): bigint | undefined {
+  if (value === undefined) {
+    return undefined
+  }
+
+  if (typeof value === 'bigint') {
+    return value
+  }
+
+  if (typeof value === 'number') {
+    return BigInt(value)
+  }
+
+  if (value.length === 0) {
+    return undefined
+  }
+
+  try {
+    return BigInt(value)
+  } catch {
+    return undefined
+  }
+}
+
+export function isNearExpiry(
+  expiresAtBlock: bigint | number | string | undefined,
+  currentBlock: bigint | number | string
+): boolean {
+  const expiresAt = normalizeBlock(expiresAtBlock)
+  const current = normalizeBlock(currentBlock)
+  if (expiresAt === undefined || current === undefined) {
     return false
   }
 
-  return expiresAtBlock - currentBlock <= NEAR_EXPIRY_THRESHOLD_BLOCKS
+  return expiresAt - current <= NEAR_EXPIRY_THRESHOLD_BLOCKS
 }

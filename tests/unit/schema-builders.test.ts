@@ -51,14 +51,17 @@ describe('Arkiv schema builders', () => {
         createdAt: '2026-02-24T00:00:00.000Z',
         updatedAt: '2026-02-24T00:00:00.000Z'
       },
-      searchTokens: ['arkiv', 'guide']
+      searchTokens: ['arkiv', 'guide', 'arkiv']
     })
 
     expect(entity.expiresIn).toBe(EXPIRATION_SECONDS.pagePublished)
     expect(findAttr(entity.attributes, 'type')).toBe('kb.page')
     expect(findAttr(entity.attributes, 'spaceSlug')).toBe('alpha')
     expect(findAttr(entity.attributes, 'pageSlug')).toBe('getting-started')
-    expect(entity.attributes.filter((attribute) => attribute.key === 'token')).toHaveLength(2)
+    expect(findAttr(entity.attributes, 'token_0')).toBe('arkiv')
+    expect(findAttr(entity.attributes, 'token_1')).toBe('guide')
+    const keys = entity.attributes.map((attribute) => attribute.key)
+    expect(new Set(keys).size).toBe(keys.length)
   })
 
   it('builds revision/link/presence entities with expected types', () => {

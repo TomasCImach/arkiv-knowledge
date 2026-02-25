@@ -70,8 +70,9 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Live smoke suite is skip-safe without key and actionable with key.
 
 ## Current Verification Snapshot
-- Last full pass: `pnpm verify` on 2026-02-24.
-- Result: lint/typecheck/unit/integration/e2e/build all pass; live test skips safely without private key.
+- Last full pass: `pnpm verify` on 2026-02-25.
+- Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
+- Live write proof: `pnpm seed:demo` completed on Kaolin with funded key, creating/reading `arkiv-demo` and demo pages.
 
 ## Next Bottlenecks (Optional Improvements)
 1. Add a deterministic browser E2E multi-tab realtime test (Playwright) for stronger phase 5 evidence.

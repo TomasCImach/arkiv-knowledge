@@ -15,6 +15,28 @@ export type BuildPageEntityInput = {
   searchTokens: string[]
 }
 
+export const PAGE_SEARCH_TOKEN_LIMIT = 20
+export const PAGE_SEARCH_TOKEN_ATTRIBUTE_PREFIX = 'token_'
+
+export function pageSearchTokenKey(index: number): string {
+  return `${PAGE_SEARCH_TOKEN_ATTRIBUTE_PREFIX}${index}`
+}
+
+function buildSearchTokenAttributes(searchTokens: string[]) {
+  const normalizedTokens = Array.from(
+    new Set(
+      searchTokens
+        .map((token) => token.trim().toLowerCase())
+        .filter((token) => token.length > 1)
+    )
+  ).slice(0, PAGE_SEARCH_TOKEN_LIMIT)
+
+  return normalizedTokens.map((token, index) => ({
+    key: pageSearchTokenKey(index),
+    value: token
+  }))
+}
+
 function pageAttributes(input: BuildPageEntityInput) {
   return buildAttributes({
     schemaVersion: KB_SCHEMA_VERSION,
@@ -26,12 +48,7 @@ function pageAttributes(input: BuildPageEntityInput) {
     status: input.status,
     parentPageKey: input.parentPageKey,
     updatedAtMs: input.updatedAtMs
-  }).concat(
-    input.searchTokens.slice(0, 20).map((token) => ({
-      key: 'token',
-      value: token
-    }))
-  )
+  }).concat(buildSearchTokenAttributes(input.searchTokens))
 }
 
 export function buildPageCreateEntity(input: BuildPageEntityInput): CreateEntityParameters {

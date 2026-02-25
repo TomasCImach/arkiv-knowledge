@@ -9,7 +9,7 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 ## Pre-Demo Setup
 1. Run `pnpm install`.
 2. Run `pnpm verify`.
-3. If you want deterministic data, run `pnpm seed:demo` with a funded key.
+3. Ensure your demo key has Kaolin test ETH, then run `pnpm seed:demo` for deterministic data.
 4. Open two browser sessions (Tab A and Tab B).
 
 ## Judge-Oriented Walkthrough

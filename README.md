@@ -41,7 +41,7 @@ ARKIV_RPC_URL=https://kaolin.hoodi.arkiv.network/rpc
 | Type | Required attributes | Payload | Default expiration |
 |---|---|---|---|
 | `kb.space` | `type`, `schemaVersion`, `spaceSlug`, `visibility`, `status`, `updatedAtMs` | `{ name, description, createdAt, updatedAt }` | 365d |
-| `kb.page` | `type`, `schemaVersion`, `spaceKey`, `spaceSlug`, `pageSlug`, `title`, `status`, `updatedAtMs`, `parentPageKey?`, repeated `token` | `{ title, bodyMarkdown, summary, createdAt, updatedAt }` | published 365d, draft 30d |
+| `kb.page` | `type`, `schemaVersion`, `spaceKey`, `spaceSlug`, `pageSlug`, `title`, `status`, `updatedAtMs`, `parentPageKey?`, `token_0..token_19` | `{ title, bodyMarkdown, summary, createdAt, updatedAt }` | published 365d, draft 30d |
 | `kb.revision` | `type`, `schemaVersion`, `spaceKey`, `pageKey`, `revisionNo`, `editedAtMs`, `editor` | `{ title, bodyMarkdown, editSummary }` | 180d |
 | `kb.link` | `type`, `schemaVersion`, `spaceKey`, `fromPageKey`, `toPageKey`, `updatedAtMs` | `{ sourceSlug, targetSlug }` | 30d |
 | `kb.presence` | `type`, `schemaVersion`, `spaceKey`, `pageKey`, `viewer`, `sessionId` | `{ displayName, joinedAt }` | 90s |
@@ -52,7 +52,7 @@ ARKIV_RPC_URL=https://kaolin.hoodi.arkiv.network/rpc
 - Page revisions: `type=kb.revision && schemaVersion=1 && pageKey=<pageKey>`
 - Backlinks: `type=kb.link && schemaVersion=1 && toPageKey=<pageKey>`
 - Presence: `type=kb.presence && schemaVersion=1 && pageKey=<pageKey>`
-- Search (query-first): `type=kb.page && schemaVersion=1 && spaceSlug=<slug> && status? && (token=<t1> OR token=<t2>...)`
+- Search (query-first): `type=kb.page && schemaVersion=1 && spaceSlug=<slug> && status? && (token_0=<t> OR ... OR token_19=<t>)`
 
 ## Example Query Builder Usage
 ```ts

@@ -11,5 +11,8 @@ describe('expiration policy', () => {
     expect(isNearExpiry(1000n, 500n)).toBe(true)
     expect(isNearExpiry(5000n, 500n)).toBe(false)
     expect(isNearExpiry(undefined, 500n)).toBe(false)
+    expect(isNearExpiry(1000, 500)).toBe(true)
+    expect(isNearExpiry('1000', '500')).toBe(true)
+    expect(isNearExpiry('bad', 500)).toBe(false)
   })
 })

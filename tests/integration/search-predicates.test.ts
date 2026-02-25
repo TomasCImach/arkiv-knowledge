@@ -15,5 +15,11 @@ describe('query-first search predicate builder', () => {
     expect(predicates[2]).toEqual({ type: 'eq', key: 'spaceSlug', value: 'alpha' })
     expect(predicates[3]).toEqual({ type: 'eq', key: 'status', value: 'published' })
     expect(predicates[4]).toMatchObject({ type: 'or' })
+    expect(predicates[4]).toMatchObject({
+      predicates: expect.arrayContaining([
+        { type: 'eq', key: 'token_0', value: 'arkiv' },
+        { type: 'eq', key: 'token_19', value: 'relationships' }
+      ])
+    })
   })
 })

@@ -105,3 +105,25 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: 3–5 minute walkthrough in `DEMO_SCRIPT.md`.
   - notes/screenshots: CI (`.github/workflows/ci.yml`), seed scripts.
 - **Next bottleneck:** optional Playwright two-tab capture for stronger realtime proof artifact.
+
+### 2026-02-25 — Iteration 8 (Network Migration)
+- **Objective:** stabilize read/write reliability during Mendoza sync instability.
+- **Implemented:** switched default Arkiv chain/rpc assumptions from Mendoza to Kaolin across app config, providers, seed/live scripts, and tests.
+- **Rubric targets:** integration / functionality / code quality.
+- **Expected score delta:** medium.
+- **Evidence:**
+  - tests: `pnpm verify` pass after migration.
+  - demo step: run app and seed flow on Kaolin endpoints.
+  - notes/screenshots: README env examples updated for Kaolin.
+- **Next bottleneck:** validate real write path and remove live-flow regressions.
+
+### 2026-02-25 — Iteration 9 (Live Write Regression Fixes)
+- **Objective:** make real wallet/create flows deterministic under live chain conditions.
+- **Implemented:** replaced duplicate `token` annotations with deterministic token slots (`token_0..token_19`), updated query predicates, fixed near-expiry bigint/number crash path, and verified browser routing with seeded dataset.
+- **Rubric targets:** integration / functionality / UX / code quality.
+- **Expected score delta:** high.
+- **Evidence:**
+  - tests: `pnpm verify` pass; schema/search tests updated.
+  - demo step: `pnpm seed:demo` succeeds on Kaolin and `/` -> `/spaces/arkiv-demo` -> page routes render in Playwright.
+  - notes/screenshots: Playwright snapshots confirm public browse with seeded space/pages.
+- **Next bottleneck:** add deterministic two-tab realtime browser artifact for final proof strength.

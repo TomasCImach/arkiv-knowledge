@@ -2,6 +2,7 @@ import { and, asc, eq, or } from '@arkiv-network/sdk/query'
 import type { Predicate } from '@arkiv-network/sdk/query'
 import type { Hex } from 'viem'
 import { getQueryClient, type QueryContext, updatedDesc } from '@/arkiv/queries/base'
+import { PAGE_SEARCH_TOKEN_LIMIT, pageSearchTokenKey } from '@/arkiv/schema/page'
 import { parsePageEntity, parseRevisionEntity } from '@/arkiv/schema/parser'
 import { ENTITY_TYPES, type PageSearchInput, type ParsedPage, type ParsedRevision } from '@/arkiv/types'
 import { tokenizeForSearch } from '@/lib/text'
@@ -71,7 +72,10 @@ export function buildPageSearchPredicates(input: PageSearchInput): Predicate[] {
 
   const tokens = tokenizeForSearch(input.q ?? '')
   if (tokens.length > 0) {
-    predicates.push(or(tokens.map((token) => eq('token', token))))
+    const tokenPredicates = tokens.flatMap((token) =>
+      Array.from({ length: PAGE_SEARCH_TOKEN_LIMIT }, (_, index) => eq(pageSearchTokenKey(index), token))
+    )
+    predicates.push(or(tokenPredicates))
   }
 
   return predicates
