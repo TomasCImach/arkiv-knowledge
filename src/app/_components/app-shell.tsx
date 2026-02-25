@@ -26,6 +26,9 @@ export async function AppShell({ children }: { children: ReactNode }) {
             <span className="subtitle">BookStack-style Arkiv documentation workspace</span>
           </div>
           <div className="toolbar">
+            <Link href="/search/pages" className="button secondary">
+              Search Pages
+            </Link>
             <Link href="/new/space" className="button secondary">
               New Space
             </Link>

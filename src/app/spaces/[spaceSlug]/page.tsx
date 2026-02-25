@@ -1,12 +1,15 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import type { Hex } from 'viem'
+import { isAddress } from 'viem'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { ExtendEntityButton } from '@/app/_components/extend-entity-button'
 import { PageTreeNav } from '@/app/_components/page-tree-nav'
+import { QueryDebugPanel } from '@/app/_components/query-debug-panel'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
 import { SpaceSearchForm } from '@/app/_components/space-search-form'
-import { fetchCurrentBlock, getSpaceBySlug, listPagesBySpace, searchPages } from '@/arkiv/queries'
-import type { PageParentMode, PageStatus, ParsedPage } from '@/arkiv/types'
+import { buildPageSearchPredicates, fetchCurrentBlock, getSpaceBySlug, listPagesBySpace, searchPages } from '@/arkiv/queries'
+import type { PageParentMode, PageSortMode, PageStatus, ParsedPage } from '@/arkiv/types'
 import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
@@ -51,17 +54,30 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
   const parentRaw = firstValue(query.parent)
   const parentMode: PageParentMode =
     parentRaw === 'root' || parentRaw === 'child' ? (parentRaw as PageParentMode) : 'all'
+  const ownerRaw = firstValue(query.owner).trim()
+  const owner = ownerRaw.length > 0 && isAddress(ownerRaw) ? (ownerRaw as Hex) : undefined
+  const sortRaw = firstValue(query.sort)
+  const sort: PageSortMode =
+    sortRaw === 'updated_asc' || sortRaw === 'title_asc' ? (sortRaw as PageSortMode) : 'updated_desc'
   let currentBlock: bigint | undefined
   let allPages: ParsedPage[] = []
   let pages: ParsedPage[] = []
   let queryError = ''
+  const hasActiveQuery = q.length > 0 || Boolean(status) || parentMode !== 'all' || Boolean(owner) || sort !== 'updated_desc'
 
   try {
     const [block, indexedPages, filteredPages] = await Promise.all([
       fetchCurrentBlock(),
       listPagesBySpace(spaceSlug),
-      q || status || parentMode !== 'all'
-        ? searchPages({ spaceSlug, q, status: status || undefined, parentMode })
+      hasActiveQuery
+        ? searchPages({
+            spaceSlug,
+            q,
+            status: status || undefined,
+            parentMode,
+            owner,
+            sort
+          })
         : Promise.resolve<ParsedPage[] | null>(null)
     ])
     currentBlock = block
@@ -70,6 +86,19 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
   } catch (error) {
     queryError = formatReadError(error, 'Failed to query pages.')
   }
+
+  if (ownerRaw.length > 0 && !owner) {
+    queryError = queryError ? `${queryError} Invalid owner filter ignored.` : 'Invalid owner filter ignored.'
+  }
+
+  const activePredicates = buildPageSearchPredicates({
+    spaceSlug,
+    q,
+    status: status || undefined,
+    parentMode,
+    owner,
+    sort
+  })
 
   return (
     <section className="doc-layout">
@@ -114,7 +143,26 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
           {queryError ? <p className="notice">Page query degraded: {queryError}</p> : null}
         </div>
 
-        <SpaceSearchForm initialQ={q} initialStatus={status || undefined} initialParentMode={parentMode} />
+        <SpaceSearchForm
+          initialQ={q}
+          initialStatus={status || undefined}
+          initialParentMode={parentMode}
+          initialOwner={ownerRaw}
+          initialSort={sort}
+        />
+
+        <QueryDebugPanel
+          title="Space Query Debug"
+          summary={{
+            spaceSlug,
+            q: q || '(empty)',
+            status: status || '(any)',
+            parentMode,
+            owner: owner ?? '(any)',
+            sort
+          }}
+          predicates={activePredicates}
+        />
 
         {pages.length === 0 ? (
           <div className="card stack">

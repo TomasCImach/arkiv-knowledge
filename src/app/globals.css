@@ -376,6 +376,19 @@ header.app-header .app-header-inner {
   color: #3b4e69;
 }
 
+.query-debug {
+  margin: 0;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f7f9fc;
+  color: #364255;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  overflow: auto;
+  padding: 0.6rem;
+}
+
 @media (max-width: 1080px) {
   .app-body {
     grid-template-columns: 1fr;
