@@ -88,3 +88,7 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 1. Add screenshot artifacts (home, space, page) to prove BookStack-like IA in submission package.
 2. Add a deterministic browser E2E multi-tab realtime test (Playwright) for stronger phase 5 evidence.
 3. Add automated query-latency telemetry for demo diagnostics.
+
+## Plan V1 (2026-02-25)
+- See [planV1.md](/Users/tomas/Dev/Personal/arkiv-knowledge/planV1.md) for the next rubric-weighted iteration sequence.
+- Priority order: space settings -> true page hierarchy -> ownership transfer depth -> query/discovery depth -> judge evidence pack.
