@@ -12,7 +12,9 @@
     "test": "vitest run --config vitest.config.ts",
     "test:e2e": "vitest run --config vitest.e2e.config.ts",
     "test:live": "tsx tests/live/arkiv-live.test.ts",
-    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:e2e && pnpm build && pnpm test:live",
+    "verify:evidence": "tsx scripts/verify-evidence.ts",
+    "evidence:capture": "tsx scripts/capture-evidence.ts",
+    "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:e2e && pnpm build && pnpm verify:evidence && pnpm test:live",
     "seed:demo": "tsx scripts/seed-demo.ts",
     "restore:demo": "tsx scripts/restore-demo.ts",
     "verify:phase": "tsx scripts/verify-phase.ts"
