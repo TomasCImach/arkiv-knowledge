@@ -181,3 +181,20 @@ Query and browse paths now expose richer Arkiv-driven discovery controls without
 - improves demo clarity by making query behavior explicit and inspectable during walkthroughs.
 
 **Scoring impact:** Medium-high uplift on functionality and medium uplift on integration-depth/query sophistication.
+
+---
+
+## 16) Ownership Transfer + Owner-Aware Authoring (Iteration 17)
+Ownership semantics are now explicit across canonical entities and authoring surfaces:
+- transfer wrappers now use Arkiv `changeOwnership` for canonical `kb.space` and `kb.page`,
+- owner-only transfer actions are visible on space settings and page detail routes,
+- create/edit page forms enforce owner checks with clear non-owner and disconnected-wallet messaging,
+- search UI exposes `Owned by me` chips to drive Arkiv `ownedBy(...)` predicate paths without manual address typing.
+
+**Why this matters:**
+- closes an integration-depth gap around ownership lifecycle beyond simple write gating,
+- makes handoff behavior judge-visible (`owner A -> owner B`) on real canonical entities,
+- improves UX clarity by surfacing permission reasons before submit attempts,
+- preserves Arkiv-first architecture by handling ownership changes through native wallet mutations.
+
+**Scoring impact:** High uplift on integration depth and medium-high uplift on functionality/permission clarity.

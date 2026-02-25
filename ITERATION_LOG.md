@@ -205,6 +205,17 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - notes/screenshots: hierarchy tree now renders in both `/spaces/[spaceSlug]` and `/spaces/[spaceSlug]/[pageSlug]` sidebars.
 - **Next bottleneck:** implement ownership transfer depth for canonical entities (iteration 17).
 
+### 2026-02-25 — Iteration 17 (Ownership Depth + Transfer)
+- **Objective:** make ownership lifecycle judge-visible beyond write gating with canonical transfer + owner-aware authoring.
+- **Implemented:** added Arkiv `changeOwnership` mutation wrappers; added owner-only transfer forms for space settings and page detail; gated create/edit page forms by owner with explicit reason text; and added `Owned by me`/`Any owner` query chips wired to `ownedBy(...)`.
+- **Rubric targets:** integration (primary) / functionality (secondary) / UX (secondary).
+- **Expected score delta:** high.
+- **Evidence:**
+  - tests: `tests/integration/ownership-transfer.test.ts`, `tests/e2e/transfer-ownership-form.test.tsx`, `tests/e2e/create-page-owner-guard.test.tsx`, `tests/e2e/edit-page-owner-guard.test.tsx`, `tests/unit/ownership-permissions.test.ts`.
+  - demo step: transfer space/page ownership as owner wallet, refresh route, and show old owner blocked while new owner regains edit/transfer controls.
+  - notes/screenshots: transfer forms visible at `/spaces/[spaceSlug]/settings` and `/spaces/[spaceSlug]/[pageSlug]` with non-owner guard text.
+- **Next bottleneck:** package deterministic realtime + screenshot evidence artifacts (iteration 19).
+
 ### 2026-02-25 — Iteration 18 (Query + Discovery Depth)
 - **Objective:** expand judge-visible query power with sort/owner controls and cross-space page discovery while keeping Arkiv-first reads.
 - **Implemented:** added sort-aware page query model, global page search input + Arkiv predicate builder, cross-space search route (`/search/pages`), owner/sort filters in space and global search UI, and dev-only query debug panel.
@@ -214,4 +225,4 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - tests: `tests/integration/search-predicates.test.ts` (global + parent-mode predicate coverage), `tests/e2e/space-search-form-filters.test.tsx` (query param serialization for q/status/parent/owner/sort).
   - demo step: run `/search/pages` with owner + status + parent + sort controls, then open `/spaces/[spaceSlug]` and show the same filter semantics in space scope.
   - notes/screenshots: global search entry is available in top navigation; query debug panel prints normalized predicates in dev mode.
-- **Next bottleneck:** ownership transfer depth for `kb.space` and canonical `kb.page` (iteration 17), then evidence-pack automation.
+- **Next bottleneck:** deterministic realtime + screenshot evidence pack automation (iteration 19).

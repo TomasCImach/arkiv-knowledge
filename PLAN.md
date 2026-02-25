@@ -99,7 +99,18 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Breadcrumbs include ancestor chain on page detail routes.
 - Unit/integration/e2e coverage added for tree behavior and parent guardrails.
 
-### Phase 10 — Query + Discovery Depth (Iteration 18)
+### Phase 10 — Ownership Transfer Depth (Iteration 17)
+- [x] Added transfer mutation wrappers (`changeOwnership`) for canonical entities.
+- [x] Added owner-only transfer UI actions for `kb.space` and canonical `kb.page`.
+- [x] Added owner-aware create/edit page guardrails with explicit non-owner/disconnected messages.
+- [x] Added “Owned by me / Any owner” filter chips over Arkiv `ownedBy(...)` query paths.
+
+**Exit criteria status:** met.
+- Ownership transfer is directly demoable on settings and page detail routes.
+- Owner handoff behavior is covered by integration/component tests.
+- Authoring controls enforce owner boundaries without breaking no-wallet browse reads.
+
+### Phase 11 — Query + Discovery Depth (Iteration 18)
 - [x] Sort-aware page search model (`updated desc`, `updated asc`, `title asc`) in Arkiv query paths.
 - [x] Owner filter wiring in both space-scoped and global page search routes.
 - [x] Cross-space search route at `/search/pages` using Arkiv query predicates only.
@@ -111,16 +122,16 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Query predicates are test-covered for local and global search builders.
 
 ## Current Verification Snapshot
-- Last full pass: `pnpm verify` on 2026-02-25 (post iteration 18 query/discovery rollout).
+- Last full pass: `pnpm verify` on 2026-02-25 (post iteration 17 ownership-depth rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
 - Live write proof: `pnpm seed:demo` completed on Kaolin with funded key, creating/reading `arkiv-demo` and demo pages.
 - Client tx observability: browser console now logs each wallet prompt under `[arkiv-tx:*]` and presence heartbeat lifecycle under `[presence-heartbeat]`.
 
 ## Next Bottlenecks (Optional Improvements)
-1. Implement ownership transfer depth for `kb.space` and canonical `kb.page` (planned iteration 17).
-2. Add deterministic browser E2E multi-tab realtime artifact for stronger phase 5 evidence.
-3. Package deterministic judge evidence artifacts (screenshots/video/checklist) with fail-soft CI capture.
+1. Add deterministic browser E2E multi-tab realtime artifact for stronger phase 5 evidence.
+2. Package deterministic judge evidence artifacts (screenshots/video/checklist) with fail-soft CI capture.
+3. Add submission-focused rubric traceability sheet (`SUBMISSION_EVIDENCE.md`) mapped to code/tests/demo steps.
 
 ## Plan V1 (2026-02-25)
 - See [planV1.md](/Users/tomas/Dev/Personal/arkiv-knowledge/planV1.md) for the next rubric-weighted iteration sequence.
-- Priority order: space settings -> true page hierarchy -> ownership transfer depth -> query/discovery depth -> judge evidence pack.
+- Priority order executed: space settings -> true page hierarchy -> query/discovery depth -> ownership transfer depth -> judge evidence pack.

@@ -23,10 +23,11 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - Connect wallet.
 - Create a new space at `/new/space`.
 - Open `/spaces/[spaceSlug]/settings` and update description/visibility.
+- In the same settings route, transfer space ownership to a second wallet address (or explain and show owner-only guard if single wallet demo).
 - Verbalize: “Settings are readable by anyone, but only owner wallet can update.”
 - Create a root page at `/spaces/[spaceSlug]/new`.
 - Create a second page and set parent to the first page.
-- Verbalize: “Wallet is required only for writes.”
+- Verbalize: “Wallet is required only for writes, and canonical authoring/transfer actions are owner-gated.”
 
 ### 3) Lifecycle Depth (Canonical + Revisions)
 - Open page edit at `/spaces/[spaceSlug]/[pageSlug]/edit`.
@@ -34,32 +35,37 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - Show canonical page key stays constant while revision list grows.
 - Verbalize: “Saves use mutate flow: canonical update + append-only revision.”
 
-### 4) Hierarchy + Query
+### 4) Ownership Handoff
+- On page detail route, use transfer form to transfer canonical page ownership.
+- Refresh and show old owner is blocked from edit/transfer while new owner regains controls after wallet switch.
+- Verbalize: “Ownership transfer uses Arkiv `changeOwnership` on canonical entities, not off-chain ACLs.”
+
+### 5) Hierarchy + Query
 - On space route, show nested page tree in sidebar (parent -> child).
 - Open child page and show ancestor breadcrumb chain.
 - Apply search filters (`parent`, `owner`, `sort`) and show Arkiv-query-backed result changes.
 - Verbalize: “Hierarchy and filter logic are query-driven from Arkiv predicates, not client-only grouping.”
 
-### 5) Global Discovery (Cross-Space Query)
+### 6) Global Discovery (Cross-Space Query)
 - Open `/search/pages`.
 - Search with at least two controls (example: `status=published`, `parent=root`, `sort=title_asc`, optional `owner=<0x...>`).
 - Open one result and show route target works across spaces.
 - Optional debug proof: in dev mode, show query debug panel with normalized predicate summary.
 - Verbalize: “Cross-space discovery is Arkiv-query-first and remains fully public for read paths.”
 
-### 6) Relationships (Backlinks)
+### 7) Relationships (Backlinks)
 - In page body, add wiki-style link `[[another-page]]` and save.
 - Open the linked page and show backlinks section populated.
 - Verbalize: “Backlinks are persisted as `kb.link` entities and queried, not computed only in UI.”
 
-### 7) Expiration + Presence
+### 8) Expiration + Presence
 - On page detail, click `Join Presence`.
 - Show live viewers list with TTL behavior.
 - Use extension button on near-expiry entity (if visible) or explain trigger threshold.
 - Optional debug proof: open browser console and show `[presence-heartbeat]` + `[arkiv-tx:*]` logs for each periodic extension prompt.
 - Verbalize: “Expiration and extension are intentional per entity class.”
 
-### 8) Realtime Signal + Resilience
+### 9) Realtime Signal + Resilience
 - Keep same page open in Tab A and Tab B.
 - Edit in Tab A, show refresh in Tab B from event subscription.
 - Mention fallback polling path if event stream degrades.
@@ -68,6 +74,7 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - “Core domain data is stored as Arkiv entities.”
 - “Navigation and IA follow documentation UX conventions (sidebar hierarchy + breadcrumbs).”
 - “Canonical pages are updated, revisions are append-only.”
+- “Ownership transfer is explicit on canonical space/page entities.”
 - “Search, filters, sorting, and relationships are Arkiv-query-driven.”
 - “Presence and expiration are product features, not incidental metadata.”
 

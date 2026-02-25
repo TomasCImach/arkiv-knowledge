@@ -81,10 +81,18 @@ const mutation = await walletClient.mutateEntities({
 })
 ```
 
+```ts
+const transfer = await walletClient.changeOwnership({
+  entityKey: canonicalPageKey,
+  newOwner: nextOwner
+})
+```
+
 ## Ownership and Read/Write Boundary
 - Read routes (`/`, `/spaces/[spaceSlug]`, `/spaces/[spaceSlug]/[pageSlug]`) are public.
 - Write routes and buttons (`/new/space`, create/edit page, `/spaces/[spaceSlug]/settings`, presence join, extend TTL) require wallet connection.
-- Space settings updates are owner-gated; non-owners can view settings in read-only mode with explicit messaging.
+- Space settings updates and transfer are owner-gated; non-owners can view settings in read-only mode with explicit messaging.
+- Canonical page edit and transfer are owner-gated; non-owners can browse page content but cannot submit edits.
 - Extension controls are owner-checked in UI and only enabled for near-expiry entities.
 
 ## Lifecycle / Expiration Policy
@@ -102,20 +110,21 @@ pnpm verify:phase all      # file-level phase verification
 ```
 
 ## Testing
-- Unit: schema contracts, parser behavior, expiration policy, link extraction, hierarchy tree logic
-- Integration: query predicate generation (including parent-mode + global search filters), canonical update + revision + link rewrite mutation path, parentPageKey write path
-- E2E (component-level): no-wallet read / wallet-gated write boundary + owner/non-owner settings gating + parent selector/guard behavior + filter serialization (`owner`, `sort`, `parent`, `status`, `q`)
+- Unit: schema contracts, parser behavior, expiration policy, link extraction, hierarchy tree logic, ownership permission rules
+- Integration: query predicate generation (including parent-mode + global search filters), canonical update + revision + link rewrite mutation path, parentPageKey write path, ownership transfer mutation contract
+- E2E (component-level): no-wallet read / wallet-gated write boundary + owner/non-owner settings gating + parent selector/guard behavior + ownership transfer handoff + filter serialization (`owner`, `sort`, `parent`, `status`, `q`)
 - Live smoke (optional): create + read-back against Arkiv network
 
 ## Demo Flow (3–5 min)
 1. Browse spaces publicly from `/` without wallet.
 2. Connect wallet and create a space (`/new/space`).
-3. Open space settings (`/spaces/<slug>/settings`) and update description/visibility as owner.
-4. Create root + child pages with parent selector (`/spaces/<slug>/new`).
+3. Open space settings (`/spaces/<slug>/settings`) and update description/visibility as owner, then show owner-only transfer control.
+4. Create root + child pages with parent selector (`/spaces/<slug>/new`) as the owner wallet.
 5. Show nested sidebar tree and ancestor breadcrumbs on child page.
 6. Apply space search filters (`parent`, `owner`, `sort`) and show Arkiv-query-driven result changes.
 7. Open global route `/search/pages` and show cross-space page discovery with same filter/sort semantics.
 8. Edit page and show canonical page key stability + growing revision list.
-9. Add wiki links and show backlinks sourced from `kb.link` queries.
-10. Join presence and show short-lived active viewers.
-11. Show realtime refresh with two sessions.
+9. Transfer canonical page ownership and demonstrate old-owner block/new-owner handoff.
+10. Add wiki links and show backlinks sourced from `kb.link` queries.
+11. Join presence and show short-lived active viewers.
+12. Show realtime refresh with two sessions.
