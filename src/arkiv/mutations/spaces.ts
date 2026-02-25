@@ -1,5 +1,6 @@
 import type { Hex } from 'viem'
 import type { ArkivWriteClient } from '@/arkiv/clients'
+import { transferEntityOwnership } from '@/arkiv/mutations/ownership'
 import { buildSpaceCreateEntity, buildSpaceUpdateEntity } from '@/arkiv/schema'
 import type { SpaceStatus, SpaceVisibility } from '@/arkiv/types'
 import { nowIso, nowMs } from '@/lib/time'
@@ -73,4 +74,12 @@ export async function updateSpace(
     entityKey: result.entityKey,
     txHash: result.txHash
   }
+}
+
+export async function transferSpaceOwnership(
+  client: ArkivWriteClient,
+  spaceKey: Hex,
+  newOwner: Hex
+): Promise<{ entityKey: Hex; txHash: Hex }> {
+  return transferEntityOwnership(client, spaceKey, newOwner)
 }

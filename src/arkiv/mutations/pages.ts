@@ -1,5 +1,6 @@
 import type { Hex } from 'viem'
 import type { ArkivWriteClient } from '@/arkiv/clients'
+import { transferEntityOwnership } from '@/arkiv/mutations/ownership'
 import { listOutgoingLinks } from '@/arkiv/queries/links'
 import { getPageBySlug, listRevisionsByPage } from '@/arkiv/queries/pages'
 import {
@@ -208,4 +209,12 @@ async function buildLinkCreatesForBody(input: BuildLinkCreatesForBodyInput) {
       }
     })
   )
+}
+
+export async function transferPageOwnership(
+  client: ArkivWriteClient,
+  pageKey: Hex,
+  newOwner: Hex
+): Promise<{ entityKey: Hex; txHash: Hex }> {
+  return transferEntityOwnership(client, pageKey, newOwner)
 }
