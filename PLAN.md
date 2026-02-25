@@ -78,16 +78,26 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Judge can browse hierarchy quickly in 3–5 minute demo.
 - UX remains no-wallet browse / wallet-only writes.
 
+### Phase 8 — Space Settings Ownership (Iteration 15)
+- [x] Owner-managed settings route at `/spaces/[spaceSlug]/settings`.
+- [x] `updateSpace` contract preserves `createdAt` while refreshing `updatedAt`.
+- [x] Non-owner and disconnected wallets are blocked with explicit read-only messaging.
+
+**Exit criteria status:** met.
+- Space settings are publicly readable and owner-writable.
+- Space detail now links to settings with explicit ownership semantics.
+- Integration/e2e coverage added for update path and owner gating.
+
 ## Current Verification Snapshot
-- Last full pass: `pnpm verify` on 2026-02-25 (post BookStack UX migration).
+- Last full pass: `pnpm verify` on 2026-02-25 (post iteration 15 space-settings rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
 - Live write proof: `pnpm seed:demo` completed on Kaolin with funded key, creating/reading `arkiv-demo` and demo pages.
 - Client tx observability: browser console now logs each wallet prompt under `[arkiv-tx:*]` and presence heartbeat lifecycle under `[presence-heartbeat]`.
 
 ## Next Bottlenecks (Optional Improvements)
-1. Add screenshot artifacts (home, space, page) to prove BookStack-like IA in submission package.
-2. Add a deterministic browser E2E multi-tab realtime test (Playwright) for stronger phase 5 evidence.
-3. Add automated query-latency telemetry for demo diagnostics.
+1. Implement true page hierarchy UX (parent selector + nested tree rendering) from `parentPageKey`.
+2. Implement ownership transfer depth for `kb.space` and canonical `kb.page`.
+3. Add deterministic browser E2E multi-tab realtime artifact for stronger phase 5 evidence.
 
 ## Plan V1 (2026-02-25)
 - See [planV1.md](/Users/tomas/Dev/Personal/arkiv-knowledge/planV1.md) for the next rubric-weighted iteration sequence.

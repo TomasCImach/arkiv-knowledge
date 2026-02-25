@@ -131,3 +131,18 @@ The UI shell now follows proven documentation UX conventions (as popularized by 
 - no-wallet read / wallet-only write model stays explicit in top-level actions.
 
 **Scoring impact:** Medium-high uplift on UX category while preserving integration/functionality behavior.
+
+---
+
+## 13) Owner-Managed Space Settings (Iteration 15)
+Space management now includes an explicit settings route (`/spaces/[spaceSlug]/settings`) backed by Arkiv `updateEntity` writes. Settings remain publicly readable, but only the owner wallet can submit updates; non-owner/direct-link access is handled as read-only with clear messaging.
+
+`updateSpace` now preserves the original `createdAt` value while refreshing `updatedAt`, so lifecycle history stays coherent across canonical updates.
+
+**Why this matters:**
+- closes a core functionality requirement gap (`manage spaces and space settings`),
+- makes ownership semantics judge-visible in a critical write flow,
+- keeps Arkiv as the sole source of truth for mutable space metadata,
+- improves live demo reliability with explicit guardrails for disconnected/non-owner states.
+
+**Scoring impact:** High uplift on functionality with medium uplift on integration-depth ownership clarity.

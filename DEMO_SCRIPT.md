@@ -22,6 +22,8 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 ### 2) Wallet-Gated Write
 - Connect wallet.
 - Create a new space at `/new/space`.
+- Open `/spaces/[spaceSlug]/settings` and update description/visibility.
+- Verbalize: “Settings are readable by anyone, but only owner wallet can update.”
 - Create a page at `/spaces/[spaceSlug]/new`.
 - Verbalize: “Wallet is required only for writes.”
 

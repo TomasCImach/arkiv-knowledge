@@ -182,3 +182,14 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: show fast navigation using sidebar + breadcrumbs from `/` -> `/spaces/[spaceSlug]` -> `/spaces/[spaceSlug]/[pageSlug]`.
   - notes/screenshots: BookStack-like IA now visible directly in app shell and route layouts.
 - **Next bottleneck:** capture and attach deterministic UI screenshots/video artifact for submission package.
+
+### 2026-02-25 — Iteration 15 (Owner-Managed Space Settings)
+- **Objective:** close functionality gap for space settings with explicit ownership semantics.
+- **Implemented:** added `/spaces/[spaceSlug]/settings` route + `EditSpaceForm`, wired owner-only `updateSpace` flow, preserved `createdAt` during space updates, and exposed `Space Settings` entry point from space page toolbar.
+- **Rubric targets:** functionality (primary) / integration (secondary) / UX (secondary).
+- **Expected score delta:** high.
+- **Evidence:**
+  - tests: `tests/integration/update-space-settings.test.ts`, `tests/e2e/edit-space-owner.test.tsx`, `tests/e2e/edit-space-non-owner.test.tsx`.
+  - demo step: open settings route, show non-owner read-only guard, switch to owner wallet and update space metadata.
+  - notes/screenshots: settings route breadcrumbs and owner-only messaging are visible without wallet for read path.
+- **Next bottleneck:** implement true page hierarchy UX (`parentPageKey` authoring + nested rendering) for iteration 16.

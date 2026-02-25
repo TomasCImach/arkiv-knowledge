@@ -82,7 +82,8 @@ const mutation = await walletClient.mutateEntities({
 
 ## Ownership and Read/Write Boundary
 - Read routes (`/`, `/spaces/[spaceSlug]`, `/spaces/[spaceSlug]/[pageSlug]`) are public.
-- Write routes and buttons (`/new/space`, create/edit page, presence join, extend TTL) require wallet connection.
+- Write routes and buttons (`/new/space`, create/edit page, `/spaces/[spaceSlug]/settings`, presence join, extend TTL) require wallet connection.
+- Space settings updates are owner-gated; non-owners can view settings in read-only mode with explicit messaging.
 - Extension controls are owner-checked in UI and only enabled for near-expiry entities.
 
 ## Lifecycle / Expiration Policy
@@ -102,14 +103,15 @@ pnpm verify:phase all      # file-level phase verification
 ## Testing
 - Unit: schema contracts, parser behavior, expiration policy, link extraction
 - Integration: query predicate generation, canonical update + revision + link rewrite mutation path
-- E2E (component-level): no-wallet read / wallet-gated write boundary
+- E2E (component-level): no-wallet read / wallet-gated write boundary + owner/non-owner settings gating
 - Live smoke (optional): create + read-back against Arkiv network
 
 ## Demo Flow (3–5 min)
 1. Browse spaces publicly from `/` without wallet.
 2. Connect wallet and create a space (`/new/space`).
-3. Create a page (`/spaces/<slug>/new`), then edit it.
-4. Show canonical page key stability + growing revision list.
-5. Add wiki links and show backlinks sourced from `kb.link` queries.
-6. Join presence and show short-lived active viewers.
-7. Show realtime refresh with two sessions.
+3. Open space settings (`/spaces/<slug>/settings`) and update description/visibility as owner.
+4. Create a page (`/spaces/<slug>/new`), then edit it.
+5. Show canonical page key stability + growing revision list.
+6. Add wiki links and show backlinks sourced from `kb.link` queries.
+7. Join presence and show short-lived active viewers.
+8. Show realtime refresh with two sessions.
