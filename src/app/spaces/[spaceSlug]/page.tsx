@@ -101,6 +101,9 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
             <Link href={`/spaces/${spaceSlug}/new`} className="button">
               New Page
             </Link>
+            <Link href={`/spaces/${spaceSlug}/settings`} className="button secondary">
+              Space Settings
+            </Link>
             <span className="badge">Space key: {space.entityKey.slice(0, 14)}...</span>
             {currentBlock ? (
               <ExtendEntityButton
@@ -112,6 +115,7 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
               />
             ) : null}
           </div>
+          <p className="subtitle">Settings updates are owner-only; reads remain public without wallet.</p>
           {queryError ? <p className="notice">Page query degraded: {queryError}</p> : null}
         </div>
 

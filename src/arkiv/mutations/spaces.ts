@@ -12,6 +12,15 @@ export type CreateSpaceInput = {
   status?: SpaceStatus
 }
 
+export type UpdateSpaceInput = {
+  spaceSlug: string
+  name: string
+  description: string
+  visibility: SpaceVisibility
+  status?: SpaceStatus
+  createdAt: string
+}
+
 export async function createSpace(client: ArkivWriteClient, input: CreateSpaceInput): Promise<{ entityKey: Hex; txHash: Hex }> {
   const timestamp = nowIso()
   const updatedAtMs = nowMs()
@@ -40,7 +49,7 @@ export async function createSpace(client: ArkivWriteClient, input: CreateSpaceIn
 export async function updateSpace(
   client: ArkivWriteClient,
   entityKey: Hex,
-  input: CreateSpaceInput
+  input: UpdateSpaceInput
 ): Promise<{ entityKey: Hex; txHash: Hex }> {
   const timestamp = nowIso()
   const updatedAtMs = nowMs()
@@ -54,7 +63,7 @@ export async function updateSpace(
       payload: {
         name: input.name,
         description: input.description,
-        createdAt: timestamp,
+        createdAt: input.createdAt,
         updatedAt: timestamp
       }
     })
