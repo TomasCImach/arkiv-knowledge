@@ -90,7 +90,7 @@ export function CreatePageForm({ spaceKey, spaceSlug, spaceOwner, availableParen
   return (
     <form className="card stack" onSubmit={onSubmit}>
       <h1 className="title">Create Page</h1>
-      <p className="subtitle">This writes canonical page + revision entities to Arkiv.</p>
+      <p className="subtitle">This writes canonical page + revision entities to Arkiv. Only the space owner can submit.</p>
 
       <label>
         Title

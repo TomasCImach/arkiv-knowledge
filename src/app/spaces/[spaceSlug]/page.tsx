@@ -139,7 +139,7 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
               />
             ) : null}
           </div>
-          <p className="subtitle">Settings updates are owner-only; reads remain public without wallet.</p>
+          <p className="subtitle">New page creation and settings updates are owner-only; reads remain public without wallet.</p>
           {queryError ? <p className="notice">Page query degraded: {queryError}</p> : null}
         </div>
 
