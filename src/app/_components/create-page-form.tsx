@@ -8,16 +8,18 @@ import { createPage } from '@/arkiv/mutations/pages'
 import type { ParsedPage } from '@/arkiv/types'
 import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
 import { listPagesInTreeOrder } from '@/features/hierarchy/tree'
+import { canManageOwnedEntity } from '@/features/ownership/permissions'
 import { slugify } from '@/lib/text'
 import { formatWalletError, runWritePreflight } from '@/lib/wallet'
 
 export type CreatePageFormProps = {
   spaceKey: Hex
   spaceSlug: string
+  spaceOwner: Hex | undefined
   availableParents: ParsedPage[]
 }
 
-export function CreatePageForm({ spaceKey, spaceSlug, availableParents }: CreatePageFormProps) {
+export function CreatePageForm({ spaceKey, spaceSlug, spaceOwner, availableParents }: CreatePageFormProps) {
   const router = useRouter()
   const walletClient = useArkivWalletClient()
   const { address, chainId, isConnected } = useAccount()
@@ -31,12 +33,19 @@ export function CreatePageForm({ spaceKey, spaceSlug, availableParents }: Create
   const [statusText, setStatusText] = useState('')
   const [pending, setPending] = useState(false)
   const parentOptions = listPagesInTreeOrder(availableParents)
+  const isSpaceOwner = canManageOwnedEntity(spaceOwner, address)
+  const canSubmit = Boolean(walletClient && isConnected && address && isSpaceOwner && !pending)
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     if (!walletClient || !address || !isConnected) {
       setStatusText('Connect wallet to create pages.')
+      return
+    }
+
+    if (!isSpaceOwner) {
+      setStatusText('Only owner can create pages in this space.')
       return
     }
 
@@ -130,9 +139,11 @@ export function CreatePageForm({ spaceKey, spaceSlug, availableParents }: Create
       </label>
 
       <div className="toolbar">
-        <input type="submit" disabled={pending} value={pending ? 'Saving...' : 'Create Page'} />
+        <input type="submit" disabled={!canSubmit} value={pending ? 'Saving...' : 'Create Page'} />
         {statusText ? <span className="subtitle">{statusText}</span> : null}
       </div>
+      {!isConnected ? <p className="subtitle">Connect wallet to create pages.</p> : null}
+      {isConnected && !isSpaceOwner ? <p className="subtitle">Only owner can create pages in this space.</p> : null}
     </form>
   )
 }

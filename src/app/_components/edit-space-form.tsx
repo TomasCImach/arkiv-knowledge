@@ -6,18 +6,11 @@ import { useAccount } from 'wagmi'
 import type { ParsedSpace } from '@/arkiv/types'
 import { updateSpace } from '@/arkiv/mutations/spaces'
 import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
+import { canManageOwnedEntity } from '@/features/ownership/permissions'
 import { formatWalletError, runWritePreflight } from '@/lib/wallet'
 
 type EditSpaceFormProps = {
   space: ParsedSpace
-}
-
-function equalAddress(a: string | undefined, b: string | undefined): boolean {
-  if (!a || !b) {
-    return false
-  }
-
-  return a.toLowerCase() === b.toLowerCase()
 }
 
 export function EditSpaceForm({ space }: EditSpaceFormProps) {
@@ -32,7 +25,7 @@ export function EditSpaceForm({ space }: EditSpaceFormProps) {
   const [statusText, setStatusText] = useState('')
   const [pending, setPending] = useState(false)
 
-  const isOwner = useMemo(() => equalAddress(address, space.owner), [address, space.owner])
+  const isOwner = useMemo(() => canManageOwnedEntity(space.owner, address), [address, space.owner])
   const canSubmit = Boolean(walletClient && isConnected && address && isOwner && !pending)
   const readOnlyMode = !canSubmit
 

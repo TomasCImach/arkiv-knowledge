@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { EditSpaceForm } from '@/app/_components/edit-space-form'
+import { TransferOwnershipForm } from '@/app/_components/transfer-ownership-form'
 import { getSpaceBySlug } from '@/arkiv/queries'
 import { formatReadError } from '@/lib/wallet'
 
@@ -36,6 +37,11 @@ export default async function SpaceSettingsRoute({ params }: { params: Promise<{
         ]}
       />
       <EditSpaceForm space={space} />
+      <div className="card stack">
+        <h2 style={{ margin: 0 }}>Transfer Space Ownership</h2>
+        <p className="subtitle">Only current owner can transfer this canonical `kb.space` entity to another wallet.</p>
+        <TransferOwnershipForm entityKey={space.entityKey} entityOwner={space.owner} entityLabel="space" />
+      </div>
     </section>
   )
 }

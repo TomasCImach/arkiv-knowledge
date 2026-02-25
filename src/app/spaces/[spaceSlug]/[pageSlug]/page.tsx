@@ -6,6 +6,7 @@ import { PageTreeNav } from '@/app/_components/page-tree-nav'
 import { PageMarkdown } from '@/app/_components/page-markdown'
 import { PresencePanel } from '@/app/_components/presence-panel'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
+import { TransferOwnershipForm } from '@/app/_components/transfer-ownership-form'
 import {
   fetchCurrentBlock,
   getPageBySlug,
@@ -124,6 +125,13 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
               />
             ) : null}
           </div>
+          <p className="subtitle">Editing and ownership transfer are owner-only actions. Public read remains open.</p>
+        </div>
+
+        <div className="card stack">
+          <h3 style={{ margin: 0 }}>Transfer Page Ownership</h3>
+          <p className="subtitle">Transfers canonical `kb.page` ownership to another wallet.</p>
+          <TransferOwnershipForm entityKey={page.entityKey} entityOwner={page.owner} entityLabel="page" />
         </div>
         {queryErrors.length > 0 ? (
           <div className="notice">Some live Arkiv data is temporarily unavailable. Retry to refresh relationship/presence panels.</div>

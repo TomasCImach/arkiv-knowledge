@@ -8,6 +8,7 @@ import { editPage } from '@/arkiv/mutations/pages'
 import type { ParsedPage } from '@/arkiv/types'
 import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
 import { collectDescendantKeys, listPagesInTreeOrder } from '@/features/hierarchy/tree'
+import { canManageOwnedEntity } from '@/features/ownership/permissions'
 import { formatWalletError, runWritePreflight } from '@/lib/wallet'
 
 export type EditPageFormProps = {
@@ -30,6 +31,8 @@ export function EditPageForm({ spaceKey, spaceSlug, page, availableParents }: Ed
   const [parentPageKey, setParentPageKey] = useState(page.parentPageKey ?? '')
   const [statusText, setStatusText] = useState('')
   const [pending, setPending] = useState(false)
+  const isOwner = canManageOwnedEntity(page.owner, address)
+  const canSubmit = Boolean(walletClient && address && isConnected && isOwner && !pending)
 
   const invalidParentKeys = useMemo(() => {
     const descendants = collectDescendantKeys(availableParents, page.entityKey)
@@ -49,6 +52,11 @@ export function EditPageForm({ spaceKey, spaceSlug, page, availableParents }: Ed
 
     if (!walletClient || !address || !isConnected) {
       setStatusText('Connect wallet to update pages.')
+      return
+    }
+
+    if (!isOwner) {
+      setStatusText('Only owner can update this page.')
       return
     }
 
@@ -145,9 +153,11 @@ export function EditPageForm({ spaceKey, spaceSlug, page, availableParents }: Ed
       </label>
 
       <div className="toolbar">
-        <input type="submit" disabled={pending} value={pending ? 'Saving...' : 'Save Page'} />
+        <input type="submit" disabled={!canSubmit} value={pending ? 'Saving...' : 'Save Page'} />
         {statusText ? <span className="subtitle">{statusText}</span> : null}
       </div>
+      {!isConnected ? <p className="subtitle">Connect wallet to update pages.</p> : null}
+      {isConnected && !isOwner ? <p className="subtitle">Only owner can update this page.</p> : null}
     </form>
   )
 }

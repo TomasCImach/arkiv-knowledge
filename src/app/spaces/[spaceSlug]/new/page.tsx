@@ -36,7 +36,7 @@ export default async function NewPageRoute({ params }: { params: Promise<{ space
           { label: 'Create Page' }
         ]}
       />
-      <CreatePageForm spaceKey={space.entityKey} spaceSlug={spaceSlug} availableParents={spacePages} />
+      <CreatePageForm spaceKey={space.entityKey} spaceSlug={spaceSlug} spaceOwner={space.owner} availableParents={spacePages} />
     </section>
   )
 }
