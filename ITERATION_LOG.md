@@ -138,3 +138,14 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: create/join flows now block early with explicit network/funding errors instead of opaque tx failure.
   - notes/screenshots: failure mode reproduced from user report and addressed in wallet pipeline.
 - **Next bottleneck:** add dedicated browser automation covering wallet-connected write flows when a test wallet is available.
+
+### 2026-02-25 — Iteration 11 (Provider Error Pass-Through)
+- **Objective:** expose real wallet/provider rejection reasons to users during write failures.
+- **Implemented:** forced browser RPC transport through same-origin proxy and wrapped `sendTransaction` to rethrow provider errors as `EntityMutationError` (preserved through Arkiv SDK boundaries).
+- **Rubric targets:** functionality / UX / integration.
+- **Expected score delta:** medium.
+- **Evidence:**
+  - tests: `pnpm verify` pass after transport + error-wrapper changes.
+  - demo step: failed writes now report provider-level reason text when available.
+  - notes/screenshots: user-reported generic fallback flow addressed in transaction send path.
+- **Next bottleneck:** add connected-wallet browser automation fixture to assert full write success path in CI-like runs.

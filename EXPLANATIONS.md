@@ -100,6 +100,7 @@ Arkiv rejects duplicate annotation keys in a single entity write. To keep page s
 Browser wallet writes now harden two weak points seen in live usage:
 - wallet tx receipt polling is routed through Arkiv RPC public transport to avoid provider-specific receipt instability,
 - write preflight verifies wallet network and balance with provider-first checks, then Arkiv RPC fallback, and blocks writes when balance cannot be verified.
+- provider-side send errors are preserved as `EntityMutationError` details before SDK wrapping, so UI shows concrete root cause instead of a generic fallback.
 
 Opaque SDK failures (`Transaction failed: undefined`) are now converted to actionable UI guidance.
 

@@ -16,13 +16,11 @@ const resolvedChain = (() => {
   }
 })()
 
-const walletRpcTransportUrl = process.env.NEXT_PUBLIC_ARKIV_RPC_URL ?? '/api/arkiv-rpc'
-
 const wagmiConfig = createConfig({
   chains: [resolvedChain],
   connectors: [injected()],
   transports: {
-    [resolvedChain.id]: http(walletRpcTransportUrl)
+    [resolvedChain.id]: http('/api/arkiv-rpc')
   },
   ssr: true
 })

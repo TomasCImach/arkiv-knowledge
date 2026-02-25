@@ -34,9 +34,6 @@ ARKIV_LIVE_TEST_PRIVATE_KEY=<0x...>
 ARKIV_DEMO_PRIVATE_KEY=<0x...>
 ARKIV_CHAIN=kaolin
 ARKIV_RPC_URL=https://kaolin.hoodi.arkiv.network/rpc
-
-# Optional browser override. If unset, wallet reads use same-origin /api/arkiv-rpc proxy.
-# NEXT_PUBLIC_ARKIV_RPC_URL=https://kaolin.hoodi.arkiv.network/rpc
 ```
 
 ## Entity Schema
