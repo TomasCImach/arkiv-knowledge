@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { spawn, spawnSync, type ChildProcessWithoutNullStreams } from 'node:child_process'
 import path from 'node:path'
 import { setTimeout as sleep } from 'node:timers/promises'
@@ -31,6 +31,40 @@ const basePort = Number(process.env.EVIDENCE_PORT ?? 3107)
 const baseUrl = `http://127.0.0.1:${basePort}`
 const session = process.env.EVIDENCE_SESSION ?? 'evidence-pack'
 const failSoft = process.env.EVIDENCE_FAIL_SOFT !== '0'
+
+function loadEnvFile(fileName: string) {
+  const filePath = path.join(process.cwd(), fileName)
+  if (!existsSync(filePath)) {
+    return
+  }
+
+  const content = readFileSync(filePath, 'utf8')
+  for (const rawLine of content.split('\n')) {
+    const line = rawLine.trim()
+    if (!line || line.startsWith('#')) {
+      continue
+    }
+
+    const match = /^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$/.exec(line)
+    if (!match) {
+      continue
+    }
+
+    const [, key, rawValue] = match
+    if (process.env[key] !== undefined) {
+      continue
+    }
+
+    let value = rawValue.trim()
+    if (
+      (value.startsWith('"') && value.endsWith('"')) ||
+      (value.startsWith("'") && value.endsWith("'"))
+    ) {
+      value = value.slice(1, -1)
+    }
+    process.env[key] = value
+  }
+}
 
 function ensureOutputDirs() {
   rmSync(outputRoot, { recursive: true, force: true })
@@ -301,8 +335,18 @@ async function runRealtimeTwoTabScenario(
     const linkedPaths = traceOutput.match(/\((\.playwright-cli\/[^)]+)\)/g) ?? []
     for (const linkedPath of linkedPaths) {
       const clean = linkedPath.slice(1, -1)
+      if (path.basename(clean) === 'resources') {
+        continue
+      }
       const destination = path.join(tracesDir, path.basename(clean))
-      if (existsSync(path.join(process.cwd(), clean)) && !existsSync(destination)) {
+      const sourceAbsolutePath = path.join(process.cwd(), clean)
+      if (!existsSync(sourceAbsolutePath)) {
+        continue
+      }
+      if (!lstatSync(sourceAbsolutePath).isFile()) {
+        continue
+      }
+      if (!existsSync(destination)) {
         copyArtifact(clean, destination)
       }
     }
@@ -319,6 +363,8 @@ async function runRealtimeTwoTabScenario(
 }
 
 async function main() {
+  loadEnvFile('.env')
+  loadEnvFile('.env.local')
   ensureOutputDirs()
 
   const artifacts: ArtifactEntry[] = []
