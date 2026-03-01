@@ -1,3 +1,4 @@
+import { createHash } from 'node:crypto'
 import { copyFileSync, existsSync, lstatSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { spawn, spawnSync, type ChildProcessWithoutNullStreams } from 'node:child_process'
 import path from 'node:path'
@@ -25,8 +26,10 @@ type PwResult = {
 const outputRoot = path.join(process.cwd(), 'output', 'playwright', 'evidence-pack')
 const screenshotsDir = path.join(outputRoot, 'screenshots')
 const tracesDir = path.join(outputRoot, 'traces')
+const clipsDir = path.join(outputRoot, 'clips')
 const reportFile = path.join(outputRoot, 'report.json')
 const indexFile = path.join(outputRoot, 'ARTIFACT_INDEX.md')
+const manifestFile = path.join(outputRoot, 'MANIFEST.sha256')
 
 const basePort = Number(process.env.EVIDENCE_PORT ?? 3107)
 const baseUrl = `http://127.0.0.1:${basePort}`
@@ -71,6 +74,7 @@ function ensureOutputDirs() {
   rmSync(outputRoot, { recursive: true, force: true })
   mkdirSync(screenshotsDir, { recursive: true })
   mkdirSync(tracesDir, { recursive: true })
+  mkdirSync(clipsDir, { recursive: true })
 }
 
 function commandExists(command: string): boolean {
@@ -166,6 +170,11 @@ function copyArtifact(sourceRelativePath: string, destinationAbsolutePath: strin
   copyFileSync(sourceAbsolutePath, destinationAbsolutePath)
 }
 
+function sha256File(filePath: string): string {
+  const content = readFileSync(filePath)
+  return createHash('sha256').update(content).digest('hex')
+}
+
 async function waitForServer(url: string, timeoutMs = 120000) {
   const start = Date.now()
   while (Date.now() - start < timeoutMs) {
@@ -233,6 +242,85 @@ async function captureRouteScreenshot(
   } catch (error) {
     artifacts.push({
       name: outputName,
+      status: 'failed',
+      detail: error instanceof Error ? error.message : String(error)
+    })
+  }
+}
+
+async function captureWalkthroughClip(
+  runner: { command: string; baseArgs: string[] },
+  artifacts: ArtifactEntry[]
+) {
+  try {
+    const steps = [
+      '/',
+      '/spaces/arkiv-demo',
+      '/spaces/arkiv-demo/getting-started',
+      '/spaces/arkiv-demo/settings'
+    ]
+
+    runPw(runner, ['goto', `${baseUrl}${steps[0]}`])
+    await sleep(800)
+
+    const traceStart = runPw(runner, ['tracing-start'], { allowFailure: true })
+    runPw(runner, ['video-start'], { allowFailure: true })
+    for (const step of steps) {
+      runPw(runner, ['goto', `${baseUrl}${step}`], { allowFailure: true })
+      await sleep(900)
+    }
+    const stopResult = runPw(runner, ['video-stop'], { allowFailure: true })
+    const traceStop = runPw(runner, ['tracing-stop'], { allowFailure: true })
+    const linkedPath = extractLinkedPath(stopResult.output)
+
+    if (linkedPath) {
+      const sourceAbsolutePath = path.join(process.cwd(), linkedPath)
+      if (existsSync(sourceAbsolutePath) && lstatSync(sourceAbsolutePath).isFile()) {
+        const extension = path.extname(sourceAbsolutePath) || '.webm'
+        const destination = path.join(clipsDir, `walkthrough-home-space-page-settings${extension}`)
+        copyArtifact(linkedPath, destination)
+        artifacts.push({
+          name: 'walkthrough-clip',
+          status: 'captured',
+          detail: 'Route flow: home -> space -> page -> settings (video).',
+          file: destination
+        })
+        return
+      }
+    }
+
+    for (const traceOutput of [traceStart.output, traceStop.output]) {
+      const linkedPaths = traceOutput.match(/\((\.playwright-cli\/[^)]+)\)/g) ?? []
+      for (const tracePath of linkedPaths) {
+        const clean = tracePath.slice(1, -1)
+        const sourceAbsolutePath = path.join(process.cwd(), clean)
+        if (!existsSync(sourceAbsolutePath) || !lstatSync(sourceAbsolutePath).isFile()) {
+          continue
+        }
+        if (path.basename(clean) === 'resources') {
+          continue
+        }
+
+        const destination = path.join(clipsDir, 'walkthrough-home-space-page-settings-trace.zip')
+        copyArtifact(clean, destination)
+        artifacts.push({
+          name: 'walkthrough-clip',
+          status: 'captured',
+          detail: 'Route flow trace fallback (video path unavailable).',
+          file: destination
+        })
+        return
+      }
+    }
+
+    artifacts.push({
+      name: 'walkthrough-clip',
+      status: 'skipped',
+      detail: 'No video or trace artifact path returned by playwright-cli.'
+    })
+  } catch (error) {
+    artifacts.push({
+      name: 'walkthrough-clip',
       status: 'failed',
       detail: error instanceof Error ? error.message : String(error)
     })
@@ -482,6 +570,7 @@ async function main() {
       'global-search',
       artifacts
     )
+    await captureWalkthroughClip(runner, artifacts)
 
     await runRealtimeTwoTabScenario(runner, artifacts)
 
@@ -518,6 +607,20 @@ async function main() {
     ...artifacts.map((item) => `| ${item.name} | ${item.status} | ${item.detail.replace(/\|/g, '\\|')} | ${item.file ?? '-'} |`)
   ]
   writeFileSync(indexFile, `${indexLines.join('\n')}\n`)
+
+  const filesForManifest = [
+    reportFile,
+    indexFile,
+    ...artifacts
+      .map((artifact) => artifact.file)
+      .filter((filePath): filePath is string => Boolean(filePath))
+      .filter((filePath) => existsSync(filePath))
+  ]
+  const manifestLines = filesForManifest.map((filePath) => {
+    const relative = path.relative(outputRoot, filePath)
+    return `${sha256File(filePath)}  ${relative}`
+  })
+  writeFileSync(manifestFile, `${manifestLines.join('\n')}\n`)
 
   const failedCount = artifacts.filter((item) => item.status === 'failed').length
   if (failedCount > 0 && !failSoft) {
