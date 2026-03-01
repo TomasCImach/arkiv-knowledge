@@ -2,6 +2,13 @@
 
 Arkiv-first documentation app built for the Arkiv Builders Challenge.
 
+## Team Members
+- Tomas (solo builder)
+
+## Deployed Demo URL
+- Local/demo-first build: `http://localhost:3000`
+- Public deployment: `TBD` (replace with final hosted URL before submission)
+
 ## Why This App Scores Well
 - Core domain data is stored in Arkiv entities (`kb.space`, `kb.page`, `kb.revision`, `kb.link`, `kb.presence`).
 - Canonical page updates use `updateEntity` semantics through `mutateEntities`, while revisions remain append-only.
@@ -10,6 +17,32 @@ Arkiv-first documentation app built for the Arkiv Builders Challenge.
 - Expiration is intentional per entity type, with owner extension controls and short-lived presence entities.
 - Browsing is public (no wallet). Wallet connection is required only for writes.
 - Canonical slug reads are deterministic, and duplicate slug writes are rejected before mutation.
+- Visibility semantics are enforced (`public` listable, `unlisted` direct-link readable, `private` owner-context only).
+- Page lifecycle includes owner-only archive and delete cleanup for canonical + relationship entities.
+
+## Architecture Diagram
+```mermaid
+flowchart LR
+  UI["Next.js App Router UI"] --> Q["Arkiv Query Paths"]
+  UI --> W["Wallet-Gated Write Forms"]
+  Q --> S["kb.space"]
+  Q --> P["kb.page"]
+  Q --> R["kb.revision"]
+  Q --> L["kb.link"]
+  Q --> PR["kb.presence"]
+  W --> M["mutateEntities / updateEntity / deleteEntity / changeOwnership"]
+  M --> S
+  M --> P
+  M --> R
+  M --> L
+  M --> PR
+```
+
+## Judge Screenshots
+![Home](public/submission/home.png)
+![Space](public/submission/space.png)
+![Page](public/submission/page.png)
+![Settings](public/submission/settings.png)
 
 ## Stack
 - Next.js 15 App Router, TypeScript, Node runtime
@@ -96,6 +129,9 @@ const transfer = await walletClient.changeOwnership({
 - Write routes and buttons (`/new/space`, create/edit page, `/spaces/[spaceSlug]/settings`, presence join, extend TTL) require wallet connection.
 - Space settings updates and transfer are owner-gated; non-owners can view settings in read-only mode with explicit messaging.
 - Canonical page edit and transfer are owner-gated; non-owners can browse page content but cannot submit edits.
+- Canonical page lifecycle actions are owner-gated:
+  - archive updates canonical page status to `archived` and appends a revision,
+  - delete removes canonical `kb.page` and cleans dependent `kb.link`, `kb.presence`, and `kb.revision` entities.
 - Extension controls are owner-checked in UI and only enabled for near-expiry entities.
 
 ## Lifecycle / Expiration Policy
@@ -103,11 +139,15 @@ const transfer = await walletClient.changeOwnership({
 - Medium: revisions (180d)
 - Regenerated medium: links (30d)
 - Ephemeral: presence (90s) with heartbeat extension
+- Revision retention policy:
+  - archive: preserve full revision history (append archive revision),
+  - delete: remove canonical page and all revisions in the same cleanup mutation.
 
 ## Scripts
 ```bash
 pnpm verify                # lint + typecheck + tests + build + live smoke (skip-safe)
 pnpm verify:evidence       # checks required submission/evidence docs and capture script presence
+pnpm verify:submission     # validates README submission sections/assets and clip+manifest capture support
 pnpm evidence:capture      # deterministic Playwright screenshot/report artifact pack (fail-soft realtime)
 pnpm seed:demo             # idempotent demo data seed (requires key)
 pnpm restore:demo          # re-run seed script for fallback dataset
@@ -124,7 +164,10 @@ pnpm verify:phase all      # file-level phase verification
 ## Submission Evidence
 - Rubric mapping file: `SUBMISSION_EVIDENCE.md`
 - Deterministic artifacts: `output/playwright/evidence-pack/`
-- CI policy: evidence capture runs fail-soft and uploads artifacts when available.
+- CI policy:
+  - `ci.yml` runs full verify plus fail-soft evidence upload.
+  - `evidence-strict.yml` runs scheduled/dispatch strict capture (fail-hard) with funded demo key.
+- Artifact package now includes screenshots, walkthrough clip output, trace zips, and `MANIFEST.sha256`.
 
 ## Demo Flow (3–5 min)
 1. Browse spaces publicly from `/` without wallet.
@@ -138,5 +181,6 @@ pnpm verify:phase all      # file-level phase verification
 9. Transfer canonical page ownership and demonstrate old-owner block/new-owner handoff.
 10. Add wiki links and show backlinks sourced from `kb.link` queries.
 11. Join presence and show short-lived active viewers.
-12. Show realtime refresh with two sessions.
-13. Show generated evidence pack (`ARTIFACT_INDEX.md` + screenshots + realtime status report).
+12. Archive a page, then delete a different page and show post-delete navigation consistency.
+13. Show realtime refresh with two sessions.
+14. Show generated evidence pack (`ARTIFACT_INDEX.md` + screenshots + walkthrough clip + hash manifest + realtime status report).

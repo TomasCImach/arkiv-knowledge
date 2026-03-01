@@ -7,8 +7,8 @@ Raise judged score from ~4.2/5 to >=4.6/5 by fixing data-integrity risks first, 
 - [x] Iteration 20 — Canonical Identity + Slug Integrity
 - [x] Iteration 21 — Lifecycle Correctness Hardening
 - [x] Iteration 22 — Visibility Enforcement That Matches UI Claims
-- [ ] Iteration 23 — Delete/Archive Lifecycle Completeness
-- [ ] Iteration 24 — Judge-Optimized Submission Assets
+- [x] Iteration 23 — Delete/Archive Lifecycle Completeness
+- [x] Iteration 24 — Judge-Optimized Submission Assets
 
 ## Current Weakness Summary
 1. **Data integrity risk (highest impact):** canonical reads are slug-based and return first match, so duplicate slug collisions can produce non-deterministic results.

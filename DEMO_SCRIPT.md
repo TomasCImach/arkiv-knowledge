@@ -45,6 +45,9 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - Edit and save twice.
 - Show canonical page key stays constant while revision list grows.
 - Confirm page `createdAt` stays stable while only `updatedAt` changes.
+- On page detail, use **Archive Page** and show status transitions to `archived` with revision continuity.
+- On another page, use **Delete Page** with slug confirmation and show redirect back to `/spaces/[spaceSlug]`.
+- Mention delete cleanup policy: canonical page + links + presence + revisions are removed together.
 - Verbalize: “Saves use mutate flow: canonical update + append-only revision, reads are anchored to canonical space key, and revision numbers are monotonic.”
 
 ### 4) Ownership Handoff
@@ -85,8 +88,9 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 ### 10) Evidence Pack (Submission Reliability)
 - Open `output/playwright/evidence-pack/ARTIFACT_INDEX.md`.
 - Show captured screenshots for home/space/page/settings/hierarchy/ownership-transfer/global-search.
-- Show `report.json` realtime entry (`captured` when funded key exists, `skipped` when missing key).
-- Verbalize: “Evidence capture is deterministic and CI-uploaded in fail-soft mode.”
+- Show `report.json` entries for `walkthrough-clip` and realtime.
+- Show `MANIFEST.sha256` hash list for artifact integrity.
+- Verbalize: “Evidence capture is deterministic, hash-verifiable, and CI-uploaded in both fail-soft and strict modes.”
 
 ## Required Verbal Points
 - “Core domain data is stored as Arkiv entities.”

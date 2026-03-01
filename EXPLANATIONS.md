@@ -285,3 +285,40 @@ Realtime evidence capture now has explicit reliability controls:
 - increases judge confidence that submission claims are backed by repeatable automation.
 
 **Scoring impact:** Medium uplift on code quality/docs and medium uplift on demo reliability.
+
+---
+
+## 22) Archive/Delete Lifecycle Completeness (Iteration 23)
+Iteration 23 closes the remaining page-management lifecycle gap with explicit owner actions:
+- page detail now exposes owner-only archive and hard-delete controls,
+- archive flow updates canonical status to `archived` and appends revision history,
+- hard-delete flow removes canonical page plus related `kb.link`, `kb.presence`, and `kb.revision` entities via one cleanup mutation,
+- deletion requires slug confirmation in UI to reduce accidental destructive writes.
+
+**Why this matters:**
+- completes lifecycle management expectations beyond create/edit only,
+- avoids orphaned relationship and presence entities after destructive actions,
+- preserves clear read/write boundaries with explicit owner gating on destructive operations,
+- keeps lifecycle behavior judge-observable directly from canonical page route.
+
+**Scoring impact:** Medium-high uplift on functionality (`manage/delete flows`) and medium uplift on integration-depth lifecycle rigor.
+
+---
+
+## 23) Submission Verification + Asset Packaging (Iteration 24)
+Iteration 24 focuses on judge speed and reproducibility confidence:
+- README now includes explicit submission sections (team members, demo URL placeholder, architecture diagram, judge screenshots),
+- committed screenshot assets live under `public/submission/`,
+- new `verify:submission` script enforces required docs/sections/assets and capture capabilities,
+- `pnpm verify` and CI now execute submission verification consistently.
+
+Evidence packaging also improved:
+- evidence capture now emits a walkthrough clip artifact (`video` when available, otherwise deterministic trace fallback),
+- bundle hash manifest (`MANIFEST.sha256`) is generated for artifact integrity checks.
+
+**Why this matters:**
+- reduces judging friction by surfacing key submission facts and visuals immediately,
+- prevents documentation regressions through automated gates,
+- increases confidence that evidence artifacts are reproducible and untampered.
+
+**Scoring impact:** Medium uplift on code quality/docs and medium uplift on demo reliability.

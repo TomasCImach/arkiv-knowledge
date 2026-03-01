@@ -271,3 +271,26 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: set a space to private, show anonymous 404 for `/spaces/[spaceSlug]`, then open with owner viewer context and show settings access; run global search and show private pages excluded for non-owner context.
   - notes/screenshots: strict report at `output/playwright/evidence-pack/report.json` with `realtime-two-tab` captured status; CI workflow at `.github/workflows/evidence-strict.yml`.
 - **Next bottleneck:** Iteration 23 archive/delete lifecycle completeness (canonical archive + relationship cleanup policy).
+
+### 2026-03-01 — Iteration 23 (Archive/Delete Lifecycle Completeness)
+- **Objective:** close lifecycle management gap with owner-visible archive/delete actions and deterministic relationship cleanup.
+- **Implemented:** added owner-only `PageLifecycleForm` to page detail; added `archivePage` mutation helper; added `deletePageWithCleanup` mutation deleting canonical `kb.page` plus related `kb.link`, `kb.presence`, and `kb.revision` entities in one mutation; documented retention policy in README.
+- **Rubric targets:** functionality (`manage flows`, primary) / integration (`entity lifecycle`, secondary) / UX (`owner boundaries`, secondary).
+- **Expected score delta:** medium-high.
+- **Evidence:**
+  - tests: `tests/integration/delete-page-cleanup.test.ts`, `tests/e2e/page-lifecycle-form.test.tsx`.
+  - verification: `pnpm verify` pass with lifecycle tests included.
+  - demo step: archive page from detail route, then delete a page with slug confirmation and show return to `/spaces/[spaceSlug]` without orphan relationship panels.
+  - notes/screenshots: lifecycle controls visible on `/spaces/[spaceSlug]/[pageSlug]` with owner/disconnected guard messaging.
+- **Next bottleneck:** Iteration 24 judge-optimized submission packaging and verification.
+
+### 2026-03-01 — Iteration 24 (Judge-Optimized Submission Assets)
+- **Objective:** improve judging speed/confidence with explicit submission sections, committed visual assets, and automated submission verification.
+- **Implemented:** upgraded README with team/demo/architecture/screenshot sections; added committed screenshots under `public/submission/`; added `scripts/verify-submission.ts` + `pnpm verify:submission` and integrated into `pnpm verify` + CI; extended evidence capture output with walkthrough clip artifact (video when available, trace fallback otherwise) and `MANIFEST.sha256`.
+- **Rubric targets:** code quality/docs (primary) / demo reliability (secondary).
+- **Expected score delta:** medium.
+- **Evidence:**
+  - tests/verification: `pnpm verify:submission`, `pnpm verify`, `pnpm evidence:capture`.
+  - demo step: open README submission sections and `output/playwright/evidence-pack/` to show screenshots + walkthrough clip artifact + hash manifest.
+  - notes/screenshots: evidence report now includes `walkthrough-clip`; hash manifest generated at `output/playwright/evidence-pack/MANIFEST.sha256`.
+- **Next bottleneck:** harden private-owner context from query-param viewer to signed/session proof for stronger production-grade privacy guarantees.
