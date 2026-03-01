@@ -30,6 +30,9 @@ jobs:
       - name: Verify
         run: pnpm verify
 
+      - name: Verify Submission Assets
+        run: pnpm verify:submission
+
       - name: Capture Evidence Pack (fail-soft)
         run: pnpm evidence:capture
         continue-on-error: true
