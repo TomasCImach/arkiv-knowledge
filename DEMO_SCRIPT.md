@@ -35,9 +35,10 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 
 ### 2.5) Visibility Semantics (Private/Unlisted/Public)
 - In space settings, switch visibility to `private`.
+- Click `Verify Private Access` (wallet signature challenge, no transaction).
 - Show anonymous/disconnected access to `/spaces/[spaceSlug]` returns not found.
-- Re-open same route with owner viewer context and show route/settings are readable.
-- Run `/search/pages` with filters and show private pages are excluded for non-owner viewer context.
+- Re-open same route as the authenticated owner wallet and show route/settings are readable.
+- Run `/search/pages` with filters and show private pages are excluded for non-owner wallet sessions.
 - Verbalize: “Visibility is enforced in both route reads and cross-space queries.”
 
 ### 3) Lifecycle Depth (Canonical + Revisions)

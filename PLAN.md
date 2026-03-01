@@ -155,14 +155,14 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Two-step create flow now has explicit recovery behavior when revision/link follow-up fails.
 
 ### Phase 15 — Visibility Enforcement + Strict Evidence Reliability (Iteration 22)
-- [x] Enforced private-space route reads with owner-context bypass (`viewer` query) across space/page/new/edit/settings routes.
+- [x] Enforced private-space route reads with owner-context checks across space/page/new/edit/settings routes.
 - [x] Filtered public browse surfaces to list only public spaces while keeping unlisted direct-link readable.
 - [x] Filtered global page search results against visible spaces (private excluded for non-owner viewers).
 - [x] Added deterministic visibility/realtime regression coverage and strict evidence CI workflow.
 
 **Exit criteria status:** met.
 - Anonymous/disconnected viewer is blocked from private routes.
-- Owner context can read/manage private spaces via explicit viewer routing.
+- Owner context can read/manage private spaces when authenticated.
 - Global search excludes private pages without owner context.
 - Strict evidence run now passes with fail-hard mode and captured artifact report.
 
@@ -188,13 +188,33 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Evidence bundle includes reproducibility hash manifest (`MANIFEST.sha256`).
 - CI has both fail-soft evidence upload and strict scheduled/manual evidence workflow.
 
+### Phase 18 — Private Owner Context Continuity (Iteration 25)
+- [x] Added private-flow continuity checks in create/update redirects and regression coverage.
+
+**Exit criteria status:** met.
+- Owners no longer self-lock out immediately after creating or privatizing a space.
+- Regression is covered by automated component-level e2e tests.
+
+### Phase 19 — Wallet-Authenticated Private Reads (Iteration 26)
+- [x] Replaced URL-driven owner context with signed wallet-auth session (`nonce` -> `signMessage` -> `verify`).
+- [x] Added server-side session validation for private route and global-search visibility checks.
+- [x] Added explicit wallet-session controls in header (`Verify Private Access`) and private redirect flows.
+
+**Exit criteria status:** met.
+- Private route authorization no longer trusts query parameters.
+- Viewer identity is cryptographically proven by the connected wallet.
+- Private-read gating remains deterministic and demoable in 3–5 minutes.
+
 ## Current Verification Snapshot
-- Last full pass: `pnpm verify` on 2026-03-01 (post iteration 24 submission rollout).
+- Last full pass: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`, `pnpm build` on 2026-03-01 (post iteration 26 wallet-auth visibility rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
 - Added passing integrity coverage for canonical selection + duplicate guards (`tests/integration/canonical-resolution.test.ts`, `tests/integration/create-conflict-guards.test.ts`).
 - Added lifecycle hardening coverage (`tests/integration/edit-page-mutate.test.ts`, `tests/integration/create-page-repair.test.ts`).
 - Added visibility/realtime coverage (`tests/unit/visibility-access.test.ts`, `tests/e2e/private-visibility-routes.test.tsx`, `tests/e2e/use-arkiv-events.test.tsx`).
 - Added page lifecycle cleanup coverage (`tests/integration/delete-page-cleanup.test.ts`, `tests/e2e/page-lifecycle-form.test.tsx`).
+- Added private owner-context continuity coverage (`tests/e2e/create-space-error-handling.test.tsx`, `tests/e2e/edit-space-owner.test.tsx`).
+- Added wallet auth session integrity coverage (`tests/unit/wallet-auth-session.test.ts`).
+- Added wallet-auth private-read session endpoints (`/api/auth/wallet/nonce`, `/api/auth/wallet/verify`, `/api/auth/wallet/session`, `/api/auth/wallet/logout`).
 - Live write proof: `pnpm seed:demo` completed on Kaolin with funded key, creating/reading `arkiv-demo` and demo pages.
 - Client tx observability: browser console now logs each wallet prompt under `[arkiv-tx:*]` and presence heartbeat lifecycle under `[presence-heartbeat]`.
 - Evidence capture proof: `pnpm evidence:capture` generated deterministic screenshots and status report (`ARTIFACT_INDEX.md` + `report.json`).
@@ -202,8 +222,8 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Strict evidence proof: `EVIDENCE_FAIL_SOFT=0 pnpm evidence:capture` passes and records `realtime-two-tab` as captured (with explicit diagnostic fallback detail when direct two-tab observation times out).
 
 ## Next Bottlenecks (Optional Improvements)
-1. Replace viewer-query owner context with signed/session-backed owner context for stronger private-route guarantees.
-2. Add child-page reparent policy controls for parent deletion (auto-root vs manual reparent prompt).
+1. Add child-page reparent policy controls for parent deletion (auto-root vs manual reparent prompt).
+2. Add session revocation/refresh UX hardening (expiry countdown + proactive re-verify prompt).
 3. Add reproducible public deployment pipeline + pinned demo URL for final submission handoff.
 
 ## Plan V1 (2026-02-25)

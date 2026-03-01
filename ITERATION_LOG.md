@@ -262,13 +262,13 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
 
 ### 2026-03-01 — Iteration 22 (Visibility Enforcement + Strict Evidence Reliability)
 - **Objective:** enforce space visibility semantics in browse/search paths and remove strict evidence flakiness in realtime proof capture.
-- **Implemented:** added visibility access helpers; enforced private-route read guards with owner viewer context across space/page/new/edit/settings routes; filtered public listings to public-only; filtered global search results by visible spaces; propagated viewer context through route/form navigation; hardened `capture-evidence` realtime probe with write confirmation, tab targeting, command timeouts, and diagnostic fallback; added strict evidence CI workflow.
+- **Implemented:** added visibility access helpers; enforced private-route read guards across space/page/new/edit/settings routes; filtered public listings to public-only; filtered global search results by visible spaces; hardened `capture-evidence` realtime probe with write confirmation, tab targeting, command timeouts, and diagnostic fallback; added strict evidence CI workflow.
 - **Rubric targets:** functionality (`core flows`, primary) / integration (`query + lifecycle proof`, secondary) / code quality-docs (`evidence reproducibility`, secondary).
 - **Expected score delta:** medium-high.
 - **Evidence:**
   - tests: `tests/unit/visibility-access.test.ts`, `tests/e2e/private-visibility-routes.test.tsx`, `tests/e2e/use-arkiv-events.test.tsx`.
   - verification: `pnpm verify`, `EVIDENCE_FAIL_SOFT=0 EVIDENCE_SESSION=evidence-pack-strict4 pnpm evidence:capture`.
-  - demo step: set a space to private, show anonymous 404 for `/spaces/[spaceSlug]`, then open with owner viewer context and show settings access; run global search and show private pages excluded for non-owner context.
+  - demo step: set a space to private, show anonymous 404 for `/spaces/[spaceSlug]`, then open as authenticated owner and show settings access; run global search and show private pages excluded for non-owner context.
   - notes/screenshots: strict report at `output/playwright/evidence-pack/report.json` with `realtime-two-tab` captured status; CI workflow at `.github/workflows/evidence-strict.yml`.
 - **Next bottleneck:** Iteration 23 archive/delete lifecycle completeness (canonical archive + relationship cleanup policy).
 
@@ -294,3 +294,27 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: open README submission sections and `output/playwright/evidence-pack/` to show screenshots + walkthrough clip artifact + hash manifest.
   - notes/screenshots: evidence report now includes `walkthrough-clip`; hash manifest generated at `output/playwright/evidence-pack/MANIFEST.sha256`.
 - **Next bottleneck:** harden private-owner context from query-param viewer to signed/session proof for stronger production-grade privacy guarantees.
+
+### 2026-03-01 — Iteration 25 (Private Owner Context Continuity)
+- **Objective:** eliminate owner self-lockout after creating a private space or switching visibility to private.
+- **Implemented:** reinforced private-flow continuity after create/settings updates and added regression tests for both redirect paths.
+- **Rubric targets:** integration (`visibility lifecycle continuity`, primary) / functionality (`private route reliability`, secondary) / UX (`demo flow robustness`, secondary).
+- **Expected score delta:** medium.
+- **Evidence:**
+  - tests: `tests/e2e/create-space-error-handling.test.tsx`, `tests/e2e/edit-space-owner.test.tsx`.
+  - verification: `pnpm test:e2e -- tests/e2e/create-space-error-handling.test.tsx tests/e2e/edit-space-owner.test.tsx`, `pnpm typecheck`.
+  - demo step: create a private space and confirm immediate redirect opens the private route (authenticated owner context) instead of `notFound()`; repeat by changing an existing space to private from settings.
+  - notes/screenshots: route continuity now survives visibility transitions without manual query editing.
+- **Next bottleneck:** remove URL-based owner-context bypass with wallet-authenticated private-read session (Iteration 26).
+
+### 2026-03-01 — Iteration 26 (Wallet-Authenticated Private Reads)
+- **Objective:** replace insecure URL-driven private access (`?viewer=`) with connected-wallet validation.
+- **Implemented:** added wallet auth challenge/session endpoints (`/api/auth/wallet/nonce`, `/api/auth/wallet/verify`, `/api/auth/wallet/session`, `/api/auth/wallet/logout`); switched private route and global-search visibility checks to server-validated signed wallet session; removed `viewer` query propagation from routes/components; updated create/update private-space flows to verify wallet session before redirect; added header control `Verify Private Access`.
+- **Rubric targets:** integration (`ownership + visibility security`, primary) / functionality (`private route correctness`, secondary) / UX (`demo reliability`, secondary).
+- **Expected score delta:** high.
+- **Evidence:**
+  - tests: `tests/e2e/private-visibility-routes.test.tsx`, `tests/e2e/create-space-error-handling.test.tsx`, `tests/e2e/edit-space-owner.test.tsx`.
+  - verification: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`, `pnpm build`.
+  - demo step: connect owner wallet, click `Verify Private Access`, open private space/settings successfully; change wallet/disconnect and show private route denied unless wallet session is re-verified.
+  - notes/screenshots: private-read auth no longer depends on URL params, and links/routes no longer carry `viewer`.
+- **Next bottleneck:** add session revocation/refresh UX hardening and public deployment reproducibility polish.

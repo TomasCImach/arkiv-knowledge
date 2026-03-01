@@ -63,6 +63,7 @@ Open `http://localhost:3000`.
 ```bash
 NEXT_PUBLIC_ARKIV_CHAIN=kaolin
 NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=<walletconnect-project-id>
+ARKIV_AUTH_SECRET=<random-long-secret>
 
 # Optional live write tests / seed scripts
 ARKIV_LIVE_TEST_PRIVATE_KEY=<0x...>
@@ -128,6 +129,7 @@ const transfer = await walletClient.changeOwnership({
 - Read routes (`/`, `/spaces/[spaceSlug]`, `/spaces/[spaceSlug]/[pageSlug]`) are public.
 - Write routes and buttons (`/new/space`, create/edit page, `/spaces/[spaceSlug]/settings`, presence join, extend TTL) require wallet connection.
 - Space settings updates and transfer are owner-gated; non-owners can view settings in read-only mode with explicit messaging.
+- Private space reads require wallet-authenticated session verification (signed message challenge, HttpOnly cookie).
 - Canonical page edit and transfer are owner-gated; non-owners can browse page content but cannot submit edits.
 - Canonical page lifecycle actions are owner-gated:
   - archive updates canonical page status to `archived` and appends a revision,
@@ -156,6 +158,7 @@ pnpm verify:phase all      # file-level phase verification
 
 ## Testing
 - Unit: schema contracts, parser behavior, expiration policy, link extraction, hierarchy tree logic, ownership permission rules
+- Unit: wallet auth session token/challenge integrity for private-read authorization
 - Integration: query predicate generation (including parent-mode + global search filters), canonical update + revision + link rewrite mutation path, parentPageKey write path, ownership transfer mutation contract
 - Integration: create-flow repair behavior for failed follow-up mutations (canonical page created, revision/link repair attempted)
 - E2E (component-level): no-wallet read / wallet-gated write boundary + owner/non-owner settings gating + parent selector/guard behavior + ownership transfer handoff + filter serialization (`owner`, `sort`, `parent`, `status`, `q`)
