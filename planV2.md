@@ -6,7 +6,7 @@ Raise judged score from ~4.2/5 to >=4.6/5 by fixing data-integrity risks first, 
 ## Execution Status
 - [x] Iteration 20 — Canonical Identity + Slug Integrity
 - [x] Iteration 21 — Lifecycle Correctness Hardening
-- [ ] Iteration 22 — Visibility Enforcement That Matches UI Claims
+- [x] Iteration 22 — Visibility Enforcement That Matches UI Claims
 - [ ] Iteration 23 — Delete/Archive Lifecycle Completeness
 - [ ] Iteration 24 — Judge-Optimized Submission Assets
 

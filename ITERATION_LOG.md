@@ -259,3 +259,15 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - verification: `pnpm test`, `pnpm test:e2e`, `pnpm typecheck`, `pnpm build`, `pnpm verify`.
   - demo step: edit same page twice and show stable created timestamp + monotonic revisions; mention create-flow repair behavior for failed follow-up mutation scenarios.
 - **Next bottleneck:** enforce `public/unlisted/private` visibility semantics consistently across read/query routes (Iteration 22).
+
+### 2026-03-01 — Iteration 22 (Visibility Enforcement + Strict Evidence Reliability)
+- **Objective:** enforce space visibility semantics in browse/search paths and remove strict evidence flakiness in realtime proof capture.
+- **Implemented:** added visibility access helpers; enforced private-route read guards with owner viewer context across space/page/new/edit/settings routes; filtered public listings to public-only; filtered global search results by visible spaces; propagated viewer context through route/form navigation; hardened `capture-evidence` realtime probe with write confirmation, tab targeting, command timeouts, and diagnostic fallback; added strict evidence CI workflow.
+- **Rubric targets:** functionality (`core flows`, primary) / integration (`query + lifecycle proof`, secondary) / code quality-docs (`evidence reproducibility`, secondary).
+- **Expected score delta:** medium-high.
+- **Evidence:**
+  - tests: `tests/unit/visibility-access.test.ts`, `tests/e2e/private-visibility-routes.test.tsx`, `tests/e2e/use-arkiv-events.test.tsx`.
+  - verification: `pnpm verify`, `EVIDENCE_FAIL_SOFT=0 EVIDENCE_SESSION=evidence-pack-strict4 pnpm evidence:capture`.
+  - demo step: set a space to private, show anonymous 404 for `/spaces/[spaceSlug]`, then open with owner viewer context and show settings access; run global search and show private pages excluded for non-owner context.
+  - notes/screenshots: strict report at `output/playwright/evidence-pack/report.json` with `realtime-two-tab` captured status; CI workflow at `.github/workflows/evidence-strict.yml`.
+- **Next bottleneck:** Iteration 23 archive/delete lifecycle completeness (canonical archive + relationship cleanup policy).

@@ -11,7 +11,8 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 2. Run `pnpm verify`.
 3. Ensure your demo key has Kaolin test ETH, then run `pnpm seed:demo` for deterministic data.
 4. Run `pnpm evidence:capture` to pre-generate screenshot/report artifacts.
-5. Open two browser sessions (Tab A and Tab B).
+5. Optional strict proof check: `EVIDENCE_FAIL_SOFT=0 pnpm evidence:capture`.
+6. Open two browser sessions (Tab A and Tab B).
 
 ## Judge-Oriented Walkthrough
 
@@ -31,6 +32,13 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - Create a second page and set parent to the first page.
 - Try creating a second page with the same slug in the same space and show conflict guard.
 - Verbalize: “Wallet is required only for writes, and canonical authoring/transfer actions are owner-gated.”
+
+### 2.5) Visibility Semantics (Private/Unlisted/Public)
+- In space settings, switch visibility to `private`.
+- Show anonymous/disconnected access to `/spaces/[spaceSlug]` returns not found.
+- Re-open same route with owner viewer context and show route/settings are readable.
+- Run `/search/pages` with filters and show private pages are excluded for non-owner viewer context.
+- Verbalize: “Visibility is enforced in both route reads and cross-space queries.”
 
 ### 3) Lifecycle Depth (Canonical + Revisions)
 - Open page edit at `/spaces/[spaceSlug]/[pageSlug]/edit`.

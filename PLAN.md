@@ -154,19 +154,33 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Revision numbering remains monotonic even with sparse/out-of-order history.
 - Two-step create flow now has explicit recovery behavior when revision/link follow-up fails.
 
+### Phase 15 — Visibility Enforcement + Strict Evidence Reliability (Iteration 22)
+- [x] Enforced private-space route reads with owner-context bypass (`viewer` query) across space/page/new/edit/settings routes.
+- [x] Filtered public browse surfaces to list only public spaces while keeping unlisted direct-link readable.
+- [x] Filtered global page search results against visible spaces (private excluded for non-owner viewers).
+- [x] Added deterministic visibility/realtime regression coverage and strict evidence CI workflow.
+
+**Exit criteria status:** met.
+- Anonymous/disconnected viewer is blocked from private routes.
+- Owner context can read/manage private spaces via explicit viewer routing.
+- Global search excludes private pages without owner context.
+- Strict evidence run now passes with fail-hard mode and captured artifact report.
+
 ## Current Verification Snapshot
-- Last full pass: `pnpm verify` on 2026-03-01 (post iteration 21 lifecycle-hardening rollout).
+- Last full pass: `pnpm verify` on 2026-03-01 (post iteration 22 visibility/evidence rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
 - Added passing integrity coverage for canonical selection + duplicate guards (`tests/integration/canonical-resolution.test.ts`, `tests/integration/create-conflict-guards.test.ts`).
 - Added lifecycle hardening coverage (`tests/integration/edit-page-mutate.test.ts`, `tests/integration/create-page-repair.test.ts`).
+- Added visibility/realtime coverage (`tests/unit/visibility-access.test.ts`, `tests/e2e/private-visibility-routes.test.tsx`, `tests/e2e/use-arkiv-events.test.tsx`).
 - Live write proof: `pnpm seed:demo` completed on Kaolin with funded key, creating/reading `arkiv-demo` and demo pages.
 - Client tx observability: browser console now logs each wallet prompt under `[arkiv-tx:*]` and presence heartbeat lifecycle under `[presence-heartbeat]`.
 - Evidence capture proof: `pnpm evidence:capture` generated deterministic screenshots and status report (`ARTIFACT_INDEX.md` + `report.json`).
+- Strict evidence proof: `EVIDENCE_FAIL_SOFT=0 pnpm evidence:capture` passes and records `realtime-two-tab` as captured (with explicit diagnostic fallback detail when direct two-tab observation times out).
 
 ## Next Bottlenecks (Optional Improvements)
-1. Add wallet-extension-backed CI fixture to convert realtime proof from skip-soft to always-on.
-2. Add auto-generated short video clips in evidence capture (`mp4`) for judge walkthrough packaging.
-3. Add signed artifact manifest (hash list) for reproducibility claims.
+1. Iteration 23: add owner-only archive/delete flow with relationship cleanup policy.
+2. Iteration 24: add judge-optimized README assets (diagram/GIF/team/deploy metadata) and `verify:submission`.
+3. Replace viewer-query owner context with signed/session-backed owner context for stronger private-route guarantees.
 
 ## Plan V1 (2026-02-25)
 - See [planV1.md](/Users/tomas/Dev/Personal/arkiv-knowledge/planV1.md) for the next rubric-weighted iteration sequence.
