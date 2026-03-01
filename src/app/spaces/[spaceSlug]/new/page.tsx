@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { CreatePageForm } from '@/app/_components/create-page-form'
-import { getSpaceBySlug, listPagesBySpace } from '@/arkiv/queries'
+import { getSpaceBySlug, listPagesBySpaceKey } from '@/arkiv/queries'
 import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
@@ -12,7 +12,12 @@ export default async function NewPageRoute({ params }: { params: Promise<{ space
   let spacePages = []
 
   try {
-    ;[space, spacePages] = await Promise.all([getSpaceBySlug(spaceSlug), listPagesBySpace(spaceSlug)])
+    space = await getSpaceBySlug(spaceSlug)
+    if (!space) {
+      notFound()
+    }
+
+    spacePages = await listPagesBySpaceKey(space.entityKey)
   } catch (error) {
     const message = formatReadError(error)
     return (

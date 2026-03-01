@@ -8,6 +8,7 @@ Arkiv-first documentation app built for the Arkiv Builders Challenge.
 - Relationships are persisted as first-class link entities (`kb.link`) and rendered via query results.
 - Expiration is intentional per entity type, with owner extension controls and short-lived presence entities.
 - Browsing is public (no wallet). Wallet connection is required only for writes.
+- Canonical slug reads are deterministic, and duplicate slug writes are rejected before mutation.
 
 ## Stack
 - Next.js 15 App Router, TypeScript, Node runtime
@@ -47,11 +48,12 @@ ARKIV_RPC_URL=https://kaolin.hoodi.arkiv.network/rpc
 
 ## Query Paths (Arkiv-first)
 - Public space list: `type=kb.space && schemaVersion=1`
-- Space pages: `type=kb.page && schemaVersion=1 && spaceSlug=<slug>`
+- Space pages (canonical): `type=kb.page && schemaVersion=1 && spaceKey=<spaceKey>`
 - Page revisions: `type=kb.revision && schemaVersion=1 && pageKey=<pageKey>`
 - Backlinks: `type=kb.link && schemaVersion=1 && toPageKey=<pageKey>`
 - Presence: `type=kb.presence && schemaVersion=1 && pageKey=<pageKey>`
 - Space search (query-first): `type=kb.page && schemaVersion=1 && spaceSlug=<slug> && status? && owner? && parentMode(all|root|child) && (token_0=<t> OR ... OR token_19=<t>) && sort(updated_desc|updated_asc|title_asc)`
+- Space search (canonical): same as above plus `spaceKey=<spaceKey>` for deterministic identity scope.
 - Global page search (query-first): `type=kb.page && schemaVersion=1 && spaceSlug? && status? && owner? && parentMode(all|root|child) && tokens? && sort(updated_desc|updated_asc|title_asc)`
 
 ## Example Query Builder Usage

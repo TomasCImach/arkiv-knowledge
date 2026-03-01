@@ -237,3 +237,14 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: open `output/playwright/evidence-pack/ARTIFACT_INDEX.md` and show route screenshots + realtime status entry.
   - notes/screenshots: captured artifacts in `output/playwright/evidence-pack/screenshots/`; realtime marked skip-safe without funded key.
 - **Next bottleneck:** automate wallet-extension-backed realtime proof in CI to eliminate skip path.
+
+### 2026-03-01 — Iteration 20 (Canonical Identity + Slug Integrity)
+- **Objective:** eliminate slug-collision ambiguity and strengthen canonical read/write integrity.
+- **Implemented:** added deterministic canonical selection in slug lookups (`kb.space`, `kb.page`); added `spaceKey`-anchored page listing/lookup/query paths for core space/page routes; added create-time conflict guards for duplicate `spaceSlug` and duplicate page slug inside canonical space; and constrained wiki-link resolution to canonical `spaceKey`.
+- **Rubric targets:** functionality (`data integrity`, primary) / integration (`ownership + relationships`, secondary).
+- **Expected score delta:** high.
+- **Evidence:**
+  - tests: `tests/integration/canonical-resolution.test.ts`, `tests/integration/create-conflict-guards.test.ts`, plus updated `tests/integration/search-predicates.test.ts`.
+  - verification: `pnpm test`, `pnpm test:e2e`, `pnpm typecheck`, `pnpm build`.
+  - demo step: attempt duplicate space/page slug creation (blocked), then browse `/spaces/[spaceSlug]/[pageSlug]` showing canonical `spaceKey`-scoped reads.
+- **Next bottleneck:** preserve `kb.page.payload.createdAt` on edit and harden revision sequencing under concurrent writes (Iteration 21).

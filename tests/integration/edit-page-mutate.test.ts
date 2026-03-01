@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   listRevisionsByPageMock: vi.fn(),
-  getPageBySlugMock: vi.fn(),
+  getPageBySlugInSpaceMock: vi.fn(),
   listOutgoingLinksMock: vi.fn()
 }))
 
 vi.mock('@/arkiv/queries/pages', () => ({
   listRevisionsByPage: mocks.listRevisionsByPageMock,
-  getPageBySlug: mocks.getPageBySlugMock
+  getPageBySlugInSpace: mocks.getPageBySlugInSpaceMock
 }))
 
 vi.mock('@/arkiv/queries/links', () => ({
@@ -20,7 +20,7 @@ import { editPage } from '@/arkiv/mutations/pages'
 describe('editPage mutation flow', () => {
   beforeEach(() => {
     mocks.listRevisionsByPageMock.mockReset()
-    mocks.getPageBySlugMock.mockReset()
+    mocks.getPageBySlugInSpaceMock.mockReset()
     mocks.listOutgoingLinksMock.mockReset()
   })
 
@@ -31,7 +31,7 @@ describe('editPage mutation flow', () => {
         entityKey: '0xdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd'
       }
     ])
-    mocks.getPageBySlugMock.mockResolvedValue({
+    mocks.getPageBySlugInSpaceMock.mockResolvedValue({
       entityKey: '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'
     })
 

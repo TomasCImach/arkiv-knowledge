@@ -132,9 +132,21 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - CI uploads evidence artifacts when present without failing the main verify gate.
 - Submission traceability is explicit and maintained with project docs.
 
+### Phase 13 — Canonical Identity + Slug Integrity (Iteration 20)
+- [x] Added deterministic canonical selectors for slug collisions in space/page reads.
+- [x] Re-anchored space/page browse queries on canonical `spaceKey` after slug resolution.
+- [x] Added create-time collision guards for duplicate `spaceSlug` and duplicate `(spaceKey,pageSlug)`.
+- [x] Added integration coverage for canonical selection and conflict guard behavior.
+
+**Exit criteria status:** met.
+- Canonical route reads are deterministic when duplicate slugs exist.
+- Space/page listing and lookup paths now prefer `spaceKey` anchoring over slug-only scope.
+- Duplicate create attempts fail early with explicit operator-facing messages.
+
 ## Current Verification Snapshot
-- Last full pass: `pnpm verify` on 2026-02-25 (post iteration 19 evidence-pack rollout).
+- Last full pass: `pnpm verify` on 2026-03-01 (post iteration 20 canonical-integrity rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
+- Added passing integrity coverage for canonical selection + duplicate guards (`tests/integration/canonical-resolution.test.ts`, `tests/integration/create-conflict-guards.test.ts`).
 - Live write proof: `pnpm seed:demo` completed on Kaolin with funded key, creating/reading `arkiv-demo` and demo pages.
 - Client tx observability: browser console now logs each wallet prompt under `[arkiv-tx:*]` and presence heartbeat lifecycle under `[presence-heartbeat]`.
 - Evidence capture proof: `pnpm evidence:capture` generated deterministic screenshots and status report (`ARTIFACT_INDEX.md` + `report.json`).
@@ -147,3 +159,6 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 ## Plan V1 (2026-02-25)
 - See [planV1.md](/Users/tomas/Dev/Personal/arkiv-knowledge/planV1.md) for the next rubric-weighted iteration sequence.
 - Priority order executed: space settings -> true page hierarchy -> query/discovery depth -> ownership transfer depth -> judge evidence pack (complete).
+
+## Plan V2 (2026-03-01)
+- See [planV2.md](/Users/tomas/Dev/Personal/arkiv-knowledge/planV2.md) for the next score-lift sequence focused on data integrity, lifecycle correctness, and submission hardening.

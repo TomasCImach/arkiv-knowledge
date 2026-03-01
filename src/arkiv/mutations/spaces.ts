@@ -1,6 +1,7 @@
 import type { Hex } from 'viem'
 import type { ArkivWriteClient } from '@/arkiv/clients'
 import { transferEntityOwnership } from '@/arkiv/mutations/ownership'
+import { getSpaceBySlug } from '@/arkiv/queries/spaces'
 import { buildSpaceCreateEntity, buildSpaceUpdateEntity } from '@/arkiv/schema'
 import type { SpaceStatus, SpaceVisibility } from '@/arkiv/types'
 import { nowIso, nowMs } from '@/lib/time'
@@ -23,6 +24,11 @@ export type UpdateSpaceInput = {
 }
 
 export async function createSpace(client: ArkivWriteClient, input: CreateSpaceInput): Promise<{ entityKey: Hex; txHash: Hex }> {
+  const existingSpace = await getSpaceBySlug(input.spaceSlug)
+  if (existingSpace) {
+    throw new Error(`Space slug "${input.spaceSlug}" already exists. Choose a different slug.`)
+  }
+
   const timestamp = nowIso()
   const updatedAtMs = nowMs()
 

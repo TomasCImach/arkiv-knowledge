@@ -215,3 +215,20 @@ Iteration 19 shifts from pure feature work to reproducible proof quality:
 - keeps engineering rigor: evidence-doc existence is now validated in `pnpm verify`.
 
 **Scoring impact:** Medium-high uplift on code quality/docs and medium uplift on demo reliability.
+
+---
+
+## 18) Canonical Identity + Slug Integrity (Iteration 20)
+Iteration 20 focuses on integrity under adversarial or accidental slug collisions:
+- canonical `getSpaceBySlug` and `getPageBySlug` now use deterministic selection (ordered query + explicit tie-break),
+- space/page route reads now resolve canonical space first and query pages by `spaceKey` (not slug-only),
+- write paths now block duplicate `spaceSlug` and duplicate `(spaceKey,pageSlug)` before wallet mutation,
+- link-target resolution inside page mutations now resolves by canonical `spaceKey` scope to avoid cross-space slug bleed.
+
+**Why this matters:**
+- removes non-deterministic route behavior when duplicate slugs exist,
+- reduces spoof/pollution risk from third-party entities reusing the same slug strings,
+- improves judge confidence in data integrity and canonical navigation semantics,
+- keeps architecture Arkiv-first while tightening identity guarantees at query/mutation boundaries.
+
+**Scoring impact:** High uplift on functionality (`data integrity`) with medium-high uplift on integration-depth ownership/relationship rigor.

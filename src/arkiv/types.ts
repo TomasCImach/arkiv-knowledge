@@ -118,6 +118,7 @@ export type PageParentMode = 'all' | 'root' | 'child'
 export type PageSortMode = 'updated_desc' | 'updated_asc' | 'title_asc'
 
 export type PageSearchInput = {
+  spaceKey?: Hex
   spaceSlug: string
   status?: PageStatus
   q?: string
@@ -127,6 +128,7 @@ export type PageSearchInput = {
 }
 
 export type GlobalPageSearchInput = {
+  spaceKey?: Hex
   spaceSlug?: string
   status?: PageStatus
   q?: string

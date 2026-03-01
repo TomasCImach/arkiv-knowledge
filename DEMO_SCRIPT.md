@@ -23,18 +23,20 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 ### 2) Wallet-Gated Write
 - Connect wallet.
 - Create a new space at `/new/space`.
+- Try creating the same space slug again and show duplicate guard message.
 - Open `/spaces/[spaceSlug]/settings` and update description/visibility.
 - In the same settings route, transfer space ownership to a second wallet address (or explain and show owner-only guard if single wallet demo).
 - Verbalize: “Settings are readable by anyone, but only owner wallet can update.”
 - Create a root page at `/spaces/[spaceSlug]/new`.
 - Create a second page and set parent to the first page.
+- Try creating a second page with the same slug in the same space and show conflict guard.
 - Verbalize: “Wallet is required only for writes, and canonical authoring/transfer actions are owner-gated.”
 
 ### 3) Lifecycle Depth (Canonical + Revisions)
 - Open page edit at `/spaces/[spaceSlug]/[pageSlug]/edit`.
 - Edit and save twice.
 - Show canonical page key stays constant while revision list grows.
-- Verbalize: “Saves use mutate flow: canonical update + append-only revision.”
+- Verbalize: “Saves use mutate flow: canonical update + append-only revision, and reads are anchored to canonical space key.”
 
 ### 4) Ownership Handoff
 - On page detail route, use transfer form to transfer canonical page ownership.

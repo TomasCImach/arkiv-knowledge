@@ -7,6 +7,30 @@ import { parsePageEntity, parseRevisionEntity } from '@/arkiv/schema/parser'
 import { ENTITY_TYPES, type GlobalPageSearchInput, type PageSearchInput, type PageSortMode, type ParsedPage, type ParsedRevision } from '@/arkiv/types'
 import { tokenizeForSearch } from '@/lib/text'
 
+function compareCanonicalPages(a: ParsedPage, b: ParsedPage): number {
+  if (a.updatedAtMs !== b.updatedAtMs) {
+    return b.updatedAtMs - a.updatedAtMs
+  }
+
+  const updatedAtA = Date.parse(a.payload.updatedAt)
+  const updatedAtB = Date.parse(b.payload.updatedAt)
+  const hasUpdatedAtA = Number.isFinite(updatedAtA)
+  const hasUpdatedAtB = Number.isFinite(updatedAtB)
+  if (hasUpdatedAtA && hasUpdatedAtB && updatedAtA !== updatedAtB) {
+    return updatedAtB - updatedAtA
+  }
+
+  return a.entityKey.localeCompare(b.entityKey)
+}
+
+function selectCanonicalPage(pages: ParsedPage[]): ParsedPage | null {
+  if (pages.length === 0) {
+    return null
+  }
+
+  return pages.slice().sort(compareCanonicalPages)[0] ?? null
+}
+
 export async function listPagesBySpace(spaceSlug: string, context?: QueryContext): Promise<ParsedPage[]> {
   const client = getQueryClient(context)
   const result = await client
@@ -15,6 +39,20 @@ export async function listPagesBySpace(spaceSlug: string, context?: QueryContext
     .withPayload(true)
     .withMetadata(true)
     .where(and([eq('type', ENTITY_TYPES.page), eq('schemaVersion', '1'), eq('spaceSlug', spaceSlug)]))
+    .orderBy(updatedDesc())
+    .fetch()
+
+  return result.entities.map(parsePageEntity).slice(0, 100)
+}
+
+export async function listPagesBySpaceKey(spaceKey: Hex, context?: QueryContext): Promise<ParsedPage[]> {
+  const client = getQueryClient(context)
+  const result = await client
+    .buildQuery()
+    .withAttributes(true)
+    .withPayload(true)
+    .withMetadata(true)
+    .where(and([eq('type', ENTITY_TYPES.page), eq('schemaVersion', '1'), eq('spaceKey', spaceKey)]))
     .orderBy(updatedDesc())
     .fetch()
 
@@ -36,13 +74,31 @@ export async function getPageBySlug(spaceSlug: string, pageSlug: string, context
         eq('pageSlug', pageSlug)
       ])
     )
+    .orderBy(updatedDesc())
     .fetch()
 
-  if (result.entities.length === 0) {
-    return null
-  }
+  return selectCanonicalPage(result.entities.map(parsePageEntity))
+}
 
-  return parsePageEntity(result.entities[0])
+export async function getPageBySlugInSpace(spaceKey: Hex, pageSlug: string, context?: QueryContext): Promise<ParsedPage | null> {
+  const client = getQueryClient(context)
+  const result = await client
+    .buildQuery()
+    .withAttributes(true)
+    .withPayload(true)
+    .withMetadata(true)
+    .where(
+      and([
+        eq('type', ENTITY_TYPES.page),
+        eq('schemaVersion', '1'),
+        eq('spaceKey', spaceKey),
+        eq('pageSlug', pageSlug)
+      ])
+    )
+    .orderBy(updatedDesc())
+    .fetch()
+
+  return selectCanonicalPage(result.entities.map(parsePageEntity))
 }
 
 export async function listRevisionsByPage(pageKey: Hex, context?: QueryContext): Promise<ParsedRevision[]> {
@@ -64,6 +120,10 @@ export function buildGlobalPageSearchPredicates(input: GlobalPageSearchInput): P
     eq('type', ENTITY_TYPES.page),
     eq('schemaVersion', '1')
   ]
+
+  if (input.spaceKey) {
+    predicates.push(eq('spaceKey', input.spaceKey))
+  }
 
   if (input.spaceSlug) {
     predicates.push(eq('spaceSlug', input.spaceSlug))

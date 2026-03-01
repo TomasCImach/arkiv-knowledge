@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const mocks = vi.hoisted(() => ({
   listRevisionsByPageMock: vi.fn(),
-  getPageBySlugMock: vi.fn(),
+  getPageBySlugInSpaceMock: vi.fn(),
   listOutgoingLinksMock: vi.fn()
 }))
 
 vi.mock('@/arkiv/queries/pages', () => ({
   listRevisionsByPage: mocks.listRevisionsByPageMock,
-  getPageBySlug: mocks.getPageBySlugMock
+  getPageBySlugInSpace: mocks.getPageBySlugInSpaceMock
 }))
 
 vi.mock('@/arkiv/queries/links', () => ({
@@ -27,7 +27,7 @@ function findAttr(
 describe('page mutation parent write path', () => {
   beforeEach(() => {
     mocks.listRevisionsByPageMock.mockReset()
-    mocks.getPageBySlugMock.mockReset()
+    mocks.getPageBySlugInSpaceMock.mockReset()
     mocks.listOutgoingLinksMock.mockReset()
   })
 

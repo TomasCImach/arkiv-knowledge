@@ -74,4 +74,22 @@ describe('query-first search predicate builder', () => {
       ])
     )
   })
+
+  it('includes canonical space key predicate when provided', () => {
+    const predicates = buildPageSearchPredicates({
+      spaceKey: '0x1111111111111111111111111111111111111111111111111111111111111111',
+      spaceSlug: 'alpha',
+      q: 'arkiv'
+    })
+
+    expect(predicates).toEqual(
+      expect.arrayContaining([
+        {
+          type: 'eq',
+          key: 'spaceKey',
+          value: '0x1111111111111111111111111111111111111111111111111111111111111111'
+        }
+      ])
+    )
+  })
 })

@@ -9,10 +9,10 @@ import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
 import { TransferOwnershipForm } from '@/app/_components/transfer-ownership-form'
 import {
   fetchCurrentBlock,
-  getPageBySlug,
+  getPageBySlugInSpace,
   getSpaceBySlug,
   listBacklinks,
-  listPagesBySpace,
+  listPagesBySpaceKey,
   listPresenceForPage,
   listRevisionsByPage
 } from '@/arkiv/queries'
@@ -29,10 +29,14 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
   let page
   let spacePages: ParsedPage[] = []
   try {
-    ;[space, page, spacePages] = await Promise.all([
-      getSpaceBySlug(spaceSlug),
-      getPageBySlug(spaceSlug, pageSlug),
-      listPagesBySpace(spaceSlug)
+    space = await getSpaceBySlug(spaceSlug)
+    if (!space) {
+      notFound()
+    }
+
+    ;[page, spacePages] = await Promise.all([
+      getPageBySlugInSpace(space.entityKey, pageSlug),
+      listPagesBySpaceKey(space.entityKey)
     ])
   } catch (error) {
     const message = formatReadError(error)

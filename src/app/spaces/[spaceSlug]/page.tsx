@@ -8,7 +8,7 @@ import { PageTreeNav } from '@/app/_components/page-tree-nav'
 import { QueryDebugPanel } from '@/app/_components/query-debug-panel'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
 import { SpaceSearchForm } from '@/app/_components/space-search-form'
-import { buildPageSearchPredicates, fetchCurrentBlock, getSpaceBySlug, listPagesBySpace, searchPages } from '@/arkiv/queries'
+import { buildPageSearchPredicates, fetchCurrentBlock, getSpaceBySlug, listPagesBySpaceKey, searchPages } from '@/arkiv/queries'
 import type { PageParentMode, PageSortMode, PageStatus, ParsedPage } from '@/arkiv/types'
 import { formatReadError } from '@/lib/wallet'
 
@@ -68,9 +68,10 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
   try {
     const [block, indexedPages, filteredPages] = await Promise.all([
       fetchCurrentBlock(),
-      listPagesBySpace(spaceSlug),
+      listPagesBySpaceKey(space.entityKey),
       hasActiveQuery
         ? searchPages({
+            spaceKey: space.entityKey,
             spaceSlug,
             q,
             status: status || undefined,
@@ -92,6 +93,7 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
   }
 
   const activePredicates = buildPageSearchPredicates({
+    spaceKey: space.entityKey,
     spaceSlug,
     q,
     status: status || undefined,
@@ -154,6 +156,7 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
         <QueryDebugPanel
           title="Space Query Debug"
           summary={{
+            spaceKey: space.entityKey,
             spaceSlug,
             q: q || '(empty)',
             status: status || '(any)',

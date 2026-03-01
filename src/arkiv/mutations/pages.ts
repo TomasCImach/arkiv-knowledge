@@ -2,7 +2,7 @@ import type { Hex } from 'viem'
 import type { ArkivWriteClient } from '@/arkiv/clients'
 import { transferEntityOwnership } from '@/arkiv/mutations/ownership'
 import { listOutgoingLinks } from '@/arkiv/queries/links'
-import { getPageBySlug, listRevisionsByPage } from '@/arkiv/queries/pages'
+import { getPageBySlugInSpace, listRevisionsByPage } from '@/arkiv/queries/pages'
 import {
   buildLinkCreateEntity,
   buildPageCreateEntity,
@@ -25,10 +25,10 @@ export type SavePageInput = {
   parentPageKey?: Hex
 }
 
-async function resolveLinkTargetPages(spaceSlug: string, targetSlugs: string[]) {
+async function resolveLinkTargetPages(spaceKey: Hex, targetSlugs: string[]) {
   const resolved = await Promise.all(
     targetSlugs.map(async (targetSlug) => {
-      const page = await getPageBySlug(spaceSlug, targetSlug)
+      const page = await getPageBySlugInSpace(spaceKey, targetSlug)
       if (!page) {
         return null
       }
@@ -48,6 +48,11 @@ function buildSearchTokens(title: string, summary: string, bodyMarkdown: string)
 }
 
 export async function createPage(client: ArkivWriteClient, input: SavePageInput): Promise<{ pageKey: Hex; txHash: Hex }> {
+  const existingPage = await getPageBySlugInSpace(input.spaceKey, input.pageSlug)
+  if (existingPage) {
+    throw new Error(`Page slug "${input.pageSlug}" already exists in this space. Choose a different slug.`)
+  }
+
   const timestamp = nowIso()
   const updatedAtMs = nowMs()
   const searchTokens = buildSearchTokens(input.title, input.summary, input.bodyMarkdown)
@@ -94,7 +99,6 @@ export async function createPage(client: ArkivWriteClient, input: SavePageInput)
 
   const links = await buildLinkCreatesForBody({
     spaceKey: input.spaceKey,
-    spaceSlug: input.spaceSlug,
     fromPageKey: createdPage.entityKey,
     fromPageSlug: input.pageSlug,
     bodyMarkdown: input.bodyMarkdown
@@ -161,7 +165,6 @@ export async function editPage(client: ArkivWriteClient, input: EditPageInput): 
   const outgoingLinks = await listOutgoingLinks(input.pageKey)
   const newLinkCreates = await buildLinkCreatesForBody({
     spaceKey: input.spaceKey,
-    spaceSlug: input.spaceSlug,
     fromPageKey: input.pageKey,
     fromPageSlug: input.pageSlug,
     bodyMarkdown: input.bodyMarkdown
@@ -182,7 +185,6 @@ export async function editPage(client: ArkivWriteClient, input: EditPageInput): 
 
 type BuildLinkCreatesForBodyInput = {
   spaceKey: Hex
-  spaceSlug: string
   fromPageKey: Hex
   fromPageSlug: string
   bodyMarkdown: string
@@ -194,7 +196,7 @@ async function buildLinkCreatesForBody(input: BuildLinkCreatesForBodyInput) {
     return []
   }
 
-  const resolvedTargets = await resolveLinkTargetPages(input.spaceSlug, linkTargets)
+  const resolvedTargets = await resolveLinkTargetPages(input.spaceKey, linkTargets)
   const timestamp = nowMs()
 
   return resolvedTargets.map((target) =>
