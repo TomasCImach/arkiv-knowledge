@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { ExtendEntityButton } from '@/app/_components/extend-entity-button'
 import { PageTreeNav } from '@/app/_components/page-tree-nav'
+import { PageLifecycleForm } from '@/app/_components/page-lifecycle-form'
 import { PageMarkdown } from '@/app/_components/page-markdown'
 import { PresencePanel } from '@/app/_components/presence-panel'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
@@ -150,6 +151,8 @@ export default async function PageRoute({
           </div>
           <p className="subtitle">Editing and ownership transfer are owner-only actions. Public read remains open.</p>
         </div>
+
+        <PageLifecycleForm page={page} viewer={viewer} />
 
         <div className="card stack">
           <h3 style={{ margin: 0 }}>Transfer Page Ownership</h3>

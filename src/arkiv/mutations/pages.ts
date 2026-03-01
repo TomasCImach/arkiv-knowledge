@@ -1,8 +1,9 @@
 import type { Hex } from 'viem'
 import type { ArkivWriteClient } from '@/arkiv/clients'
 import { transferEntityOwnership } from '@/arkiv/mutations/ownership'
-import { listOutgoingLinks } from '@/arkiv/queries/links'
+import { listBacklinks, listOutgoingLinks } from '@/arkiv/queries/links'
 import { getPageBySlugInSpace, listRevisionsByPage } from '@/arkiv/queries/pages'
+import { listPresenceForPage } from '@/arkiv/queries/presence'
 import {
   buildLinkCreateEntity,
   buildPageCreateEntity,
@@ -314,4 +315,82 @@ export async function transferPageOwnership(
   newOwner: Hex
 ): Promise<{ entityKey: Hex; txHash: Hex }> {
   return transferEntityOwnership(client, pageKey, newOwner)
+}
+
+export type ArchivePageInput = {
+  spaceKey: Hex
+  spaceSlug: string
+  pageKey: Hex
+  pageSlug: string
+  title: string
+  bodyMarkdown: string
+  summary: string
+  editor: Hex
+  parentPageKey?: Hex
+  createdAt?: string
+  editSummary?: string
+}
+
+export async function archivePage(client: ArkivWriteClient, input: ArchivePageInput) {
+  return editPage(client, {
+    spaceKey: input.spaceKey,
+    spaceSlug: input.spaceSlug,
+    pageKey: input.pageKey,
+    pageSlug: input.pageSlug,
+    title: input.title,
+    bodyMarkdown: input.bodyMarkdown,
+    summary: input.summary,
+    status: 'archived',
+    editor: input.editor,
+    parentPageKey: input.parentPageKey,
+    createdAt: input.createdAt,
+    editSummary: input.editSummary ?? 'Archived page'
+  })
+}
+
+export type DeletePageWithCleanupResult = {
+  pageKey: Hex
+  txHash: Hex
+  deletedKeys: Hex[]
+  deletedCounts: {
+    revisions: number
+    links: number
+    presence: number
+  }
+}
+
+export async function deletePageWithCleanup(
+  client: ArkivWriteClient,
+  pageKey: Hex
+): Promise<DeletePageWithCleanupResult> {
+  const [revisions, outgoingLinks, incomingLinks, presenceRecords] = await Promise.all([
+    listRevisionsByPage(pageKey),
+    listOutgoingLinks(pageKey),
+    listBacklinks(pageKey),
+    listPresenceForPage(pageKey)
+  ])
+
+  const uniqueKeys = new Set<Hex>([
+    pageKey,
+    ...revisions.map((revision) => revision.entityKey),
+    ...outgoingLinks.map((link) => link.entityKey),
+    ...incomingLinks.map((link) => link.entityKey),
+    ...presenceRecords.map((presence) => presence.entityKey)
+  ])
+  const deletedKeys = Array.from(uniqueKeys)
+
+  const mutation = await client.mutateEntities({
+    deletes: deletedKeys.map((entityKey) => ({ entityKey }))
+  })
+
+  return {
+    pageKey,
+    txHash: mutation.txHash,
+    deletedKeys,
+    deletedCounts: {
+      revisions: revisions.length,
+      links: outgoingLinks.length + incomingLinks.length,
+      presence: presenceRecords.length
+    }
+  }
 }
