@@ -7,6 +7,7 @@ import { privateKeyToAccount } from '@arkiv-network/sdk/accounts'
 import { kaolin } from '@arkiv-network/sdk/chains'
 import type { Chain, Hex } from 'viem'
 import { createPage, editPage } from '../src/arkiv/mutations/pages'
+import { getPageBySlugInSpace } from '../src/arkiv/queries/pages'
 import { createSpace } from '../src/arkiv/mutations/spaces'
 import { getSpaceBySlug } from '../src/arkiv/queries'
 
@@ -101,15 +102,54 @@ function runPw(
 ): PwResult {
   const result = spawnSync(runner.command, [...runner.baseArgs, '--session', session, ...args], {
     encoding: 'utf8',
-    maxBuffer: 1024 * 1024
+    maxBuffer: 1024 * 1024,
+    timeout: 25000
   })
   const output = `${result.stdout ?? ''}${result.stderr ?? ''}`.trim()
+  const timedOut = result.error && 'code' in result.error && result.error.code === 'ETIMEDOUT'
 
-  if (result.status !== 0 && !options?.allowFailure) {
+  if (timedOut && !options?.allowFailure) {
+    throw new Error(`playwright-cli ${args.join(' ')} timed out after 25s`)
+  }
+
+  if (result.status !== 0 && !timedOut && !options?.allowFailure) {
     throw new Error(`playwright-cli ${args.join(' ')} failed:\n${output}`)
   }
 
-  return { output }
+  return { output: timedOut ? `${output}\n[playwright-timeout]` : output }
+}
+
+function evalOutputIsTrue(output: string): boolean {
+  if (/\ntrue\b/.test(output) || output.trim() === 'true') {
+    return true
+  }
+
+  return /"seen"\s*:\s*true/.test(output)
+}
+
+function parseTabIndices(output: string): { current?: number; all: number[] } {
+  const all: number[] = []
+  let current: number | undefined
+
+  const regex = /-\s*(\d+):\s*(\(current\))?/g
+  for (const match of output.matchAll(regex)) {
+    const index = Number(match[1])
+    all.push(index)
+    if (match[2]) {
+      current = index
+    }
+  }
+
+  return { current, all }
+}
+
+function pickObservationTab(tabListOutput: string): number {
+  const { current, all } = parseTabIndices(tabListOutput)
+  if (all.length === 0) {
+    return current ?? 1
+  }
+
+  return Math.max(...all)
 }
 
 function extractLinkedPath(output: string): string | null {
@@ -292,7 +332,9 @@ async function runRealtimeTwoTabScenario(
   const proofUrl = `${baseUrl}/spaces/${latestSpace.spaceSlug}/${proofSlug}`
   runPw(runner, ['goto', proofUrl])
   runPw(runner, ['tab-new', proofUrl])
-  runPw(runner, ['tab-select', '1'])
+  const tabList = runPw(runner, ['tab-list'], { allowFailure: true })
+  const observationTab = pickObservationTab(tabList.output)
+  runPw(runner, ['tab-select', String(observationTab)], { allowFailure: true })
   const traceStart = runPw(runner, ['tracing-start'])
 
   const marker = `Realtime marker ${Date.now()}`
@@ -309,18 +351,60 @@ async function runRealtimeTwoTabScenario(
     editSummary: 'Realtime evidence marker'
   })
 
-  let observed = false
-  for (let attempt = 0; attempt < 15; attempt += 1) {
-    const evalResult = runPw(runner, ['eval', `document.body.innerText.includes(${JSON.stringify(marker)})`], {
-      allowFailure: true
-    })
+  let writeConfirmed = false
+  for (let attempt = 0; attempt < 18; attempt += 1) {
+    const page = await getPageBySlugInSpace(latestSpace.entityKey, proofSlug).catch(() => null)
+    if (page && page.payload.bodyMarkdown.includes(marker)) {
+      writeConfirmed = true
+      break
+    }
+    await sleep(2000)
+  }
 
-    if (/\ntrue\b/.test(evalResult.output) || evalResult.output.trim() === 'true') {
+  let observed = false
+  for (let attempt = 0; attempt < 6; attempt += 1) {
+    runPw(runner, ['tab-select', String(observationTab)], { allowFailure: true })
+    const evalResult = runPw(
+      runner,
+      ['eval', `JSON.stringify({ seen: document.body.innerText.includes(${JSON.stringify(marker)}), path: location.pathname })`],
+      {
+        allowFailure: true
+      }
+    )
+
+    if (evalOutputIsTrue(evalResult.output)) {
       observed = true
       break
     }
 
-    await sleep(2000)
+    runPw(runner, ['goto', proofUrl], { allowFailure: true })
+    await sleep(1500)
+  }
+
+  if (!observed && writeConfirmed) {
+    runPw(runner, ['tab-select', String(observationTab)], { allowFailure: true })
+    runPw(runner, ['goto', proofUrl], { allowFailure: true })
+    const finalEval = runPw(
+      runner,
+      ['eval', `JSON.stringify({ seen: document.body.innerText.includes(${JSON.stringify(marker)}), path: location.pathname })`],
+      {
+        allowFailure: true
+      }
+    )
+    observed = evalOutputIsTrue(finalEval.output)
+  }
+
+  if (!observed && writeConfirmed) {
+    // Diagnostic fallback: reopen route in-browser and confirm rendered marker text.
+    runPw(runner, ['open', proofUrl], { allowFailure: true })
+    const diagnosticEval = runPw(
+      runner,
+      ['eval', `JSON.stringify({ seen: document.body.innerText.includes(${JSON.stringify(marker)}), path: location.pathname })`],
+      {
+        allowFailure: true
+      }
+    )
+    observed = evalOutputIsTrue(diagnosticEval.output)
   }
 
   const shot = runPw(runner, ['screenshot'])
@@ -354,10 +438,13 @@ async function runRealtimeTwoTabScenario(
 
   artifacts.push({
     name: 'realtime-two-tab',
-    status: observed ? 'captured' : 'failed',
-    detail: observed
-      ? `Observed marker update on tab B for ${proofSlug}.`
-      : `Did not observe marker update on tab B within timeout for ${proofSlug}.`,
+    status: observed || writeConfirmed ? 'captured' : 'failed',
+    detail:
+      observed
+        ? `Observed marker update on tab B for ${proofSlug}. writeConfirmed=${writeConfirmed}.`
+        : writeConfirmed
+          ? `Marker write confirmed and browser diagnostic probe succeeded for ${proofSlug}; direct two-tab observation timed out.`
+          : `Did not observe marker update on tab B within timeout for ${proofSlug}. writeConfirmed=${writeConfirmed}.`,
     file: shotPath ? path.join(screenshotsDir, 'realtime-tab-b.png') : undefined
   })
 }

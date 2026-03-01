@@ -1,0 +1,52 @@
+name: Evidence Strict
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+
+jobs:
+  strict-evidence:
+    runs-on: ubuntu-latest
+    env:
+      ARKIV_DEMO_PRIVATE_KEY: ${{ secrets.ARKIV_DEMO_PRIVATE_KEY }}
+      ARKIV_CHAIN: ${{ secrets.ARKIV_CHAIN }}
+      ARKIV_RPC_URL: ${{ secrets.ARKIV_RPC_URL }}
+      NEXT_PUBLIC_ARKIV_CHAIN: ${{ secrets.ARKIV_CHAIN }}
+      NEXT_PUBLIC_ARKIV_RPC_URL: ${{ secrets.ARKIV_RPC_URL }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.19.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Require funded demo key
+        run: |
+          if [ -z "$ARKIV_DEMO_PRIVATE_KEY" ]; then
+            echo "ARKIV_DEMO_PRIVATE_KEY is required for strict evidence run."
+            exit 1
+          fi
+
+      - name: Capture Evidence Pack (strict)
+        run: EVIDENCE_FAIL_SOFT=0 pnpm evidence:capture
+
+      - name: Upload Evidence Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidence-pack-strict
+          path: output/playwright/evidence-pack
+          if-no-files-found: ignore
