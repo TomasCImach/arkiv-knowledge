@@ -232,3 +232,24 @@ Iteration 20 focuses on integrity under adversarial or accidental slug collision
 - keeps architecture Arkiv-first while tightening identity guarantees at query/mutation boundaries.
 
 **Scoring impact:** High uplift on functionality (`data integrity`) with medium-high uplift on integration-depth ownership/relationship rigor.
+
+---
+
+## 19) Lifecycle Correctness Hardening (Iteration 21)
+Iteration 21 closes lifecycle integrity gaps in canonical page mutations:
+- `editPage` now preserves canonical `payload.createdAt` and updates only `updatedAt`,
+- revision numbering now derives from `max(revisionNo)+1` instead of total count,
+- create-page two-step writes (`createEntity` -> follow-up `mutateEntities`) now have an explicit compensation path:
+  - log failure context,
+  - attempt to repair missing initial revision,
+  - attempt best-effort link re-creation,
+  - return recovered tx when revision integrity is restored,
+  - otherwise throw actionable operator guidance.
+
+**Why this matters:**
+- prevents lifecycle metadata drift on every edit,
+- avoids revision number collisions in sparse histories,
+- reduces orphaned canonical pages when follow-up mutations fail mid-flow,
+- makes recovery behavior deterministic and judge-observable rather than silent.
+
+**Scoring impact:** Medium-high uplift on functionality (`data integrity`) and medium uplift on integration-depth lifecycle maturity.

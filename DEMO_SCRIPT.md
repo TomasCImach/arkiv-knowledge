@@ -36,7 +36,8 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - Open page edit at `/spaces/[spaceSlug]/[pageSlug]/edit`.
 - Edit and save twice.
 - Show canonical page key stays constant while revision list grows.
-- Verbalize: “Saves use mutate flow: canonical update + append-only revision, and reads are anchored to canonical space key.”
+- Confirm page `createdAt` stays stable while only `updatedAt` changes.
+- Verbalize: “Saves use mutate flow: canonical update + append-only revision, reads are anchored to canonical space key, and revision numbers are monotonic.”
 
 ### 4) Ownership Handoff
 - On page detail route, use transfer form to transfer canonical page ownership.

@@ -248,3 +248,14 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - verification: `pnpm test`, `pnpm test:e2e`, `pnpm typecheck`, `pnpm build`.
   - demo step: attempt duplicate space/page slug creation (blocked), then browse `/spaces/[spaceSlug]/[pageSlug]` showing canonical `spaceKey`-scoped reads.
 - **Next bottleneck:** preserve `kb.page.payload.createdAt` on edit and harden revision sequencing under concurrent writes (Iteration 21).
+
+### 2026-03-01 — Iteration 21 (Lifecycle Correctness Hardening)
+- **Objective:** fix page lifecycle metadata drift and harden revision sequencing + create-flow recovery.
+- **Implemented:** `editPage` now preserves canonical `createdAt`; revision numbering now derives from `max(revisionNo)+1`; and `createPage` now includes follow-up mutation compensation (failure logging + revision repair attempt + best-effort link repair + actionable failure guidance).
+- **Rubric targets:** functionality (`data integrity`, primary) / integration (`advanced lifecycle behavior`, secondary).
+- **Expected score delta:** medium-high.
+- **Evidence:**
+  - tests: updated `tests/integration/edit-page-mutate.test.ts` (createdAt stability + revision sequencing), added `tests/integration/create-page-repair.test.ts` (repair success/failure paths).
+  - verification: `pnpm test`, `pnpm test:e2e`, `pnpm typecheck`, `pnpm build`, `pnpm verify`.
+  - demo step: edit same page twice and show stable created timestamp + monotonic revisions; mention create-flow repair behavior for failed follow-up mutation scenarios.
+- **Next bottleneck:** enforce `public/unlisted/private` visibility semantics consistently across read/query routes (Iteration 22).

@@ -5,6 +5,7 @@ Arkiv-first documentation app built for the Arkiv Builders Challenge.
 ## Why This App Scores Well
 - Core domain data is stored in Arkiv entities (`kb.space`, `kb.page`, `kb.revision`, `kb.link`, `kb.presence`).
 - Canonical page updates use `updateEntity` semantics through `mutateEntities`, while revisions remain append-only.
+- Page edits preserve canonical `createdAt` and bump revisions using `max(revisionNo)+1`.
 - Relationships are persisted as first-class link entities (`kb.link`) and rendered via query results.
 - Expiration is intentional per entity type, with owner extension controls and short-lived presence entities.
 - Browsing is public (no wallet). Wallet connection is required only for writes.
@@ -116,6 +117,7 @@ pnpm verify:phase all      # file-level phase verification
 ## Testing
 - Unit: schema contracts, parser behavior, expiration policy, link extraction, hierarchy tree logic, ownership permission rules
 - Integration: query predicate generation (including parent-mode + global search filters), canonical update + revision + link rewrite mutation path, parentPageKey write path, ownership transfer mutation contract
+- Integration: create-flow repair behavior for failed follow-up mutations (canonical page created, revision/link repair attempted)
 - E2E (component-level): no-wallet read / wallet-gated write boundary + owner/non-owner settings gating + parent selector/guard behavior + ownership transfer handoff + filter serialization (`owner`, `sort`, `parent`, `status`, `q`)
 - Live smoke (optional): create + read-back against Arkiv network
 

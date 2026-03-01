@@ -143,10 +143,22 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Space/page listing and lookup paths now prefer `spaceKey` anchoring over slug-only scope.
 - Duplicate create attempts fail early with explicit operator-facing messages.
 
+### Phase 14 — Lifecycle Correctness Hardening (Iteration 21)
+- [x] Page edits now preserve canonical `payload.createdAt` instead of resetting it.
+- [x] Revision sequencing now uses `max(revisionNo)+1` instead of list length.
+- [x] Added compensation path for create-page follow-up mutation failures (log + repair attempt).
+- [x] Added integration coverage for createdAt stability, revision sequencing, and repair behavior.
+
+**Exit criteria status:** met.
+- Canonical page lifecycle metadata remains stable across edits.
+- Revision numbering remains monotonic even with sparse/out-of-order history.
+- Two-step create flow now has explicit recovery behavior when revision/link follow-up fails.
+
 ## Current Verification Snapshot
-- Last full pass: `pnpm verify` on 2026-03-01 (post iteration 20 canonical-integrity rollout).
+- Last full pass: `pnpm verify` on 2026-03-01 (post iteration 21 lifecycle-hardening rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
 - Added passing integrity coverage for canonical selection + duplicate guards (`tests/integration/canonical-resolution.test.ts`, `tests/integration/create-conflict-guards.test.ts`).
+- Added lifecycle hardening coverage (`tests/integration/edit-page-mutate.test.ts`, `tests/integration/create-page-repair.test.ts`).
 - Live write proof: `pnpm seed:demo` completed on Kaolin with funded key, creating/reading `arkiv-demo` and demo pages.
 - Client tx observability: browser console now logs each wallet prompt under `[arkiv-tx:*]` and presence heartbeat lifecycle under `[presence-heartbeat]`.
 - Evidence capture proof: `pnpm evidence:capture` generated deterministic screenshots and status report (`ARTIFACT_INDEX.md` + `report.json`).

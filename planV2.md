@@ -5,7 +5,7 @@ Raise judged score from ~4.2/5 to >=4.6/5 by fixing data-integrity risks first, 
 
 ## Execution Status
 - [x] Iteration 20 — Canonical Identity + Slug Integrity
-- [ ] Iteration 21 — Lifecycle Correctness Hardening
+- [x] Iteration 21 — Lifecycle Correctness Hardening
 - [ ] Iteration 22 — Visibility Enforcement That Matches UI Claims
 - [ ] Iteration 23 — Delete/Archive Lifecycle Completeness
 - [ ] Iteration 24 — Judge-Optimized Submission Assets
@@ -13,7 +13,7 @@ Raise judged score from ~4.2/5 to >=4.6/5 by fixing data-integrity risks first, 
 ## Current Weakness Summary
 1. **Data integrity risk (highest impact):** canonical reads are slug-based and return first match, so duplicate slug collisions can produce non-deterministic results.
 2. **Ownership integrity gap:** page queries are primarily `spaceSlug`-scoped, so third-party writes with copied slugs can pollute browse/search results.
-3. **Lifecycle consistency bug:** page edits overwrite `createdAt` instead of preserving original creation timestamp.
+3. **Lifecycle consistency bug:** page edits overwrite `createdAt` instead of preserving original creation timestamp. (resolved in Iteration 21)
 4. **Visibility semantics gap:** `private`/`unlisted` states are writable but not consistently enforced in read paths.
 5. **Submission packaging gap:** README quality is strong technically but still lacks judge-friendly assets/sections expected for top documentation score.
 
