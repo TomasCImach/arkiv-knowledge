@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { listSpaces } from '@/arkiv/queries'
 import type { ParsedSpace } from '@/arkiv/types'
 import { WalletStatus } from '@/app/_components/wallet-status'
+import { filterListedSpaces } from '@/features/visibility/access'
 import { formatReadError } from '@/lib/wallet'
 
 export async function AppShell({ children }: { children: ReactNode }) {
@@ -14,6 +15,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
   } catch (error) {
     navError = formatReadError(error, 'Could not load spaces.')
   }
+  const listedSpaces = filterListedSpaces(spaces)
 
   return (
     <div className="app-frame">
@@ -48,11 +50,11 @@ export async function AppShell({ children }: { children: ReactNode }) {
             <div className="stack" style={{ gap: '0.4rem' }}>
               <span className="sidebar-label">Spaces</span>
               {navError ? <p className="notice">Sidebar degraded: {navError}</p> : null}
-              {spaces.length === 0 ? (
+              {listedSpaces.length === 0 ? (
                 <p className="subtitle">No spaces yet.</p>
               ) : (
                 <div className="nav-tree">
-                  {spaces.map((space) => (
+                  {listedSpaces.map((space) => (
                     <Link key={space.entityKey} href={`/spaces/${space.spaceSlug}`} className="nav-tree-item">
                       <span>{space.payload.name}</span>
                       <span className="nav-tree-meta">{space.spaceSlug}</span>

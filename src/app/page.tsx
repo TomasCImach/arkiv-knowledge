@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { listSpaces } from '@/arkiv/queries'
 import type { ParsedSpace } from '@/arkiv/types'
+import { filterListedSpaces } from '@/features/visibility/access'
 import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
@@ -15,6 +16,7 @@ export default async function HomePage() {
   } catch (error) {
     loadError = formatReadError(error, 'Failed to load spaces from Arkiv.')
   }
+  const listedSpaces = filterListedSpaces(spaces)
 
   return (
     <section className="stack doc-column">
@@ -35,7 +37,7 @@ export default async function HomePage() {
         {loadError ? <p className="notice">Arkiv read is temporarily unavailable: {loadError}</p> : null}
       </div>
 
-      {spaces.length === 0 ? (
+      {listedSpaces.length === 0 ? (
         <div className="card stack">
           <p className="subtitle">No spaces yet. Connect a wallet and create the first one.</p>
         </div>
@@ -43,9 +45,9 @@ export default async function HomePage() {
         <div className="card stack">
           <div className="toolbar" style={{ justifyContent: 'space-between' }}>
             <h2 style={{ margin: 0 }}>All Spaces</h2>
-            <span className="badge">{spaces.length} total</span>
+            <span className="badge">{listedSpaces.length} total</span>
           </div>
-          {spaces.map((space) => (
+          {listedSpaces.map((space) => (
             <Link key={space.entityKey} href={`/spaces/${space.spaceSlug}`} className="doc-list-item">
               <div className="toolbar doc-list-head">
                 <h2 style={{ margin: 0 }}>{space.payload.name}</h2>

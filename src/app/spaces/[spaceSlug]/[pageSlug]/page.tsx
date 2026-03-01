@@ -18,12 +18,20 @@ import {
 } from '@/arkiv/queries'
 import type { ParsedPage } from '@/arkiv/types'
 import { buildAncestorChain } from '@/features/hierarchy/tree'
+import { canViewSpace, parseViewerAddress } from '@/features/visibility/access'
 import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
 
-export default async function PageRoute({ params }: { params: Promise<{ spaceSlug: string; pageSlug: string }> }) {
+export default async function PageRoute({
+  params,
+  searchParams
+}: {
+  params: Promise<{ spaceSlug: string; pageSlug: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   const { spaceSlug, pageSlug } = await params
+  const query = await searchParams
 
   let space
   let page
@@ -56,6 +64,17 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
   if (!space || !page) {
     notFound()
   }
+  const viewer = parseViewerAddress(query.viewer)
+  if (!canViewSpace(space, viewer)) {
+    notFound()
+  }
+
+  const withViewer = (value: string) => {
+    if (!viewer) {
+      return value
+    }
+    return `${value}${value.includes('?') ? '&' : '?'}viewer=${viewer}`
+  }
 
   const [revisionsResult, backlinksResult, presenceResult, blockResult] = await Promise.allSettled([
     listRevisionsByPage(page.entityKey),
@@ -86,20 +105,20 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
       <aside className="card stack doc-aside">
         <div className="toolbar" style={{ justifyContent: 'space-between' }}>
           <strong>{space.payload.name}</strong>
-          <Link href={`/spaces/${spaceSlug}/new`} className="badge">
+          <Link href={withViewer(`/spaces/${spaceSlug}/new`)} className="badge">
             New Page
           </Link>
         </div>
-        <PageTreeNav spaceSlug={spaceSlug} pages={spacePages} activePageSlug={pageSlug} />
+        <PageTreeNav spaceSlug={spaceSlug} pages={spacePages} activePageSlug={pageSlug} viewer={viewer} />
       </aside>
 
       <div className="stack doc-column">
         <Breadcrumbs
           items={[
             { href: '/', label: 'Knowledge Base' },
-            { href: `/spaces/${spaceSlug}`, label: space.payload.name },
+            { href: withViewer(`/spaces/${spaceSlug}`), label: space.payload.name },
             ...ancestors.map((ancestor) => ({
-              href: `/spaces/${spaceSlug}/${ancestor.pageSlug}`,
+              href: withViewer(`/spaces/${spaceSlug}/${ancestor.pageSlug}`),
               label: ancestor.payload.title
             })),
             { label: page.payload.title }
@@ -115,7 +134,7 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
           <p className="subtitle">{page.payload.summary}</p>
 
           <div className="toolbar">
-            <Link href={`/spaces/${spaceSlug}/${pageSlug}/edit`} className="button">
+            <Link href={withViewer(`/spaces/${spaceSlug}/${pageSlug}/edit`)} className="button">
               Edit Page
             </Link>
             <span className="badge">Canonical key: {page.entityKey.slice(0, 14)}...</span>
@@ -149,7 +168,11 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
             <p className="subtitle">No backlinks currently indexed.</p>
           ) : (
             backlinks.map((link) => (
-              <Link key={link.entityKey} href={`/spaces/${spaceSlug}/${link.payload.sourceSlug}`} className="doc-list-item">
+              <Link
+                key={link.entityKey}
+                href={withViewer(`/spaces/${spaceSlug}/${link.payload.sourceSlug}`)}
+                className="doc-list-item"
+              >
                 <div className="toolbar doc-list-head">
                   <strong>{link.payload.sourceSlug}</strong>
                   <span className="badge">backlink</span>

@@ -10,17 +10,14 @@ import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
 import { SpaceSearchForm } from '@/app/_components/space-search-form'
 import { buildPageSearchPredicates, fetchCurrentBlock, getSpaceBySlug, listPagesBySpaceKey, searchPages } from '@/arkiv/queries'
 import type { PageParentMode, PageSortMode, PageStatus, ParsedPage } from '@/arkiv/types'
+import { canViewSpace, firstQueryValue, parseViewerAddress } from '@/features/visibility/access'
 import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
 
-type SpaceRouteProps = {
+export type SpaceRouteProps = {
   params: Promise<{ spaceSlug: string }>
   searchParams: Promise<Record<string, string | string[] | undefined>>
-}
-
-function firstValue(value: string | string[] | undefined): string {
-  return Array.isArray(value) ? value[0] ?? '' : value ?? ''
 }
 
 export default async function SpacePage({ params, searchParams }: SpaceRouteProps) {
@@ -48,15 +45,26 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
   if (!space) {
     notFound()
   }
+  const viewer = parseViewerAddress(query.viewer)
+  if (!canViewSpace(space, viewer)) {
+    notFound()
+  }
 
-  const q = firstValue(query.q)
-  const status = firstValue(query.status) as PageStatus | ''
-  const parentRaw = firstValue(query.parent)
+  const withViewer = (value: string) => {
+    if (!viewer) {
+      return value
+    }
+    return `${value}${value.includes('?') ? '&' : '?'}viewer=${viewer}`
+  }
+
+  const q = firstQueryValue(query.q)
+  const status = firstQueryValue(query.status) as PageStatus | ''
+  const parentRaw = firstQueryValue(query.parent)
   const parentMode: PageParentMode =
     parentRaw === 'root' || parentRaw === 'child' ? (parentRaw as PageParentMode) : 'all'
-  const ownerRaw = firstValue(query.owner).trim()
+  const ownerRaw = firstQueryValue(query.owner).trim()
   const owner = ownerRaw.length > 0 && isAddress(ownerRaw) ? (ownerRaw as Hex) : undefined
-  const sortRaw = firstValue(query.sort)
+  const sortRaw = firstQueryValue(query.sort)
   const sort: PageSortMode =
     sortRaw === 'updated_asc' || sortRaw === 'title_asc' ? (sortRaw as PageSortMode) : 'updated_desc'
   let currentBlock: bigint | undefined
@@ -111,7 +119,7 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
           <strong>Space Contents</strong>
           <span className="badge">{allPages.length} pages</span>
         </div>
-        <PageTreeNav spaceSlug={spaceSlug} pages={allPages} />
+        <PageTreeNav spaceSlug={spaceSlug} pages={allPages} viewer={viewer} />
       </aside>
 
       <div className="stack doc-column">
@@ -124,10 +132,10 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
           </div>
           <p className="subtitle">{space.payload.description}</p>
           <div className="toolbar">
-            <Link href={`/spaces/${spaceSlug}/new`} className="button">
+            <Link href={withViewer(`/spaces/${spaceSlug}/new`)} className="button">
               New Page
             </Link>
-            <Link href={`/spaces/${spaceSlug}/settings`} className="button secondary">
+            <Link href={withViewer(`/spaces/${spaceSlug}/settings`)} className="button secondary">
               Space Settings
             </Link>
             <span className="badge">Space key: {space.entityKey.slice(0, 14)}...</span>
@@ -178,7 +186,7 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
               <span className="badge">{pages.length} results</span>
             </div>
             {pages.map((page) => (
-              <Link key={page.entityKey} href={`/spaces/${spaceSlug}/${page.pageSlug}`} className="doc-list-item">
+              <Link key={page.entityKey} href={withViewer(`/spaces/${spaceSlug}/${page.pageSlug}`)} className="doc-list-item">
                 <div className="toolbar doc-list-head">
                   <strong>{page.payload.title}</strong>
                   <span className="badge">{page.status}</span>

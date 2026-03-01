@@ -11,9 +11,10 @@ import { formatWalletError, runWritePreflight } from '@/lib/wallet'
 
 type EditSpaceFormProps = {
   space: ParsedSpace
+  viewer?: string
 }
 
-export function EditSpaceForm({ space }: EditSpaceFormProps) {
+export function EditSpaceForm({ space, viewer }: EditSpaceFormProps) {
   const router = useRouter()
   const walletClient = useArkivWalletClient()
   const { address, chainId, isConnected } = useAccount()
@@ -62,7 +63,8 @@ export function EditSpaceForm({ space }: EditSpaceFormProps) {
       })
 
       setStatusText(`Updated (${result.txHash.slice(0, 10)}...)`)
-      router.push(`/spaces/${space.spaceSlug}`)
+      const nextUrl = viewer ? `/spaces/${space.spaceSlug}?viewer=${viewer}` : `/spaces/${space.spaceSlug}`
+      router.push(nextUrl)
       router.refresh()
     } catch (error) {
       console.error('edit-space failed', error)

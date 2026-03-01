@@ -4,15 +4,12 @@ import { isAddress } from 'viem'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { QueryDebugPanel } from '@/app/_components/query-debug-panel'
 import { SpaceSearchForm } from '@/app/_components/space-search-form'
-import { buildGlobalPageSearchPredicates, searchPagesGlobal } from '@/arkiv/queries'
+import { buildGlobalPageSearchPredicates, listSpaces, searchPagesGlobal } from '@/arkiv/queries'
 import type { GlobalPageSearchInput, PageParentMode, PageSortMode, PageStatus, ParsedPage } from '@/arkiv/types'
+import { filterPagesByVisibleSpaces, firstQueryValue, parseViewerAddress } from '@/features/visibility/access'
 import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
-
-function firstValue(value: string | string[] | undefined): string {
-  return Array.isArray(value) ? value[0] ?? '' : value ?? ''
-}
 
 export default async function GlobalPageSearchRoute({
   searchParams
@@ -20,16 +17,17 @@ export default async function GlobalPageSearchRoute({
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const query = await searchParams
-  const q = firstValue(query.q)
-  const status = firstValue(query.status) as PageStatus | ''
-  const parentRaw = firstValue(query.parent)
+  const q = firstQueryValue(query.q)
+  const status = firstQueryValue(query.status) as PageStatus | ''
+  const parentRaw = firstQueryValue(query.parent)
   const parentMode: PageParentMode =
     parentRaw === 'root' || parentRaw === 'child' ? (parentRaw as PageParentMode) : 'all'
-  const ownerRaw = firstValue(query.owner).trim()
+  const ownerRaw = firstQueryValue(query.owner).trim()
   const owner = ownerRaw.length > 0 && isAddress(ownerRaw) ? (ownerRaw as Hex) : undefined
-  const sortRaw = firstValue(query.sort)
+  const sortRaw = firstQueryValue(query.sort)
   const sort: PageSortMode =
     sortRaw === 'updated_asc' || sortRaw === 'title_asc' ? (sortRaw as PageSortMode) : 'updated_desc'
+  const viewer = parseViewerAddress(query.viewer)
 
   const input: GlobalPageSearchInput = {
     q,
@@ -46,7 +44,8 @@ export default async function GlobalPageSearchRoute({
 
   if (hasActiveQuery) {
     try {
-      pages = await searchPagesGlobal(input)
+      const [rawPages, spaces] = await Promise.all([searchPagesGlobal(input), listSpaces(300)])
+      pages = filterPagesByVisibleSpaces(rawPages, spaces, viewer)
     } catch (error) {
       queryError = formatReadError(error, 'Failed to query pages across spaces.')
     }
@@ -54,6 +53,13 @@ export default async function GlobalPageSearchRoute({
 
   if (ownerRaw.length > 0 && !owner) {
     queryError = queryError ? `${queryError} Invalid owner filter ignored.` : 'Invalid owner filter ignored.'
+  }
+
+  const withViewer = (value: string) => {
+    if (!viewer) {
+      return value
+    }
+    return `${value}${value.includes('?') ? '&' : '?'}viewer=${viewer}`
   }
 
   return (
@@ -80,6 +86,7 @@ export default async function GlobalPageSearchRoute({
           status: status || '(any)',
           parentMode,
           owner: owner ?? '(any)',
+          viewer: viewer ?? '(public)',
           sort
         }}
         predicates={activePredicates}
@@ -109,7 +116,7 @@ export default async function GlobalPageSearchRoute({
               <span className="badge">{pages.length} pages</span>
             </div>
             {pages.map((page) => (
-              <Link key={page.entityKey} href={`/spaces/${page.spaceSlug}/${page.pageSlug}`} className="doc-list-item">
+              <Link key={page.entityKey} href={withViewer(`/spaces/${page.spaceSlug}/${page.pageSlug}`)} className="doc-list-item">
                 <div className="toolbar doc-list-head">
                   <strong>{page.payload.title}</strong>
                   <span className="badge">{page.status}</span>
