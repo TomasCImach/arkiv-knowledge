@@ -32,6 +32,7 @@ export function SpaceSearchForm({
     event.preventDefault()
 
     const params = new URLSearchParams(current.toString())
+    params.delete('viewer')
     if (q.trim()) {
       params.set('q', q.trim())
     } else {

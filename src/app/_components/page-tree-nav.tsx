@@ -7,10 +7,9 @@ type PageTreeNavProps = {
   pages: ParsedPage[]
   activePageSlug?: string
   emptyMessage?: string
-  viewer?: string
 }
 
-export function PageTreeNav({ spaceSlug, pages, activePageSlug, emptyMessage = 'No pages created yet.', viewer }: PageTreeNavProps) {
+export function PageTreeNav({ spaceSlug, pages, activePageSlug, emptyMessage = 'No pages created yet.' }: PageTreeNavProps) {
   if (pages.length === 0) {
     return <p className="subtitle">{emptyMessage}</p>
   }
@@ -22,7 +21,7 @@ export function PageTreeNav({ spaceSlug, pages, activePageSlug, emptyMessage = '
       {tree.map(({ page, depth }) => (
         <Link
           key={page.entityKey}
-          href={viewer ? `/spaces/${spaceSlug}/${page.pageSlug}?viewer=${viewer}` : `/spaces/${spaceSlug}/${page.pageSlug}`}
+          href={`/spaces/${spaceSlug}/${page.pageSlug}`}
           className={`nav-tree-item ${page.pageSlug === activePageSlug ? 'active' : ''}`}
           style={{ marginLeft: `${depth * 0.75}rem` }}
         >

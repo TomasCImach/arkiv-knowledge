@@ -17,10 +17,9 @@ export type CreatePageFormProps = {
   spaceSlug: string
   spaceOwner: Hex | undefined
   availableParents: ParsedPage[]
-  viewer?: string
 }
 
-export function CreatePageForm({ spaceKey, spaceSlug, spaceOwner, availableParents, viewer }: CreatePageFormProps) {
+export function CreatePageForm({ spaceKey, spaceSlug, spaceOwner, availableParents }: CreatePageFormProps) {
   const router = useRouter()
   const walletClient = useArkivWalletClient()
   const { address, chainId, isConnected } = useAccount()
@@ -78,8 +77,7 @@ export function CreatePageForm({ spaceKey, spaceSlug, spaceOwner, availableParen
         parentPageKey: parentPageKey ? (parentPageKey as Hex) : undefined
       })
       setStatusText(`Created page ${result.pageKey.slice(0, 10)}...`)
-      const nextUrl = viewer ? `/spaces/${spaceSlug}/${finalSlug}?viewer=${viewer}` : `/spaces/${spaceSlug}/${finalSlug}`
-      router.push(nextUrl)
+      router.push(`/spaces/${spaceSlug}/${finalSlug}`)
       router.refresh()
     } catch (error) {
       console.error('create-page failed', error)

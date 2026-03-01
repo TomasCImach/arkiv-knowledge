@@ -10,7 +10,8 @@ import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
 import { SpaceSearchForm } from '@/app/_components/space-search-form'
 import { buildPageSearchPredicates, fetchCurrentBlock, getSpaceBySlug, listPagesBySpaceKey, searchPages } from '@/arkiv/queries'
 import type { PageParentMode, PageSortMode, PageStatus, ParsedPage } from '@/arkiv/types'
-import { canViewSpace, firstQueryValue, parseViewerAddress } from '@/features/visibility/access'
+import { getAuthenticatedViewerAddress } from '@/features/auth/session'
+import { canViewSpace, firstQueryValue } from '@/features/visibility/access'
 import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
@@ -45,16 +46,9 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
   if (!space) {
     notFound()
   }
-  const viewer = parseViewerAddress(query.viewer)
+  const viewer = await getAuthenticatedViewerAddress()
   if (!canViewSpace(space, viewer)) {
     notFound()
-  }
-
-  const withViewer = (value: string) => {
-    if (!viewer) {
-      return value
-    }
-    return `${value}${value.includes('?') ? '&' : '?'}viewer=${viewer}`
   }
 
   const q = firstQueryValue(query.q)
@@ -119,7 +113,7 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
           <strong>Space Contents</strong>
           <span className="badge">{allPages.length} pages</span>
         </div>
-        <PageTreeNav spaceSlug={spaceSlug} pages={allPages} viewer={viewer} />
+        <PageTreeNav spaceSlug={spaceSlug} pages={allPages} />
       </aside>
 
       <div className="stack doc-column">
@@ -132,10 +126,10 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
           </div>
           <p className="subtitle">{space.payload.description}</p>
           <div className="toolbar">
-            <Link href={withViewer(`/spaces/${spaceSlug}/new`)} className="button">
+            <Link href={`/spaces/${spaceSlug}/new`} className="button">
               New Page
             </Link>
-            <Link href={withViewer(`/spaces/${spaceSlug}/settings`)} className="button secondary">
+            <Link href={`/spaces/${spaceSlug}/settings`} className="button secondary">
               Space Settings
             </Link>
             <span className="badge">Space key: {space.entityKey.slice(0, 14)}...</span>
@@ -186,7 +180,7 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
               <span className="badge">{pages.length} results</span>
             </div>
             {pages.map((page) => (
-              <Link key={page.entityKey} href={withViewer(`/spaces/${spaceSlug}/${page.pageSlug}`)} className="doc-list-item">
+              <Link key={page.entityKey} href={`/spaces/${spaceSlug}/${page.pageSlug}`} className="doc-list-item">
                 <div className="toolbar doc-list-head">
                   <strong>{page.payload.title}</strong>
                   <span className="badge">{page.status}</span>

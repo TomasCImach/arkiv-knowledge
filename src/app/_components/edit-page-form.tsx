@@ -16,10 +16,9 @@ export type EditPageFormProps = {
   spaceSlug: string
   page: ParsedPage
   availableParents: ParsedPage[]
-  viewer?: string
 }
 
-export function EditPageForm({ spaceKey, spaceSlug, page, availableParents, viewer }: EditPageFormProps) {
+export function EditPageForm({ spaceKey, spaceSlug, page, availableParents }: EditPageFormProps) {
   const router = useRouter()
   const walletClient = useArkivWalletClient()
   const { address, chainId, isConnected } = useAccount()
@@ -95,8 +94,7 @@ export function EditPageForm({ spaceKey, spaceSlug, page, availableParents, view
       })
 
       setStatusText(`Saved (${result.txHash.slice(0, 10)}...)`)
-      const nextUrl = viewer ? `/spaces/${spaceSlug}/${page.pageSlug}?viewer=${viewer}` : `/spaces/${spaceSlug}/${page.pageSlug}`
-      router.push(nextUrl)
+      router.push(`/spaces/${spaceSlug}/${page.pageSlug}`)
       router.refresh()
     } catch (error) {
       console.error('edit-page failed', error)

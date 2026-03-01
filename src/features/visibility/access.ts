@@ -1,5 +1,3 @@
-import type { Hex } from 'viem'
-import { isAddress } from 'viem'
 import type { ParsedPage, ParsedSpace } from '@/arkiv/types'
 import { equalAddress } from '@/features/ownership/permissions'
 
@@ -7,15 +5,6 @@ export type QueryValue = string | string[] | undefined
 
 export function firstQueryValue(value: QueryValue): string {
   return Array.isArray(value) ? value[0] ?? '' : value ?? ''
-}
-
-export function parseViewerAddress(value: QueryValue): Hex | undefined {
-  const raw = firstQueryValue(value).trim()
-  if (!raw || !isAddress(raw)) {
-    return undefined
-  }
-
-  return raw as Hex
 }
 
 export function canViewSpace(space: Pick<ParsedSpace, 'visibility' | 'owner'>, viewer: string | undefined): boolean {

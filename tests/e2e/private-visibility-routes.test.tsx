@@ -11,7 +11,8 @@ const mocks = vi.hoisted(() => ({
   buildPageSearchPredicatesMock: vi.fn(),
   listSpacesMock: vi.fn(),
   searchPagesGlobalMock: vi.fn(),
-  buildGlobalPageSearchPredicatesMock: vi.fn()
+  buildGlobalPageSearchPredicatesMock: vi.fn(),
+  getAuthenticatedViewerAddressMock: vi.fn()
 }))
 
 vi.mock('next/navigation', () => ({
@@ -67,6 +68,10 @@ vi.mock('@/arkiv/queries', () => ({
   buildGlobalPageSearchPredicates: mocks.buildGlobalPageSearchPredicatesMock
 }))
 
+vi.mock('@/features/auth/session', () => ({
+  getAuthenticatedViewerAddress: mocks.getAuthenticatedViewerAddressMock
+}))
+
 const OWNER = '0x1111111111111111111111111111111111111111'
 
 function buildSpace(visibility: ParsedSpace['visibility']): ParsedSpace {
@@ -119,6 +124,7 @@ describe('private visibility route enforcement', () => {
     mocks.listSpacesMock.mockReset()
     mocks.searchPagesGlobalMock.mockReset()
     mocks.buildGlobalPageSearchPredicatesMock.mockReset()
+    mocks.getAuthenticatedViewerAddressMock.mockReset()
 
     mocks.getSpaceBySlugMock.mockResolvedValue(buildSpace('private'))
     mocks.listPagesBySpaceKeyMock.mockResolvedValue([])
@@ -126,6 +132,7 @@ describe('private visibility route enforcement', () => {
     mocks.searchPagesMock.mockResolvedValue([])
     mocks.buildPageSearchPredicatesMock.mockReturnValue([])
     mocks.buildGlobalPageSearchPredicatesMock.mockReturnValue([])
+    mocks.getAuthenticatedViewerAddressMock.mockResolvedValue(undefined)
   })
 
   afterEach(() => {
@@ -143,20 +150,21 @@ describe('private visibility route enforcement', () => {
     ).rejects.toThrow('NEXT_NOT_FOUND')
   })
 
-  it('allows owner viewer to load private space and settings routes', async () => {
+  it('allows authenticated owner wallet to load private space and settings routes', async () => {
     const { default: SpacePage } = await import('@/app/spaces/[spaceSlug]/page')
     const { default: SpaceSettingsRoute } = await import('@/app/spaces/[spaceSlug]/settings/page')
+    mocks.getAuthenticatedViewerAddressMock.mockResolvedValue(OWNER)
 
     const spaceElement = await SpacePage({
       params: Promise.resolve({ spaceSlug: 'private-space' }),
-      searchParams: Promise.resolve({ viewer: OWNER })
+      searchParams: Promise.resolve({})
     })
     render(spaceElement)
     expect(screen.getByRole('heading', { name: 'Private Space' })).toBeInTheDocument()
 
     const settingsElement = await SpaceSettingsRoute({
       params: Promise.resolve({ spaceSlug: 'private-space' }),
-      searchParams: Promise.resolve({ viewer: OWNER })
+      searchParams: Promise.resolve({})
     })
     render(settingsElement)
     expect(screen.getByText('Edit Space Form')).toBeInTheDocument()

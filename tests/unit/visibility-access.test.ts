@@ -4,7 +4,6 @@ import {
   canViewSpace,
   filterListedSpaces,
   filterPagesByVisibleSpaces,
-  parseViewerAddress,
   shouldListSpace
 } from '@/features/visibility/access'
 
@@ -59,12 +58,6 @@ function buildPage(entityKey: `0x${string}`, spaceKey: `0x${string}`, pageSlug: 
 }
 
 describe('visibility access helpers', () => {
-  it('parses viewer only when a valid address is provided', () => {
-    expect(parseViewerAddress(undefined)).toBeUndefined()
-    expect(parseViewerAddress('not-an-address')).toBeUndefined()
-    expect(parseViewerAddress(OWNER)).toBe(OWNER)
-  })
-
   it('allows private reads only for the owner, while public and unlisted stay public', () => {
     const privateSpace = buildSpace(SPACE_PRIVATE, 'private', OWNER)
     const publicSpace = buildSpace(SPACE_PUBLIC, 'public', OWNER)

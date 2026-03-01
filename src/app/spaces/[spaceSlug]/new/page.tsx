@@ -2,20 +2,20 @@ import { notFound } from 'next/navigation'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { CreatePageForm } from '@/app/_components/create-page-form'
 import { getSpaceBySlug, listPagesBySpaceKey } from '@/arkiv/queries'
-import { canViewSpace, parseViewerAddress } from '@/features/visibility/access'
+import { getAuthenticatedViewerAddress } from '@/features/auth/session'
+import { canViewSpace } from '@/features/visibility/access'
 import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
 
 export default async function NewPageRoute({
   params,
-  searchParams
+  searchParams: _
 }: {
   params: Promise<{ spaceSlug: string }>
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }) {
   const { spaceSlug } = await params
-  const query = await searchParams
   let space
   let spacePages = []
 
@@ -39,16 +39,9 @@ export default async function NewPageRoute({
   if (!space) {
     notFound()
   }
-  const viewer = parseViewerAddress(query.viewer)
+  const viewer = await getAuthenticatedViewerAddress()
   if (!canViewSpace(space, viewer)) {
     notFound()
-  }
-
-  const withViewer = (value: string) => {
-    if (!viewer) {
-      return value
-    }
-    return `${value}${value.includes('?') ? '&' : '?'}viewer=${viewer}`
   }
 
   return (
@@ -56,17 +49,11 @@ export default async function NewPageRoute({
       <Breadcrumbs
         items={[
           { href: '/', label: 'Knowledge Base' },
-          { href: withViewer(`/spaces/${spaceSlug}`), label: space.payload.name },
+          { href: `/spaces/${spaceSlug}`, label: space.payload.name },
           { label: 'Create Page' }
         ]}
       />
-      <CreatePageForm
-        spaceKey={space.entityKey}
-        spaceSlug={spaceSlug}
-        spaceOwner={space.owner}
-        availableParents={spacePages}
-        viewer={viewer}
-      />
+      <CreatePageForm spaceKey={space.entityKey} spaceSlug={spaceSlug} spaceOwner={space.owner} availableParents={spacePages} />
     </section>
   )
 }

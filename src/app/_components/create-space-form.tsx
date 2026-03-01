@@ -2,9 +2,12 @@
 
 import { FormEvent, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import type { Hex } from 'viem'
 import { useAccount } from 'wagmi'
+import { useSignMessage } from 'wagmi'
 import { createSpace } from '@/arkiv/mutations/spaces'
 import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
+import { ensureWalletReadSession } from '@/features/auth/client-session'
 import { slugify } from '@/lib/text'
 import { formatWalletError, runWritePreflight } from '@/lib/wallet'
 
@@ -12,6 +15,7 @@ export function CreateSpaceForm() {
   const router = useRouter()
   const walletClient = useArkivWalletClient()
   const { address, chainId, isConnected } = useAccount()
+  const { signMessageAsync } = useSignMessage()
   const [name, setName] = useState('')
   const [slug, setSlug] = useState('')
   const [description, setDescription] = useState('')
@@ -54,6 +58,11 @@ export function CreateSpaceForm() {
         visibility
       })
       setStatusText(`Created (${result.txHash.slice(0, 10)}...)`)
+
+      if (visibility === 'private') {
+        await ensureWalletReadSession(address as Hex, (message) => signMessageAsync({ message }))
+      }
+
       router.push(`/spaces/${finalSlug}`)
       router.refresh()
     } catch (error) {

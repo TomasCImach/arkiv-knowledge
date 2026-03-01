@@ -6,7 +6,8 @@ import { QueryDebugPanel } from '@/app/_components/query-debug-panel'
 import { SpaceSearchForm } from '@/app/_components/space-search-form'
 import { buildGlobalPageSearchPredicates, listSpaces, searchPagesGlobal } from '@/arkiv/queries'
 import type { GlobalPageSearchInput, PageParentMode, PageSortMode, PageStatus, ParsedPage } from '@/arkiv/types'
-import { filterPagesByVisibleSpaces, firstQueryValue, parseViewerAddress } from '@/features/visibility/access'
+import { getAuthenticatedViewerAddress } from '@/features/auth/session'
+import { filterPagesByVisibleSpaces, firstQueryValue } from '@/features/visibility/access'
 import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
@@ -27,7 +28,7 @@ export default async function GlobalPageSearchRoute({
   const sortRaw = firstQueryValue(query.sort)
   const sort: PageSortMode =
     sortRaw === 'updated_asc' || sortRaw === 'title_asc' ? (sortRaw as PageSortMode) : 'updated_desc'
-  const viewer = parseViewerAddress(query.viewer)
+  const viewer = await getAuthenticatedViewerAddress()
 
   const input: GlobalPageSearchInput = {
     q,
@@ -53,13 +54,6 @@ export default async function GlobalPageSearchRoute({
 
   if (ownerRaw.length > 0 && !owner) {
     queryError = queryError ? `${queryError} Invalid owner filter ignored.` : 'Invalid owner filter ignored.'
-  }
-
-  const withViewer = (value: string) => {
-    if (!viewer) {
-      return value
-    }
-    return `${value}${value.includes('?') ? '&' : '?'}viewer=${viewer}`
   }
 
   return (
@@ -116,7 +110,7 @@ export default async function GlobalPageSearchRoute({
               <span className="badge">{pages.length} pages</span>
             </div>
             {pages.map((page) => (
-              <Link key={page.entityKey} href={withViewer(`/spaces/${page.spaceSlug}/${page.pageSlug}`)} className="doc-list-item">
+              <Link key={page.entityKey} href={`/spaces/${page.spaceSlug}/${page.pageSlug}`} className="doc-list-item">
                 <div className="toolbar doc-list-head">
                   <strong>{page.payload.title}</strong>
                   <span className="badge">{page.status}</span>

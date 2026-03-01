@@ -18,6 +18,9 @@ vi.mock('wagmi', () => ({
     isConnected: true,
     address: '0x2222222222222222222222222222222222222222',
     chainId: 60138453025
+  }),
+  useSignMessage: () => ({
+    signMessageAsync: vi.fn()
   })
 }))
 

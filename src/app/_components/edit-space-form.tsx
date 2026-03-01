@@ -2,22 +2,25 @@
 
 import { FormEvent, useMemo, useState } from 'react'
 import { useRouter } from 'next/navigation'
+import type { Hex } from 'viem'
 import { useAccount } from 'wagmi'
+import { useSignMessage } from 'wagmi'
 import type { ParsedSpace } from '@/arkiv/types'
 import { updateSpace } from '@/arkiv/mutations/spaces'
 import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
+import { ensureWalletReadSession } from '@/features/auth/client-session'
 import { canManageOwnedEntity } from '@/features/ownership/permissions'
 import { formatWalletError, runWritePreflight } from '@/lib/wallet'
 
 type EditSpaceFormProps = {
   space: ParsedSpace
-  viewer?: string
 }
 
-export function EditSpaceForm({ space, viewer }: EditSpaceFormProps) {
+export function EditSpaceForm({ space }: EditSpaceFormProps) {
   const router = useRouter()
   const walletClient = useArkivWalletClient()
   const { address, chainId, isConnected } = useAccount()
+  const { signMessageAsync } = useSignMessage()
 
   const [name, setName] = useState(space.payload.name)
   const [description, setDescription] = useState(space.payload.description)
@@ -63,8 +66,12 @@ export function EditSpaceForm({ space, viewer }: EditSpaceFormProps) {
       })
 
       setStatusText(`Updated (${result.txHash.slice(0, 10)}...)`)
-      const nextUrl = viewer ? `/spaces/${space.spaceSlug}?viewer=${viewer}` : `/spaces/${space.spaceSlug}`
-      router.push(nextUrl)
+
+      if (visibility === 'private') {
+        await ensureWalletReadSession(address as Hex, (message) => signMessageAsync({ message }))
+      }
+
+      router.push(`/spaces/${space.spaceSlug}`)
       router.refresh()
     } catch (error) {
       console.error('edit-space failed', error)
