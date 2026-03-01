@@ -31,6 +31,9 @@ export async function AppShell({ children }: { children: ReactNode }) {
             <Link href="/search/pages" className="button secondary">
               Search Pages
             </Link>
+            <Link href="/my/spaces" className="button secondary">
+              My Spaces
+            </Link>
             <Link href="/new/space" className="button secondary">
               New Space
             </Link>
@@ -43,9 +46,14 @@ export async function AppShell({ children }: { children: ReactNode }) {
           <div className="card stack sidebar-panel">
             <div className="toolbar" style={{ justifyContent: 'space-between' }}>
               <strong>Navigation</strong>
-              <Link href="/" className="badge">
-                Home
-              </Link>
+              <div className="toolbar" style={{ gap: '0.35rem' }}>
+                <Link href="/" className="badge">
+                  Home
+                </Link>
+                <Link href="/my/spaces" className="badge">
+                  My Spaces
+                </Link>
+              </div>
             </div>
             <div className="stack" style={{ gap: '0.4rem' }}>
               <span className="sidebar-label">Spaces</span>

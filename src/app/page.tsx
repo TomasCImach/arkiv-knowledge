@@ -32,6 +32,9 @@ export default async function HomePage() {
           <Link href="/new/space" className="button">
             Create Space
           </Link>
+          <Link href="/my/spaces" className="button secondary">
+            My Spaces
+          </Link>
           <span className="badge">Core data is stored as Arkiv entities</span>
         </div>
         {loadError ? <p className="notice">Arkiv read is temporarily unavailable: {loadError}</p> : null}
