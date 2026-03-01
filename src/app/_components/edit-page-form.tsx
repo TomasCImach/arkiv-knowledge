@@ -89,6 +89,7 @@ export function EditPageForm({ spaceKey, spaceSlug, page, availableParents }: Ed
         bodyMarkdown,
         editor: address,
         editSummary,
+        createdAt: page.payload.createdAt,
         parentPageKey: parentPageKey ? (parentPageKey as Hex) : undefined
       })
 
