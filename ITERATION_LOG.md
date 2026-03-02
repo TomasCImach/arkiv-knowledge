@@ -330,3 +330,15 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: start at `/` and quickly compare browse readability and CTA prominence across `/`, `/spaces/[spaceSlug]`, `/spaces/[spaceSlug]/[pageSlug]`, and `/spaces/[spaceSlug]/settings`.
   - notes/screenshots: updated visual system is centralized in `src/app/globals.css`; typography boundary fix in `src/app/layout.tsx`.
 - **Next bottleneck:** Iteration 28 progressive disclosure of technical metadata (reduce blockchain jargon in default browse flow).
+
+### 2026-03-02 — Iteration 28 (Progressive Disclosure for Technical Metadata)
+- **Objective:** make default browsing/writing flows less technical while keeping Arkiv detail accessible on demand.
+- **Implemented:** added reusable `TechnicalDetails` disclosure component; moved canonical keys, retention details, and lifecycle internals into collapsible panels on space/page/settings/presence surfaces; simplified primary copy to user-task language; standardized owner/write hints to concise action guidance.
+- **Rubric targets:** UX (`blockchain abstraction`, primary) / UX (`user experience`, secondary).
+- **Expected score delta:** high.
+- **Evidence:**
+  - tests: N/A (presentation and copy-focused iteration).
+  - verification: `pnpm typecheck`.
+  - demo step: open `/spaces/[spaceSlug]/[pageSlug]`, show clean default read flow, then expand `Technical details` to reveal canonical key, retention controls, and Arkiv-specific lifecycle context.
+  - notes/screenshots: disclosure component at `src/app/_components/technical-details.tsx`; route/form integrations across space/page/settings/presence and edit/create flows.
+- **Next bottleneck:** Iteration 29 search UX simplification (basic vs advanced filters + active filter chips).

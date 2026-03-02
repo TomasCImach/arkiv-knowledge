@@ -371,3 +371,20 @@ Iteration 27 focuses on Design & UX lift without changing Arkiv storage/query be
 - preserves Arkiv-first proof quality by keeping all data and lifecycle semantics unchanged.
 
 **Scoring impact:** Medium-high uplift on Design & UX with low implementation risk.
+
+---
+
+## 27) Progressive Disclosure for Technical Metadata (Iteration 28)
+Iteration 28 reduces cognitive load in primary UX while preserving integration transparency:
+- introduced reusable `Technical details` disclosure panels for optional advanced context,
+- moved canonical keys, retention controls, and lifecycle internals out of the main action path on space/page/settings/presence surfaces,
+- simplified blockchain-heavy copy into plain task guidance for default reads and writes,
+- standardized owner gating hints to action-oriented text (`connect owner wallet`, `switch to owner wallet`).
+
+**Why this matters:**
+- improves blockchain abstraction score by keeping web3 complexity behind optional disclosure,
+- strengthens first-visit usability and scan speed during the 3–5 minute judge walkthrough,
+- keeps technical rigor available for judges who want to inspect Arkiv specifics,
+- avoids integration regressions by changing presentation only, not data paths.
+
+**Scoring impact:** High uplift on UX abstraction/clarity with low implementation risk.

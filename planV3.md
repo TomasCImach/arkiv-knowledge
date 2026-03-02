@@ -9,7 +9,7 @@ Challenge timing guardrail:
 
 ## Execution Status
 - [x] Iteration 27 - Visual Identity + Readability System
-- [ ] Iteration 28 - Progressive Disclosure for Technical Metadata
+- [x] Iteration 28 - Progressive Disclosure for Technical Metadata
 - [ ] Iteration 29 - Search UX Simplification
 - [ ] Iteration 30 - Authoring Experience Upgrade
 - [ ] Iteration 31 - Mobile-First Navigation + Action Ergonomics

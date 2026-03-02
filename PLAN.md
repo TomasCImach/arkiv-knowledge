@@ -216,10 +216,22 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Readability improved by separating body copy typography from interface typography.
 - Interaction states are clearer and more consistent without changing Arkiv data behavior.
 
+### Phase 21 — Progressive Disclosure of Technical Metadata (Iteration 28)
+- [x] Added reusable disclosure surface for optional technical context (`Technical details`).
+- [x] Moved canonical keys, retention controls, and lifecycle internals out of primary browse flow.
+- [x] Simplified owner/write messaging to short action-oriented hints across authoring, transfer, lifecycle, and presence surfaces.
+- [x] Kept full Arkiv transparency available on demand through expandable technical panels.
+
+**Exit criteria status:** met.
+- Default browse flow is less blockchain-jargon-heavy and easier to scan.
+- Technical details remain accessible for judges without overwhelming first-time users.
+- Owner gating guidance is consistent and task-oriented across write actions.
+
 ## Current Verification Snapshot
 - Last full pass: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`, `pnpm build` on 2026-03-01 (post iteration 26 wallet-auth visibility rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
 - Iteration 27 check: `pnpm typecheck` pass on 2026-03-02 after visual-system refactor.
+- Iteration 28 check: `pnpm typecheck` pass on 2026-03-02 after technical-details disclosure rollout.
 - Added passing integrity coverage for canonical selection + duplicate guards (`tests/integration/canonical-resolution.test.ts`, `tests/integration/create-conflict-guards.test.ts`).
 - Added lifecycle hardening coverage (`tests/integration/edit-page-mutate.test.ts`, `tests/integration/create-page-repair.test.ts`).
 - Added visibility/realtime coverage (`tests/unit/visibility-access.test.ts`, `tests/e2e/private-visibility-routes.test.tsx`, `tests/e2e/use-arkiv-events.test.tsx`).
