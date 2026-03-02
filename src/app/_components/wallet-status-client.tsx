@@ -3,28 +3,31 @@
 import '@rainbow-me/rainbowkit/styles.css'
 import { ConnectButton, RainbowKitProvider } from '@rainbow-me/rainbowkit'
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import type { Hex } from 'viem'
 import { useSignMessage } from 'wagmi'
 import { useAccount } from 'wagmi'
 import { clearWalletReadSession, ensureWalletReadSession, readWalletSessionAddress } from '@/features/auth/client-session'
 
 export function WalletStatusClient() {
+  const router = useRouter()
   const { address, isConnected } = useAccount()
   const { signMessageAsync } = useSignMessage()
   const [statusText, setStatusText] = useState('')
   const [pending, setPending] = useState(false)
-  const loggedOutOnDisconnectRef = useRef(false)
+  const hadWalletConnectionRef = useRef(false)
 
   useEffect(() => {
     if (isConnected) {
-      loggedOutOnDisconnectRef.current = false
+      hadWalletConnectionRef.current = true
       return
     }
 
-    if (loggedOutOnDisconnectRef.current) {
+    if (!hadWalletConnectionRef.current) {
       return
     }
-    loggedOutOnDisconnectRef.current = true
+    hadWalletConnectionRef.current = false
+    setStatusText('')
     void clearWalletReadSession()
   }, [isConnected])
 
@@ -38,6 +41,7 @@ export function WalletStatusClient() {
     try {
       await ensureWalletReadSession(address as Hex, (message) => signMessageAsync({ message }))
       setStatusText('Private-read session verified.')
+      router.refresh()
     } catch (error) {
       const message = error instanceof Error && error.message ? error.message : 'Wallet verification failed.'
       setStatusText(message)
