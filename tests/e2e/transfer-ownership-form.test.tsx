@@ -87,7 +87,7 @@ describe('transfer ownership form', () => {
       />
     )
 
-    expect(screen.getByText('Only owner can transfer page ownership.')).toBeInTheDocument()
+    expect(screen.getByText('Switch to the owner wallet to continue.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Transfer page ownership' })).toBeDisabled()
 
     mocks.accountState.address = '0x2222222222222222222222222222222222222222'
@@ -99,7 +99,7 @@ describe('transfer ownership form', () => {
       />
     )
 
-    expect(screen.queryByText('Only owner can transfer page ownership.')).not.toBeInTheDocument()
+    expect(screen.queryByText('Switch to the owner wallet to continue.')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Transfer page ownership' })).toBeEnabled()
   })
 })

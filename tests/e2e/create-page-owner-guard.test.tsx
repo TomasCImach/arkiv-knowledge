@@ -51,7 +51,7 @@ describe('create page owner guard', () => {
       />
     )
 
-    expect(screen.getByText('Only owner can create pages in this space.')).toBeInTheDocument()
+    expect(screen.getByText('Switch to the owner wallet to continue.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Create Page' })).toBeDisabled()
     expect(mocks.createPageMock).not.toHaveBeenCalled()
   })

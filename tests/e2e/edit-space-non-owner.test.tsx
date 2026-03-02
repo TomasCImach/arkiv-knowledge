@@ -65,7 +65,7 @@ describe('edit space non-owner guardrails', () => {
       />
     )
 
-    expect(screen.getByText('Only owner can update space settings.')).toBeInTheDocument()
+    expect(screen.getByText('Switch to the owner wallet to continue.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Save Settings' })).toBeDisabled()
     expect(mocks.updateSpaceMock).not.toHaveBeenCalled()
   })

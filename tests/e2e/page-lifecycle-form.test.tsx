@@ -105,7 +105,7 @@ describe('page lifecycle form', () => {
 
     mocks.accountState.address = '0x2222222222222222222222222222222222222222'
     rerender(<PageLifecycleForm page={page} viewer="0x2222222222222222222222222222222222222222" />)
-    expect(screen.getByText('Only owner can archive or delete this page.')).toBeInTheDocument()
+    expect(screen.getByText('Switch to the owner wallet to continue.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Archive Page' })).toBeDisabled()
   })
 })

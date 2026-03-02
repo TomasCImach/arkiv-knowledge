@@ -68,7 +68,7 @@ describe('edit page owner guard', () => {
       />
     )
 
-    expect(screen.getByText('Only owner can update this page.')).toBeInTheDocument()
+    expect(screen.getByText('Switch to the owner wallet to continue.')).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Save Page' })).toBeDisabled()
     expect(mocks.editPageMock).not.toHaveBeenCalled()
   })
