@@ -154,6 +154,14 @@ a {
   font-family: var(--font-heading);
 }
 
+.sidebar-subtitle {
+  font-size: 0.74rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #61717d;
+  font-family: var(--font-heading);
+}
+
 .card {
   background: var(--surface);
   border: 1px solid var(--line);

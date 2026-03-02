@@ -29,11 +29,15 @@ export async function AppShell({ children }: { children: ReactNode }) {
   }
 
   const publicSpaces = filterListedSpaces(spaces)
-  const mergedByKey = new Map<string, ParsedSpace>()
-  for (const space of [...publicSpaces, ...ownerSpaces]) {
-    mergedByKey.set(space.entityKey, space)
-  }
-  const listedSpaces = Array.from(mergedByKey.values()).sort((a, b) => b.updatedAtMs - a.updatedAtMs)
+  const ownedSpaces = ownerSpaces.slice().sort((a, b) => b.updatedAtMs - a.updatedAtMs)
+  const ownedKeys = new Set(ownedSpaces.map((space) => space.entityKey))
+  const visiblePublicSpaces = publicSpaces
+    .filter((space) => !ownedKeys.has(space.entityKey))
+    .slice()
+    .sort((a, b) => b.updatedAtMs - a.updatedAtMs)
+  const hasOwnedSection = ownedSpaces.length > 0
+  const hasPublicSection = visiblePublicSpaces.length > 0
+  const showSectionSubtitles = hasOwnedSection && hasPublicSection
   const navError = navErrors.join(' ')
   const sidebarContent = (
     <div className="card stack sidebar-panel">
@@ -49,19 +53,39 @@ export async function AppShell({ children }: { children: ReactNode }) {
         </div>
       </div>
       <div className="stack" style={{ gap: '0.4rem' }}>
-        <span className="sidebar-label">{viewer ? 'Spaces (Public + Owned)' : 'Spaces'}</span>
+        <span className="sidebar-label">Spaces</span>
         {navError ? <p className="notice">Sidebar degraded: {navError}</p> : null}
-        {listedSpaces.length === 0 ? (
+        {!hasOwnedSection && !hasPublicSection ? (
           <p className="subtitle">No spaces yet.</p>
         ) : (
-          <div className="nav-tree">
-            {listedSpaces.map((space) => (
-              <Link key={space.entityKey} href={`/spaces/${space.spaceSlug}`} className="nav-tree-item">
-                <span>{space.payload.name}</span>
-                <span className="nav-tree-meta">{space.spaceSlug}</span>
-              </Link>
-            ))}
-          </div>
+          <>
+            {hasOwnedSection ? (
+              <div className="stack sidebar-space-section" style={{ gap: '0.35rem' }}>
+                {showSectionSubtitles ? <span className="sidebar-subtitle">Owned</span> : null}
+                <div className="nav-tree">
+                  {ownedSpaces.map((space) => (
+                    <Link key={space.entityKey} href={`/spaces/${space.spaceSlug}`} className="nav-tree-item">
+                      <span>{space.payload.name}</span>
+                      <span className="nav-tree-meta">{space.spaceSlug}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+            {hasPublicSection ? (
+              <div className="stack sidebar-space-section" style={{ gap: '0.35rem' }}>
+                {showSectionSubtitles ? <span className="sidebar-subtitle">Public</span> : null}
+                <div className="nav-tree">
+                  {visiblePublicSpaces.map((space) => (
+                    <Link key={space.entityKey} href={`/spaces/${space.spaceSlug}`} className="nav-tree-item">
+                      <span>{space.payload.name}</span>
+                      <span className="nav-tree-meta">{space.spaceSlug}</span>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+          </>
         )}
       </div>
     </div>
