@@ -1,22 +1,40 @@
 import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { MobileNavDrawer } from '@/app/_components/mobile-nav-drawer'
-import { listSpaces } from '@/arkiv/queries'
+import { listSpaces, listSpacesOwnedBy } from '@/arkiv/queries'
 import type { ParsedSpace } from '@/arkiv/types'
 import { WalletStatus } from '@/app/_components/wallet-status'
+import { getAuthenticatedViewerAddress } from '@/features/auth/session'
 import { filterListedSpaces } from '@/features/visibility/access'
 import { formatReadError } from '@/lib/wallet'
 
 export async function AppShell({ children }: { children: ReactNode }) {
+  const viewer = await getAuthenticatedViewerAddress()
   let spaces: ParsedSpace[] = []
-  let navError = ''
+  let ownerSpaces: ParsedSpace[] = []
+  const navErrors: string[] = []
 
   try {
     spaces = await listSpaces(40)
   } catch (error) {
-    navError = formatReadError(error, 'Could not load spaces.')
+    navErrors.push(formatReadError(error, 'Could not load spaces.'))
   }
-  const listedSpaces = filterListedSpaces(spaces)
+
+  if (viewer) {
+    try {
+      ownerSpaces = await listSpacesOwnedBy(viewer, 200)
+    } catch (error) {
+      navErrors.push(formatReadError(error, 'Could not load private owner spaces.'))
+    }
+  }
+
+  const publicSpaces = filterListedSpaces(spaces)
+  const mergedByKey = new Map<string, ParsedSpace>()
+  for (const space of [...publicSpaces, ...ownerSpaces]) {
+    mergedByKey.set(space.entityKey, space)
+  }
+  const listedSpaces = Array.from(mergedByKey.values()).sort((a, b) => b.updatedAtMs - a.updatedAtMs)
+  const navError = navErrors.join(' ')
   const sidebarContent = (
     <div className="card stack sidebar-panel">
       <div className="toolbar" style={{ justifyContent: 'space-between' }}>
@@ -31,7 +49,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
         </div>
       </div>
       <div className="stack" style={{ gap: '0.4rem' }}>
-        <span className="sidebar-label">Spaces</span>
+        <span className="sidebar-label">{viewer ? 'Spaces (Public + Owned)' : 'Spaces'}</span>
         {navError ? <p className="notice">Sidebar degraded: {navError}</p> : null}
         {listedSpaces.length === 0 ? (
           <p className="subtitle">No spaces yet.</p>
