@@ -342,3 +342,15 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: open `/spaces/[spaceSlug]/[pageSlug]`, show clean default read flow, then expand `Technical details` to reveal canonical key, retention controls, and Arkiv-specific lifecycle context.
   - notes/screenshots: disclosure component at `src/app/_components/technical-details.tsx`; route/form integrations across space/page/settings/presence and edit/create flows.
 - **Next bottleneck:** Iteration 29 search UX simplification (basic vs advanced filters + active filter chips).
+
+### 2026-03-02 — Iteration 29 (Search UX Simplification)
+- **Objective:** reduce search cognitive load while preserving advanced Arkiv query controls.
+- **Implemented:** refactored `SpaceSearchForm` into basic + advanced lanes; added active-filter chips with one-click remove and `Clear all`; added result summary copy on space/global search routes; extended search-form test coverage for advanced toggle and chip removal behavior; updated owner-guard copy expectations in existing e2e tests to match standardized messaging.
+- **Rubric targets:** UX (`user experience`, primary) / functionality (`filtering & search`, secondary).
+- **Expected score delta:** medium-high.
+- **Evidence:**
+  - tests: `tests/e2e/space-search-form-filters.test.tsx` (advanced controls + chip clear coverage), plus updated owner-guard expectation tests.
+  - verification: `pnpm typecheck`, `pnpm test:e2e`.
+  - demo step: run a basic query first, open advanced filters for owner/parent/sort, then remove one constraint from active chips and use `Clear all`.
+  - notes/screenshots: search UX component changes in `src/app/_components/space-search-form.tsx`; result-summary updates in space/global search routes.
+- **Next bottleneck:** Iteration 30 authoring UX upgrade (edit/preview tabs + unsaved-change guard).

@@ -227,11 +227,23 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Technical details remain accessible for judges without overwhelming first-time users.
 - Owner gating guidance is consistent and task-oriented across write actions.
 
+### Phase 22 — Search UX Simplification (Iteration 29)
+- [x] Split search UX into a basic lane (query + status) and toggleable advanced lane (parent, owner, sort).
+- [x] Added active-filter chips with one-click remove for each filter and global `Clear all`.
+- [x] Added result summary copy on space/global search routes (`Showing X pages in Y scope`).
+- [x] Extended filter serialization test coverage for advanced toggle and active-chip behavior.
+
+**Exit criteria status:** met.
+- Default search path is lighter for first-time users.
+- Advanced controls remain available without crowding the primary interaction path.
+- Active filter state is explicit and quickly reversible from the UI.
+
 ## Current Verification Snapshot
 - Last full pass: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`, `pnpm build` on 2026-03-01 (post iteration 26 wallet-auth visibility rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
 - Iteration 27 check: `pnpm typecheck` pass on 2026-03-02 after visual-system refactor.
 - Iteration 28 check: `pnpm typecheck` pass on 2026-03-02 after technical-details disclosure rollout.
+- Iteration 29 check: `pnpm typecheck` + `pnpm test:e2e` pass on 2026-03-02 after search UX simplification and filter-chip rollout.
 - Added passing integrity coverage for canonical selection + duplicate guards (`tests/integration/canonical-resolution.test.ts`, `tests/integration/create-conflict-guards.test.ts`).
 - Added lifecycle hardening coverage (`tests/integration/edit-page-mutate.test.ts`, `tests/integration/create-page-repair.test.ts`).
 - Added visibility/realtime coverage (`tests/unit/visibility-access.test.ts`, `tests/e2e/private-visibility-routes.test.tsx`, `tests/e2e/use-arkiv-events.test.tsx`).

@@ -60,7 +60,9 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 ### 5) Hierarchy + Query
 - On space route, show nested page tree in sidebar (parent -> child).
 - Open child page and show ancestor breadcrumb chain.
-- Apply search filters (`parent`, `owner`, `sort`) and show Arkiv-query-backed result changes.
+- In search UI, start with basic controls (`query`, `status`), then open advanced filters (`parent`, `owner`, `sort`) and apply.
+- Remove one active filter using chip `x`, then show `Clear all`.
+- Show result summary row (`Showing X pages in Y scope`) updates as filters change.
 - Verbalize: “Hierarchy and filter logic are query-driven from Arkiv predicates, not client-only grouping.”
 
 ### 6) Global Discovery (Cross-Space Query)
