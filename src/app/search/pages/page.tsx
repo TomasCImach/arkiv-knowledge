@@ -101,7 +101,8 @@ export default async function GlobalPageSearchRoute({
       {hasActiveQuery && !queryError ? (
         pages.length === 0 ? (
           <div className="card stack">
-            <p className="subtitle">No pages match the current Arkiv query.</p>
+            <p className="subtitle">Showing 0 pages across all visible spaces for the active filters.</p>
+            <p className="subtitle">No pages match the current query.</p>
           </div>
         ) : (
           <div className="card stack">
@@ -109,6 +110,9 @@ export default async function GlobalPageSearchRoute({
               <h2 style={{ margin: 0 }}>Results</h2>
               <span className="badge">{pages.length} pages</span>
             </div>
+            <p className="subtitle">
+              Showing {pages.length} page{pages.length === 1 ? '' : 's'} across all visible spaces for the active filters.
+            </p>
             {pages.map((page) => (
               <Link key={page.entityKey} href={`/spaces/${page.spaceSlug}/${page.pageSlug}`} className="doc-list-item">
                 <div className="toolbar doc-list-head">

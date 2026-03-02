@@ -175,7 +175,12 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
 
         {pages.length === 0 ? (
           <div className="card stack">
-            <p className="subtitle">No pages match the current Arkiv query.</p>
+            <p className="subtitle">
+              {hasActiveQuery
+                ? `Showing 0 pages in ${space.payload.name} for the active filters.`
+                : `Showing 0 pages in ${space.payload.name}.`}
+            </p>
+            <p className="subtitle">No pages match the current query.</p>
           </div>
         ) : (
           <div className="card stack">
@@ -183,6 +188,11 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
               <h2 style={{ margin: 0 }}>Pages</h2>
               <span className="badge">{pages.length} results</span>
             </div>
+            <p className="subtitle">
+              {hasActiveQuery
+                ? `Showing ${pages.length} page${pages.length === 1 ? '' : 's'} in ${space.payload.name} for the active filters.`
+                : `Showing all ${pages.length} page${pages.length === 1 ? '' : 's'} in ${space.payload.name}.`}
+            </p>
             {pages.map((page) => (
               <Link key={page.entityKey} href={`/spaces/${spaceSlug}/${page.pageSlug}`} className="doc-list-item">
                 <div className="toolbar doc-list-head">
