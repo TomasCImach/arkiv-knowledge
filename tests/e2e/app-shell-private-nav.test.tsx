@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import React from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ParsedSpace } from '@/arkiv/types'
@@ -78,10 +78,16 @@ describe('app shell private navigation', () => {
 
     const { AppShell } = await import('@/app/_components/app-shell')
     const element = await AppShell({ children: React.createElement('div', null, 'Body') })
-    render(element)
+    const { container } = render(element)
+    const desktopSidebar = container.querySelector('.app-sidebar-desktop .sidebar-panel')
+    expect(desktopSidebar).not.toBeNull()
 
-    expect(screen.getAllByText('Public Docs').length).toBeGreaterThan(0)
-    expect(screen.queryAllByText('Private Docs')).toHaveLength(0)
+    const desktopQueries = within(desktopSidebar as HTMLElement)
+    expect(desktopQueries.getByText('Spaces')).toBeInTheDocument()
+    expect(desktopQueries.queryByText('Owned')).not.toBeInTheDocument()
+    expect(desktopQueries.queryByText('Public')).not.toBeInTheDocument()
+    expect(desktopQueries.getByText('Public Docs')).toBeInTheDocument()
+    expect(desktopQueries.queryByText('Private Docs')).not.toBeInTheDocument()
     expect(mocks.listSpacesOwnedByMock).not.toHaveBeenCalled()
   })
 
@@ -110,12 +116,19 @@ describe('app shell private navigation', () => {
 
     const { AppShell } = await import('@/app/_components/app-shell')
     const element = await AppShell({ children: React.createElement('div', null, 'Body') })
-    render(element)
+    const { container } = render(element)
+    const desktopSidebar = container.querySelector('.app-sidebar-desktop .sidebar-panel')
+    expect(desktopSidebar).not.toBeNull()
+    const desktopQueries = within(desktopSidebar as HTMLElement)
 
     expect(mocks.listSpacesOwnedByMock).toHaveBeenCalledWith(viewer, 200)
-    expect(screen.getAllByText('Spaces (Public + Owned)').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Public Docs').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Private Docs').length).toBeGreaterThan(0)
-    expect(screen.getAllByText('Unlisted Docs').length).toBeGreaterThan(0)
+    expect(desktopQueries.getByText('Spaces')).toBeInTheDocument()
+    const subtitles = desktopQueries.getAllByText(/^(Owned|Public)$/)
+    expect(subtitles).toHaveLength(2)
+    expect(subtitles[0]).toHaveTextContent('Owned')
+    expect(subtitles[1]).toHaveTextContent('Public')
+    expect(desktopQueries.getByText('Public Docs')).toBeInTheDocument()
+    expect(desktopQueries.getByText('Private Docs')).toBeInTheDocument()
+    expect(desktopQueries.getByText('Unlisted Docs')).toBeInTheDocument()
   })
 })
