@@ -465,6 +465,44 @@ header.app-header .app-header-inner {
   padding: 0.6rem;
 }
 
+.markdown-tabs {
+  gap: var(--space-2);
+}
+
+.markdown-tabs > button {
+  min-width: 92px;
+}
+
+.markdown-preview {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  background: #fcf8ee;
+  padding: 0.85rem 0.95rem;
+  min-height: 240px;
+}
+
+.form-callout {
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 0.75rem 0.85rem;
+  display: grid;
+  gap: 0.65rem;
+}
+
+.form-callout.success {
+  background: #e8f4f1;
+  border-color: #7dafaa;
+}
+
+.form-callout.error {
+  background: #f8ece8;
+  border-color: #cf978a;
+}
+
+.form-callout-actions {
+  gap: var(--space-2);
+}
+
 .technical-details {
   border: 1px dashed var(--line-strong);
   border-radius: var(--radius-md);

@@ -1,12 +1,15 @@
 'use client'
 
 import { FormEvent, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import type { Hex } from 'viem'
 import { useAccount } from 'wagmi'
+import { MarkdownEditorField } from '@/app/_components/markdown-editor-field'
 import { editPage } from '@/arkiv/mutations/pages'
 import type { ParsedPage } from '@/arkiv/types'
 import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
+import { useUnsavedChangesGuard } from '@/features/forms/useUnsavedChangesGuard'
 import { collectDescendantKeys, listPagesInTreeOrder } from '@/features/hierarchy/tree'
 import { canManageOwnedEntity } from '@/features/ownership/permissions'
 import { formatWalletError, runWritePreflight } from '@/lib/wallet'
@@ -30,7 +33,15 @@ export function EditPageForm({ spaceKey, spaceSlug, page, availableParents }: Ed
   const [bodyMarkdown, setBodyMarkdown] = useState(page.payload.bodyMarkdown)
   const [editSummary, setEditSummary] = useState('Content update')
   const [parentPageKey, setParentPageKey] = useState(page.parentPageKey ?? '')
-  const [statusText, setStatusText] = useState('')
+  const [feedback, setFeedback] = useState<{ tone: 'error' | 'success'; text: string } | null>(null)
+  const [savedSnapshot, setSavedSnapshot] = useState(() => ({
+    title: page.payload.title,
+    summary: page.payload.summary,
+    status: page.status,
+    bodyMarkdown: page.payload.bodyMarkdown,
+    editSummary: 'Content update',
+    parentPageKey: page.parentPageKey ?? ''
+  }))
   const [pending, setPending] = useState(false)
   const isOwner = canManageOwnedEntity(page.owner, address)
   const canSubmit = Boolean(walletClient && address && isConnected && isOwner && !pending)
@@ -47,36 +58,45 @@ export function EditPageForm({ spaceKey, spaceSlug, page, availableParents }: Ed
   const parentOptionKeys = useMemo(() => {
     return new Set(parentOptions.map(({ page: candidate }) => candidate.entityKey))
   }, [parentOptions])
+  const isDirty =
+    title !== savedSnapshot.title ||
+    summary !== savedSnapshot.summary ||
+    status !== savedSnapshot.status ||
+    bodyMarkdown !== savedSnapshot.bodyMarkdown ||
+    editSummary !== savedSnapshot.editSummary ||
+    parentPageKey !== savedSnapshot.parentPageKey
+
+  useUnsavedChangesGuard(isDirty && !pending)
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     if (!walletClient || !address || !isConnected) {
-      setStatusText('Connect wallet to update pages.')
+      setFeedback({ tone: 'error', text: 'Connect wallet to update pages.' })
       return
     }
 
     if (!isOwner) {
-      setStatusText('Only owner can update this page.')
+      setFeedback({ tone: 'error', text: 'Only owner can update this page.' })
       return
     }
 
     if (parentPageKey) {
       const selectedParent = parentPageKey as Hex
       if (invalidParentKeys.has(selectedParent) || !parentOptionKeys.has(selectedParent)) {
-        setStatusText('Invalid parent selection. Refresh and choose a different parent.')
+        setFeedback({ tone: 'error', text: 'Invalid parent selection. Refresh and choose a different parent.' })
         return
       }
     }
 
     const preflight = await runWritePreflight(address, chainId)
     if (!preflight.ok) {
-      setStatusText(preflight.message)
+      setFeedback({ tone: 'error', text: preflight.message })
       return
     }
 
     setPending(true)
-    setStatusText('')
+    setFeedback(null)
 
     try {
       const result = await editPage(walletClient, {
@@ -94,12 +114,19 @@ export function EditPageForm({ spaceKey, spaceSlug, page, availableParents }: Ed
         parentPageKey: parentPageKey ? (parentPageKey as Hex) : undefined
       })
 
-      setStatusText(`Saved (${result.txHash.slice(0, 10)}...)`)
-      router.push(`/spaces/${spaceSlug}/${page.pageSlug}`)
+      setFeedback({ tone: 'success', text: `Saved (${result.txHash.slice(0, 10)}...). Choose what to do next.` })
+      setSavedSnapshot({
+        title,
+        summary,
+        status,
+        bodyMarkdown,
+        editSummary,
+        parentPageKey
+      })
       router.refresh()
     } catch (error) {
       console.error('edit-page failed', error)
-      setStatusText(formatWalletError(error, 'Failed to save page.'))
+      setFeedback({ tone: 'error', text: formatWalletError(error, 'Failed to save page.') })
     } finally {
       setPending(false)
     }
@@ -152,14 +179,26 @@ export function EditPageForm({ spaceKey, spaceSlug, page, availableParents }: Ed
         </select>
       </label>
 
-      <label>
-        Markdown body
-        <textarea required value={bodyMarkdown} onChange={(event) => setBodyMarkdown(event.target.value)} />
-      </label>
+      <MarkdownEditorField value={bodyMarkdown} onChange={setBodyMarkdown} />
+
+      {feedback ? (
+        <div className={`form-callout ${feedback.tone === 'success' ? 'success' : 'error'}`}>
+          <p className="subtitle">{feedback.text}</p>
+          {feedback.tone === 'success' ? (
+            <div className="toolbar form-callout-actions">
+              <Link href={`/spaces/${spaceSlug}/${page.pageSlug}`} className="button secondary">
+                Open page
+              </Link>
+              <Link href={`/spaces/${spaceSlug}`} className="button secondary">
+                Back to space
+              </Link>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       <div className="toolbar">
         <input type="submit" disabled={!canSubmit} value={pending ? 'Saving...' : 'Save Page'} />
-        {statusText ? <span className="subtitle">{statusText}</span> : null}
       </div>
       {!isConnected ? <p className="subtitle">Connect the owner wallet to continue.</p> : null}
       {isConnected && !isOwner ? <p className="subtitle">Switch to the owner wallet to continue.</p> : null}
