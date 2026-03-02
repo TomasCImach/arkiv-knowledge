@@ -147,19 +147,30 @@ a {
 }
 
 .sidebar-label {
-  font-size: 0.76rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
+  font-size: 0.92rem;
+  letter-spacing: 0.02em;
+  color: #2e3b4f;
   font-family: var(--font-heading);
+  font-weight: 700;
 }
 
 .sidebar-subtitle {
-  font-size: 0.74rem;
-  letter-spacing: 0.06em;
+  font-size: 0.7rem;
+  letter-spacing: 0.11em;
   text-transform: uppercase;
   color: #61717d;
   font-family: var(--font-heading);
+  font-weight: 600;
+}
+
+.sidebar-space-groups {
+  gap: 0.5rem;
+}
+
+.sidebar-space-section {
+  border-left: 1px solid var(--line);
+  padding-left: 0.56rem;
+  margin-left: 0.08rem;
 }
 
 .card {

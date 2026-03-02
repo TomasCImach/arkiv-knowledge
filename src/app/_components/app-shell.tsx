@@ -52,7 +52,7 @@ export async function AppShell({ children }: { children: ReactNode }) {
           </Link>
         </div>
       </div>
-      <div className="stack" style={{ gap: '0.4rem' }}>
+      <div className="stack sidebar-space-groups" style={{ gap: '0.4rem' }}>
         <span className="sidebar-label">Spaces</span>
         {navError ? <p className="notice">Sidebar degraded: {navError}</p> : null}
         {!hasOwnedSection && !hasPublicSection ? (
