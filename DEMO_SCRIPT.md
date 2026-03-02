@@ -44,7 +44,10 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 
 ### 3) Lifecycle Depth (Canonical + Revisions)
 - Open page edit at `/spaces/[spaceSlug]/[pageSlug]/edit`.
+- In editor, switch between `Edit` and `Preview` tabs for markdown.
+- Make a change and attempt to navigate away to show unsaved-change confirmation.
 - Edit and save twice.
+- After save, use inline CTA (`Open page` / `Back to space`) instead of auto-redirect.
 - Show canonical page key stays constant while revision list grows.
 - Confirm page `createdAt` stays stable while only `updatedAt` changes.
 - On page detail, use **Archive Page** and show status transitions to `archived` with revision continuity.

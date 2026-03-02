@@ -354,3 +354,15 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: run a basic query first, open advanced filters for owner/parent/sort, then remove one constraint from active chips and use `Clear all`.
   - notes/screenshots: search UX component changes in `src/app/_components/space-search-form.tsx`; result-summary updates in space/global search routes.
 - **Next bottleneck:** Iteration 30 authoring UX upgrade (edit/preview tabs + unsaved-change guard).
+
+### 2026-03-02 — Iteration 30 (Authoring Experience Upgrade)
+- **Objective:** improve page authoring confidence and flow completion quality.
+- **Implemented:** introduced shared markdown edit/preview field for create/edit forms; added unsaved-change leave guard hook (`beforeunload` + link-leave confirmation) to authoring surfaces; replaced status fragments with inline success/error callouts; added post-write next-step CTAs (`Open page`, `Back to space`) after successful save/create.
+- **Rubric targets:** UX (`user experience`, primary) / functionality (`core flows work`, secondary).
+- **Expected score delta:** medium.
+- **Evidence:**
+  - tests: added `tests/e2e/page-authoring-ux.test.tsx` (preview tabs + unsaved leave warning), updated existing page form e2e regressions.
+  - verification: `pnpm typecheck`, `pnpm test:e2e`.
+  - demo step: edit a page, switch to preview, attempt to leave with unsaved edits (show confirm), save changes, then use CTA buttons to navigate.
+  - notes/screenshots: new shared components/hooks in `src/app/_components/markdown-editor-field.tsx` and `src/features/forms/useUnsavedChangesGuard.ts`.
+- **Next bottleneck:** Iteration 31 mobile-first navigation and action ergonomics.

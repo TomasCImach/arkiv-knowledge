@@ -405,3 +405,20 @@ Iteration 29 makes query power easier to use without reducing Arkiv predicate de
 - strengthens confidence that UX simplification did not break deterministic URL/query behavior.
 
 **Scoring impact:** Medium-high uplift on UX and medium uplift on functionality discoverability.
+
+---
+
+## 29) Authoring Experience Upgrade (Iteration 30)
+Iteration 30 improves the end-to-end writing workflow for page authors:
+- added reusable markdown edit/preview tabs for both create and edit forms,
+- added unsaved-change leave protection on authoring forms (browser unload + link navigation confirmation),
+- replaced inline status fragments with clearer success/error callouts,
+- added post-save/create next-step CTAs (`Open page`, `Back to space`) directly inside the authoring surface.
+
+**Why this matters:**
+- reduces accidental data loss risk during long editing sessions,
+- improves confidence in markdown quality before submitting a write transaction,
+- keeps users oriented after successful writes without forcing immediate redirects,
+- increases perceived product maturity in one of the most judge-visible flows (create/edit page).
+
+**Scoring impact:** Medium-high uplift on UX authoring quality and medium uplift on core-flow reliability.

@@ -238,12 +238,24 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Advanced controls remain available without crowding the primary interaction path.
 - Active filter state is explicit and quickly reversible from the UI.
 
+### Phase 23 — Authoring Experience Upgrade (Iteration 30)
+- [x] Added markdown edit/preview tabs to create/edit page forms with shared reusable field component.
+- [x] Added unsaved-change route-leave protection for page authoring forms (beforeunload + link navigation confirmation).
+- [x] Reworked save/create feedback into inline callouts with post-write next-step CTAs (`Open page`, `Back to space`).
+- [x] Added e2e coverage for preview-tab behavior and unsaved-change warning, plus regression compatibility for existing page-form tests.
+
+**Exit criteria status:** met.
+- Authors can switch between edit and preview without leaving the form.
+- Unsaved changes are protected by explicit leave confirmation.
+- Success and error states are clearer and actionable in-place.
+
 ## Current Verification Snapshot
 - Last full pass: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`, `pnpm build` on 2026-03-01 (post iteration 26 wallet-auth visibility rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
 - Iteration 27 check: `pnpm typecheck` pass on 2026-03-02 after visual-system refactor.
 - Iteration 28 check: `pnpm typecheck` pass on 2026-03-02 after technical-details disclosure rollout.
 - Iteration 29 check: `pnpm typecheck` + `pnpm test:e2e` pass on 2026-03-02 after search UX simplification and filter-chip rollout.
+- Iteration 30 check: `pnpm typecheck` + `pnpm test:e2e` pass on 2026-03-02 after authoring UX (preview tabs + unsaved guard + callouts) rollout.
 - Added passing integrity coverage for canonical selection + duplicate guards (`tests/integration/canonical-resolution.test.ts`, `tests/integration/create-conflict-guards.test.ts`).
 - Added lifecycle hardening coverage (`tests/integration/edit-page-mutate.test.ts`, `tests/integration/create-page-repair.test.ts`).
 - Added visibility/realtime coverage (`tests/unit/visibility-access.test.ts`, `tests/e2e/private-visibility-routes.test.tsx`, `tests/e2e/use-arkiv-events.test.tsx`).
