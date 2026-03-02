@@ -366,3 +366,27 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: edit a page, switch to preview, attempt to leave with unsaved edits (show confirm), save changes, then use CTA buttons to navigate.
   - notes/screenshots: new shared components/hooks in `src/app/_components/markdown-editor-field.tsx` and `src/features/forms/useUnsavedChangesGuard.ts`.
 - **Next bottleneck:** Iteration 31 mobile-first navigation and action ergonomics.
+
+### 2026-03-02 — Iteration 31 (Mobile-First Navigation + Action Ergonomics)
+- **Objective:** improve mobile browse/write ergonomics and navigation clarity for judge-visible responsive behavior.
+- **Implemented:** added explicit mobile drawer navigation with open/close controls and route-change auto-close; preserved desktop sidebar pattern while reducing mobile header action crowding; introduced sticky mobile action bars for create/edit/settings/search apply actions; enforced 44px minimum touch-target baseline on core controls.
+- **Rubric targets:** UX (`responsive design`, primary) / UX (`user experience`, secondary).
+- **Expected score delta:** high.
+- **Evidence:**
+  - tests: added `tests/e2e/mobile-ux-states.test.tsx` (drawer open/close/path-change behavior + retry primitive path).
+  - verification: `pnpm typecheck`, `pnpm test:e2e`.
+  - demo step: switch to mobile width, open drawer nav, navigate to create/edit/search flows, and show sticky submit/apply controls while scrolling.
+  - notes/screenshots: mobile IA + action ergonomics implemented in `src/app/_components/mobile-nav-drawer.tsx`, `src/app/_components/app-shell.tsx`, and `src/app/globals.css`.
+- **Next bottleneck:** Iteration 32 loading/empty/error state unification and retry affordances.
+
+### 2026-03-02 — Iteration 32 (Loading/Empty/Error States Unification)
+- **Objective:** make degraded/loading/empty route states consistent, actionable, and demo-stable.
+- **Implemented:** introduced shared route feedback components (`RouteStateCard`, `RouteLoadingState`, `RetryButton`); added route-level loading skeletons for home/space/page/search/settings; migrated key empty states to task-oriented CTA cards; replaced static degraded-read warnings with explicit retry controls.
+- **Rubric targets:** UX (`user experience`, primary) / functionality (`error handling`, secondary).
+- **Expected score delta:** medium-high.
+- **Evidence:**
+  - tests: `tests/e2e/mobile-ux-states.test.tsx` (retry primitive), full e2e regression suite for route copy/state integrations.
+  - verification: `pnpm typecheck`, `pnpm test:e2e`.
+  - demo step: trigger/loading transition to show skeleton states, run a filtered search with no matches to show CTA empty state, then simulate degraded read path and use retry action.
+  - notes/screenshots: shared state components in `src/app/_components/route-state-card.tsx`, `src/app/_components/route-loading-state.tsx`, and route updates across home/search/space/page/new/edit/settings.
+- **Next bottleneck:** refresh submission evidence captures to include new mobile and recovery-state walkthrough screenshots.

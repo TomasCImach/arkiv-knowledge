@@ -12,8 +12,8 @@ Challenge timing guardrail:
 - [x] Iteration 28 - Progressive Disclosure for Technical Metadata
 - [x] Iteration 29 - Search UX Simplification
 - [x] Iteration 30 - Authoring Experience Upgrade
-- [ ] Iteration 31 - Mobile-First Navigation + Action Ergonomics
-- [ ] Iteration 32 - Loading/Empty/Error States Unification
+- [x] Iteration 31 - Mobile-First Navigation + Action Ergonomics
+- [x] Iteration 32 - Loading/Empty/Error States Unification
 
 ## Baseline (Rubric-Calibrated)
 - Arkiv integration depth: strong (high-4s)
@@ -111,3 +111,5 @@ Primary score drag is not missing features. It is UX polish, visual distinctiven
 - Design & UX: 3.8 -> 4.5
 - Code quality/docs: 4.6 -> 4.7
 - Weighted final: ~4.65/5 (target band: 4.60-4.75)
+
+V3 execution status on 2026-03-02: complete (iterations 27-32 shipped with test and demo evidence updates).

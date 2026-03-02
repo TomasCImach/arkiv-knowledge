@@ -249,6 +249,28 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Unsaved changes are protected by explicit leave confirmation.
 - Success and error states are clearer and actionable in-place.
 
+### Phase 24 — Mobile-First Navigation + Action Ergonomics (Iteration 31)
+- [x] Added explicit mobile navigation drawer with open/close controls and route-change auto-close behavior.
+- [x] Kept desktop sidebar for larger viewports while moving mobile discovery into drawer-first IA.
+- [x] Added sticky mobile action bars for critical submit/apply actions (create/edit/settings/search).
+- [x] Enforced touch-target baseline sizing and spacing for mobile interaction reliability.
+
+**Exit criteria status:** met.
+- Mobile browse flow now has explicit, predictable navigation controls without sidebar crowding.
+- Critical actions remain reachable on small screens during long forms/search interactions.
+- Interaction controls meet mobile ergonomics baseline (44px target minimum).
+
+### Phase 25 — Loading/Empty/Error State Unification (Iteration 32)
+- [x] Added shared route feedback components for empty/error/loading surfaces.
+- [x] Added route-level `loading.tsx` skeletons for home, space, page, search, and settings routes.
+- [x] Replaced ad-hoc empty cards with task-oriented guidance and direct CTA actions on key browse/search routes.
+- [x] Added explicit retry affordances (`router.refresh`) for degraded Arkiv reads across primary routes.
+
+**Exit criteria status:** met.
+- Loading states are now consistent and route-specific across judge-critical flows.
+- Empty states provide clear next actions instead of dead-end messaging.
+- Read degradation paths now provide recoverable retry controls instead of static warnings.
+
 ## Current Verification Snapshot
 - Last full pass: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`, `pnpm build` on 2026-03-01 (post iteration 26 wallet-auth visibility rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
@@ -256,6 +278,8 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Iteration 28 check: `pnpm typecheck` pass on 2026-03-02 after technical-details disclosure rollout.
 - Iteration 29 check: `pnpm typecheck` + `pnpm test:e2e` pass on 2026-03-02 after search UX simplification and filter-chip rollout.
 - Iteration 30 check: `pnpm typecheck` + `pnpm test:e2e` pass on 2026-03-02 after authoring UX (preview tabs + unsaved guard + callouts) rollout.
+- Iteration 31 check: `pnpm typecheck` + `pnpm test:e2e` pass on 2026-03-02 after mobile drawer/action ergonomics rollout.
+- Iteration 32 check: `pnpm typecheck` + `pnpm test:e2e` pass on 2026-03-02 after unified route loading/empty/error/retry states rollout.
 - Added passing integrity coverage for canonical selection + duplicate guards (`tests/integration/canonical-resolution.test.ts`, `tests/integration/create-conflict-guards.test.ts`).
 - Added lifecycle hardening coverage (`tests/integration/edit-page-mutate.test.ts`, `tests/integration/create-page-repair.test.ts`).
 - Added visibility/realtime coverage (`tests/unit/visibility-access.test.ts`, `tests/e2e/private-visibility-routes.test.tsx`, `tests/e2e/use-arkiv-events.test.tsx`).
@@ -270,8 +294,8 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Strict evidence proof: `EVIDENCE_FAIL_SOFT=0 pnpm evidence:capture` passes and records `realtime-two-tab` as captured (with explicit diagnostic fallback detail when direct two-tab observation times out).
 
 ## Next Bottlenecks (Optional Improvements)
-1. Add child-page reparent policy controls for parent deletion (auto-root vs manual reparent prompt).
-2. Add session revocation/refresh UX hardening (expiry countdown + proactive re-verify prompt).
+1. Capture and commit refreshed desktop/mobile UX evidence screenshots for iteration 31/32 state surfaces.
+2. Add wallet session expiry indicator + proactive re-verification prompt in header for longer demos.
 3. Add reproducible public deployment pipeline + pinned demo URL for final submission handoff.
 
 ## Plan V1 (2026-02-25)

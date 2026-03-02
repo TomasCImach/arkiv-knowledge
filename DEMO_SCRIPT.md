@@ -22,6 +22,12 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - Keep `Technical details` panels collapsed in default browse path, then expand one panel to show canonical key/retention transparency on demand.
 - Verbalize: “Read paths are public, navigation hierarchy is optimized for documentation browsing, and the UI system intentionally separates reading typography from action/navigation typography.”
 
+### 1.5) Mobile IA + Action Ergonomics
+- Switch browser width to mobile.
+- Open the `Menu` drawer, navigate to `Search Pages` or `My Spaces`, then close drawer.
+- Open create/edit/search forms and scroll; show sticky mobile action bars for `Create`, `Save`, and `Apply query`.
+- Verbalize: “Navigation remains explicit on mobile, and critical actions stay reachable while scrolling.”
+
 ### 2) Wallet-Gated Write
 - Connect wallet.
 - Create a new space at `/new/space`.
@@ -98,6 +104,12 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - Show `report.json` entries for `walkthrough-clip` and realtime.
 - Show `MANIFEST.sha256` hash list for artifact integrity.
 - Verbalize: “Evidence capture is deterministic, hash-verifiable, and CI-uploaded in both fail-soft and strict modes.”
+
+### 11) Recovery UX (Loading/Empty/Error)
+- Navigate between routes and briefly show loading skeleton cards.
+- Run a search that returns zero results and show task-oriented empty-state CTA.
+- Show an Arkiv degraded-read state (if available) and click `Retry` to recover using in-place refresh.
+- Verbalize: “Loading/empty/error surfaces are unified and actionable, so degraded reads do not break the flow.”
 
 ## Required Verbal Points
 - “Core domain data is stored as Arkiv entities.”
