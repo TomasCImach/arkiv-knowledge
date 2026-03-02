@@ -7,6 +7,8 @@ import { PageLifecycleForm } from '@/app/_components/page-lifecycle-form'
 import { PageMarkdown } from '@/app/_components/page-markdown'
 import { PresencePanel } from '@/app/_components/presence-panel'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
+import { RetryButton } from '@/app/_components/retry-button'
+import { RouteStateCard, RouteStateLinkAction } from '@/app/_components/route-state-card'
 import { TechnicalDetails } from '@/app/_components/technical-details'
 import { TransferOwnershipForm } from '@/app/_components/transfer-ownership-form'
 import {
@@ -51,14 +53,18 @@ export default async function PageRoute({
   } catch (error) {
     const message = formatReadError(error)
     return (
-      <section className="stack">
-        <div className="card stack">
-          <h1 className="title">Page temporarily unavailable</h1>
-          <p className="notice">Could not load page data from Arkiv: {message}</p>
-          <Link href={`/spaces/${spaceSlug}`} className="button secondary">
-            Back to space
-          </Link>
-        </div>
+      <section className="stack doc-column">
+        <RouteStateCard
+          tone="error"
+          title="Page temporarily unavailable"
+          message={`Could not load page data from Arkiv: ${message}`}
+          action={
+            <>
+              <RetryButton label="Retry page read" />
+              <RouteStateLinkAction href={`/spaces/${spaceSlug}`} label="Back to space" secondary />
+            </>
+          }
+        />
       </section>
     )
   }
@@ -159,7 +165,12 @@ export default async function PageRoute({
           <TransferOwnershipForm entityKey={page.entityKey} entityOwner={page.owner} entityLabel="page" />
         </div>
         {queryErrors.length > 0 ? (
-          <div className="notice">Some live Arkiv data is temporarily unavailable. Retry to refresh relationship/presence panels.</div>
+          <RouteStateCard
+            tone="error"
+            title="Some live panels are degraded"
+            message="Arkiv relationship, revision, or presence reads are temporarily unavailable."
+            action={<RetryButton label="Retry live panels" />}
+          />
         ) : null}
 
         <PageMarkdown markdown={page.payload.bodyMarkdown} />

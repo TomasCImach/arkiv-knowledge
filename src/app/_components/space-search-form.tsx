@@ -181,7 +181,9 @@ export function SpaceSearchForm({
         <button type="button" className="secondary" onClick={() => setAdvancedOpen((value) => !value)}>
           {advancedOpen ? 'Hide advanced filters' : 'Show advanced filters'}
         </button>
-        <button type="submit">Apply query</button>
+        <button type="submit" className="search-submit mobile-action-bar">
+          Apply query
+        </button>
       </div>
 
       {advancedOpen ? (

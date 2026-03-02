@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
+import { RetryButton } from '@/app/_components/retry-button'
+import { RouteStateCard, RouteStateLinkAction } from '@/app/_components/route-state-card'
 import { listSpacesOwnedBy } from '@/arkiv/queries'
 import type { ParsedSpace } from '@/arkiv/types'
 import { getAuthenticatedViewerAddress } from '@/features/auth/session'
@@ -14,12 +16,11 @@ export default async function MySpacesPage() {
     return (
       <section className="stack doc-column">
         <Breadcrumbs items={[{ href: '/', label: 'Knowledge Base' }, { label: 'My Spaces' }]} />
-        <div className="card stack">
-          <h1 className="title">My Spaces</h1>
-          <p className="subtitle">
-            Verify private access in the header after connecting your wallet to list your private and unlisted spaces.
-          </p>
-        </div>
+        <RouteStateCard
+          title="My Spaces"
+          message="Verify private access in the header after connecting your wallet to list your private and unlisted spaces."
+          action={<RouteStateLinkAction href="/" label="Back to knowledge base" secondary />}
+        />
       </section>
     )
   }
@@ -42,13 +43,23 @@ export default async function MySpacesPage() {
           <span className="badge">viewer: {viewer.slice(0, 10)}...</span>
           <span className="badge">{spaces.length} spaces</span>
         </div>
-        {loadError ? <p className="notice">Owned-space query degraded: {loadError}</p> : null}
       </div>
 
+      {loadError ? (
+        <RouteStateCard
+          tone="error"
+          title="Could not refresh owned spaces"
+          message={`Owned-space query degraded: ${loadError}`}
+          action={<RetryButton label="Retry owned spaces query" />}
+        />
+      ) : null}
+
       {spaces.length === 0 ? (
-        <div className="card stack">
-          <p className="subtitle">No spaces found for the authenticated wallet.</p>
-        </div>
+        <RouteStateCard
+          title="No owned spaces found"
+          message="Create a space with this wallet to populate the owner view."
+          action={<RouteStateLinkAction href="/new/space" label="Create space" />}
+        />
       ) : (
         <div className="card stack">
           {spaces.map((space) => (

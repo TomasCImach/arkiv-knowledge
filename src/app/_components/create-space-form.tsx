@@ -107,9 +107,9 @@ export function CreateSpaceForm() {
         </select>
       </label>
 
-      <div className="toolbar">
+      {statusText ? <p className="subtitle">{statusText}</p> : null}
+      <div className="toolbar form-actions mobile-action-bar">
         <input type="submit" disabled={pending} value={pending ? 'Creating...' : 'Create Space'} />
-        {statusText ? <span className="subtitle">{statusText}</span> : null}
       </div>
     </form>
   )

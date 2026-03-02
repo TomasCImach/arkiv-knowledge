@@ -7,6 +7,8 @@ import { ExtendEntityButton } from '@/app/_components/extend-entity-button'
 import { PageTreeNav } from '@/app/_components/page-tree-nav'
 import { QueryDebugPanel } from '@/app/_components/query-debug-panel'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
+import { RetryButton } from '@/app/_components/retry-button'
+import { RouteStateCard, RouteStateLinkAction } from '@/app/_components/route-state-card'
 import { SpaceSearchForm } from '@/app/_components/space-search-form'
 import { TechnicalDetails } from '@/app/_components/technical-details'
 import { buildPageSearchPredicates, fetchCurrentBlock, getSpaceBySlug, listPagesBySpaceKey, searchPages } from '@/arkiv/queries'
@@ -32,14 +34,18 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
   } catch (error) {
     const message = formatReadError(error)
     return (
-      <section className="stack">
-        <div className="card stack">
-          <h1 className="title">Space temporarily unavailable</h1>
-          <p className="notice">Could not read this space from Arkiv: {message}</p>
-          <Link href="/" className="button secondary">
-            Back to spaces
-          </Link>
-        </div>
+      <section className="stack doc-column">
+        <RouteStateCard
+          tone="error"
+          title="Space temporarily unavailable"
+          message={`Could not read this space from Arkiv: ${message}`}
+          action={
+            <>
+              <RetryButton label="Retry space read" />
+              <RouteStateLinkAction href="/" label="Back to spaces" secondary />
+            </>
+          }
+        />
       </section>
     )
   }
@@ -148,7 +154,6 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
             ) : null}
             <p className="subtitle">Retention controls and lifecycle metadata are shown here to keep browsing focused on content.</p>
           </TechnicalDetails>
-          {queryError ? <p className="notice">Page query degraded: {queryError}</p> : null}
         </div>
 
         <SpaceSearchForm
@@ -173,15 +178,23 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
           predicates={activePredicates}
         />
 
-        {pages.length === 0 ? (
-          <div className="card stack">
-            <p className="subtitle">
-              {hasActiveQuery
+        {queryError ? (
+          <RouteStateCard
+            tone="error"
+            title="Page query degraded"
+            message={queryError}
+            action={<RetryButton label="Retry page query" />}
+          />
+        ) : pages.length === 0 ? (
+          <RouteStateCard
+            title="No pages in this view"
+            message={
+              hasActiveQuery
                 ? `Showing 0 pages in ${space.payload.name} for the active filters.`
-                : `Showing 0 pages in ${space.payload.name}.`}
-            </p>
-            <p className="subtitle">No pages match the current query.</p>
-          </div>
+                : `Showing 0 pages in ${space.payload.name}.`
+            }
+            action={<RouteStateLinkAction href={`/spaces/${spaceSlug}/new`} label="Create first page" />}
+          />
         ) : (
           <div className="card stack">
             <div className="toolbar" style={{ justifyContent: 'space-between' }}>

@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { EditSpaceForm } from '@/app/_components/edit-space-form'
+import { RetryButton } from '@/app/_components/retry-button'
+import { RouteStateCard, RouteStateLinkAction } from '@/app/_components/route-state-card'
 import { TechnicalDetails } from '@/app/_components/technical-details'
 import { TransferOwnershipForm } from '@/app/_components/transfer-ownership-form'
 import { getSpaceBySlug } from '@/arkiv/queries'
@@ -25,10 +27,19 @@ export default async function SpaceSettingsRoute({
   } catch (error) {
     const message = formatReadError(error)
     return (
-      <div className="card stack">
-        <h1 className="title">Space temporarily unavailable</h1>
-        <p className="notice">Could not load space settings from Arkiv: {message}</p>
-      </div>
+      <section className="stack doc-column">
+        <RouteStateCard
+          tone="error"
+          title="Space settings unavailable"
+          message={`Could not load space settings from Arkiv: ${message}`}
+          action={
+            <>
+              <RetryButton label="Retry settings read" />
+              <RouteStateLinkAction href={`/spaces/${spaceSlug}`} label="Back to space" secondary />
+            </>
+          }
+        />
+      </section>
     )
   }
 

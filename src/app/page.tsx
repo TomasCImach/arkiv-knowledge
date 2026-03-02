@@ -1,5 +1,7 @@
 import Link from 'next/link'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
+import { RetryButton } from '@/app/_components/retry-button'
+import { RouteStateCard, RouteStateLinkAction } from '@/app/_components/route-state-card'
 import { listSpaces } from '@/arkiv/queries'
 import type { ParsedSpace } from '@/arkiv/types'
 import { filterListedSpaces } from '@/features/visibility/access'
@@ -37,13 +39,23 @@ export default async function HomePage() {
           </Link>
           <span className="badge">Core data is stored as Arkiv entities</span>
         </div>
-        {loadError ? <p className="notice">Arkiv read is temporarily unavailable: {loadError}</p> : null}
       </div>
 
+      {loadError ? (
+        <RouteStateCard
+          tone="error"
+          title="Space listing temporarily unavailable"
+          message={`Arkiv read degraded: ${loadError}`}
+          action={<RetryButton label="Retry space query" />}
+        />
+      ) : null}
+
       {listedSpaces.length === 0 ? (
-        <div className="card stack">
-          <p className="subtitle">No spaces yet. Connect a wallet and create the first one.</p>
-        </div>
+        <RouteStateCard
+          title="No spaces yet"
+          message="Connect the owner wallet and create the first space to start your knowledge base."
+          action={<RouteStateLinkAction href="/new/space" label="Create first space" />}
+        />
       ) : (
         <div className="card stack">
           <div className="toolbar" style={{ justifyContent: 'space-between' }}>

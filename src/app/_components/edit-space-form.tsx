@@ -131,9 +131,9 @@ export function EditSpaceForm({ space }: EditSpaceFormProps) {
         </select>
       </label>
 
-      <div className="toolbar">
+      {statusText ? <p className="subtitle">{statusText}</p> : null}
+      <div className="toolbar form-actions mobile-action-bar">
         <input type="submit" disabled={!canSubmit} value={pending ? 'Saving...' : 'Save Settings'} />
-        {statusText ? <span className="subtitle">{statusText}</span> : null}
       </div>
 
       {!isConnected ? <p className="subtitle">Connect the owner wallet to continue.</p> : null}

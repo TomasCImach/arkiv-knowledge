@@ -3,6 +3,8 @@ import type { Hex } from 'viem'
 import { isAddress } from 'viem'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { QueryDebugPanel } from '@/app/_components/query-debug-panel'
+import { RetryButton } from '@/app/_components/retry-button'
+import { RouteStateCard, RouteStateLinkAction } from '@/app/_components/route-state-card'
 import { SpaceSearchForm } from '@/app/_components/space-search-form'
 import { buildGlobalPageSearchPredicates, listSpaces, searchPagesGlobal } from '@/arkiv/queries'
 import type { GlobalPageSearchInput, PageParentMode, PageSortMode, PageStatus, ParsedPage } from '@/arkiv/types'
@@ -87,23 +89,28 @@ export default async function GlobalPageSearchRoute({
       />
 
       {!hasActiveQuery ? (
-        <div className="card stack">
-          <p className="subtitle">Add at least one filter (query, status, owner, or parent mode) to run cross-space search.</p>
-        </div>
+        <RouteStateCard
+          title="Choose filters to start searching"
+          message="Add at least one filter (query, status, owner, or parent mode) to run a cross-space Arkiv query."
+        />
       ) : null}
 
       {queryError ? (
-        <div className="card stack">
-          <p className="notice">{queryError}</p>
-        </div>
+        <RouteStateCard
+          tone="error"
+          title="Search query degraded"
+          message={queryError}
+          action={<RetryButton label="Retry search" />}
+        />
       ) : null}
 
       {hasActiveQuery && !queryError ? (
         pages.length === 0 ? (
-          <div className="card stack">
-            <p className="subtitle">Showing 0 pages across all visible spaces for the active filters.</p>
-            <p className="subtitle">No pages match the current query.</p>
-          </div>
+          <RouteStateCard
+            title="No matching pages"
+            message="Showing 0 pages across all visible spaces for the active filters."
+            action={<RouteStateLinkAction href="/search/pages" label="Clear filters" secondary />}
+          />
         ) : (
           <div className="card stack">
             <div className="toolbar" style={{ justifyContent: 'space-between' }}>

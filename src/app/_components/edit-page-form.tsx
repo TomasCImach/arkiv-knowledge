@@ -197,7 +197,7 @@ export function EditPageForm({ spaceKey, spaceSlug, page, availableParents }: Ed
         </div>
       ) : null}
 
-      <div className="toolbar">
+      <div className="toolbar form-actions mobile-action-bar">
         <input type="submit" disabled={!canSubmit} value={pending ? 'Saving...' : 'Save Page'} />
       </div>
       {!isConnected ? <p className="subtitle">Connect the owner wallet to continue.</p> : null}

@@ -171,7 +171,7 @@ export function CreatePageForm({ spaceKey, spaceSlug, spaceOwner, availableParen
         </div>
       ) : null}
 
-      <div className="toolbar">
+      <div className="toolbar form-actions mobile-action-bar">
         <input type="submit" disabled={!canSubmit} value={pending ? 'Saving...' : 'Create Page'} />
       </div>
       {!isConnected ? <p className="subtitle">Connect the owner wallet to continue.</p> : null}

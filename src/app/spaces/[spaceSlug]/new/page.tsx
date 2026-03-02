@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { CreatePageForm } from '@/app/_components/create-page-form'
+import { RetryButton } from '@/app/_components/retry-button'
+import { RouteStateCard, RouteStateLinkAction } from '@/app/_components/route-state-card'
 import { getSpaceBySlug, listPagesBySpaceKey } from '@/arkiv/queries'
 import { getAuthenticatedViewerAddress } from '@/features/auth/session'
 import { canViewSpace } from '@/features/visibility/access'
@@ -29,10 +31,19 @@ export default async function NewPageRoute({
   } catch (error) {
     const message = formatReadError(error)
     return (
-      <div className="card stack">
-        <h1 className="title">Space temporarily unavailable</h1>
-        <p className="notice">Could not load space for page creation: {message}</p>
-      </div>
+      <section className="stack doc-column">
+        <RouteStateCard
+          tone="error"
+          title="Cannot load create-page context"
+          message={`Could not load space for page creation: ${message}`}
+          action={
+            <>
+              <RetryButton label="Retry create-page context" />
+              <RouteStateLinkAction href={`/spaces/${spaceSlug}`} label="Back to space" secondary />
+            </>
+          }
+        />
+      </section>
     )
   }
 

@@ -1,6 +1,8 @@
 import { notFound } from 'next/navigation'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { EditPageForm } from '@/app/_components/edit-page-form'
+import { RetryButton } from '@/app/_components/retry-button'
+import { RouteStateCard, RouteStateLinkAction } from '@/app/_components/route-state-card'
 import { getPageBySlugInSpace, getSpaceBySlug, listPagesBySpaceKey } from '@/arkiv/queries'
 import { getAuthenticatedViewerAddress } from '@/features/auth/session'
 import { canViewSpace } from '@/features/visibility/access'
@@ -34,10 +36,19 @@ export default async function EditPageRoute({
   } catch (error) {
     const message = formatReadError(error)
     return (
-      <div className="card stack">
-        <h1 className="title">Page temporarily unavailable</h1>
-        <p className="notice">Could not load page for editing: {message}</p>
-      </div>
+      <section className="stack doc-column">
+        <RouteStateCard
+          tone="error"
+          title="Cannot load edit-page context"
+          message={`Could not load page for editing: ${message}`}
+          action={
+            <>
+              <RetryButton label="Retry edit-page context" />
+              <RouteStateLinkAction href={`/spaces/${spaceSlug}/${pageSlug}`} label="Back to page" secondary />
+            </>
+          }
+        />
+      </section>
     )
   }
 
