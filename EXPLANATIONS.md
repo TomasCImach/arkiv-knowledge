@@ -354,3 +354,20 @@ Iteration 26 replaces insecure URL-based owner context with cryptographic wallet
 - improves judge confidence in ownership/visibility integrity while preserving public browse behavior.
 
 **Scoring impact:** High uplift on integration depth security posture and medium-high uplift on private-flow reliability.
+
+---
+
+## 26) Visual Identity + Readability System (Iteration 27)
+Iteration 27 focuses on Design & UX lift without changing Arkiv storage/query behavior:
+- refreshed the global token system with clearer semantic contrast (ink/surface/line/accent), spacing, radius, and elevation scales,
+- introduced stronger but restrained brand expression through accent usage, surface treatment, and interaction feedback,
+- corrected typography boundary so long-form reading uses body serif while UI chrome/headings/actions use heading font,
+- improved hover/focus states and card/list affordances to make navigation and action priority more legible in demos.
+
+**Why this matters:**
+- directly targets the rubric's visual design axis (distinctive identity + cohesive style),
+- increases readability and perceived product maturity on first visit,
+- improves judge scanning speed for primary CTAs and information hierarchy,
+- preserves Arkiv-first proof quality by keeping all data and lifecycle semantics unchanged.
+
+**Scoring impact:** Medium-high uplift on Design & UX with low implementation risk.

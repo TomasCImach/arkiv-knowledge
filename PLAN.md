@@ -205,9 +205,21 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Viewer identity is cryptographically proven by the connected wallet.
 - Private-read gating remains deterministic and demoable in 3–5 minutes.
 
+### Phase 20 — Visual Identity + Readability System (Iteration 27)
+- [x] Refreshed global design tokens (palette, spacing, radius, shadows) for stronger visual hierarchy and brand differentiation.
+- [x] Corrected typography boundary: reading surfaces now use body serif while UI chrome/headings/buttons use heading font.
+- [x] Upgraded interactive styling for buttons, cards, navigation, and focus rings with consistent accent semantics.
+- [x] Improved background atmosphere and content contrast while keeping no-wallet browse UX intact.
+
+**Exit criteria status:** met.
+- Visual hierarchy is stronger and more judge-distinctive in home/space/page/settings views.
+- Readability improved by separating body copy typography from interface typography.
+- Interaction states are clearer and more consistent without changing Arkiv data behavior.
+
 ## Current Verification Snapshot
 - Last full pass: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`, `pnpm build` on 2026-03-01 (post iteration 26 wallet-auth visibility rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
+- Iteration 27 check: `pnpm typecheck` pass on 2026-03-02 after visual-system refactor.
 - Added passing integrity coverage for canonical selection + duplicate guards (`tests/integration/canonical-resolution.test.ts`, `tests/integration/create-conflict-guards.test.ts`).
 - Added lifecycle hardening coverage (`tests/integration/edit-page-mutate.test.ts`, `tests/integration/create-page-repair.test.ts`).
 - Added visibility/realtime coverage (`tests/unit/visibility-access.test.ts`, `tests/e2e/private-visibility-routes.test.tsx`, `tests/e2e/use-arkiv-events.test.tsx`).
@@ -232,3 +244,6 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 
 ## Plan V2 (2026-03-01)
 - See [planV2.md](/Users/tomas/Dev/Personal/arkiv-knowledge/planV2.md) for the next score-lift sequence focused on data integrity, lifecycle correctness, and submission hardening.
+
+## Plan V3 (2026-03-01)
+- See [planV3.md](/Users/tomas/Dev/Personal/arkiv-knowledge/planV3.md) for the UX/design-first score-lift sequence focused on visual identity, progressive disclosure, search ergonomics, mobile IA, and loading/empty/error states.

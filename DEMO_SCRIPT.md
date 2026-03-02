@@ -19,7 +19,7 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 ### 1) Public Browse (No Wallet)
 - Open `/` in Tab A with wallet disconnected.
 - Use left navigation + breadcrumbs to move from home -> one space -> one page (`/spaces/[spaceSlug]/[pageSlug]`).
-- Verbalize: “Read paths are public, and navigation hierarchy is optimized for documentation browsing.”
+- Verbalize: “Read paths are public, navigation hierarchy is optimized for documentation browsing, and the UI system intentionally separates reading typography from action/navigation typography.”
 
 ### 2) Wallet-Gated Write
 - Connect wallet.

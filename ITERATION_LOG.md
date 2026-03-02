@@ -318,3 +318,15 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: connect owner wallet, click `Verify Private Access`, open private space/settings successfully; change wallet/disconnect and show private route denied unless wallet session is re-verified.
   - notes/screenshots: private-read auth no longer depends on URL params, and links/routes no longer carry `viewer`.
 - **Next bottleneck:** add session revocation/refresh UX hardening and public deployment reproducibility polish.
+
+### 2026-03-02 — Iteration 27 (Visual Identity + Readability System)
+- **Objective:** raise judged UX/design perception with a stronger visual system and clearer reading hierarchy.
+- **Implemented:** refreshed global theme tokens (palette/spacing/radius/shadows), upgraded button/card/list/nav interaction styling, added richer background atmosphere, and corrected typography boundary so body content uses `--font-body` while headings/UI chrome/actions use `--font-heading`.
+- **Rubric targets:** UX (`visual design`, primary) / UX (`user experience`, secondary).
+- **Expected score delta:** medium-high.
+- **Evidence:**
+  - tests: N/A (styling-focused iteration).
+  - verification: `pnpm typecheck`.
+  - demo step: start at `/` and quickly compare browse readability and CTA prominence across `/`, `/spaces/[spaceSlug]`, `/spaces/[spaceSlug]/[pageSlug]`, and `/spaces/[spaceSlug]/settings`.
+  - notes/screenshots: updated visual system is centralized in `src/app/globals.css`; typography boundary fix in `src/app/layout.tsx`.
+- **Next bottleneck:** Iteration 28 progressive disclosure of technical metadata (reduce blockchain jargon in default browse flow).
