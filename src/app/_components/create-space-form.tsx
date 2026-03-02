@@ -76,7 +76,7 @@ export function CreateSpaceForm() {
   return (
     <form className="card stack" onSubmit={onSubmit}>
       <h1 className="title">Create Space</h1>
-      <p className="subtitle">Writes require wallet signatures. Browsing remains public.</p>
+      <p className="subtitle">Anyone can browse spaces. Connect a wallet to create one.</p>
 
       <label>
         Space name

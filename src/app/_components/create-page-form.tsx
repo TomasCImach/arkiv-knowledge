@@ -11,6 +11,7 @@ import { listPagesInTreeOrder } from '@/features/hierarchy/tree'
 import { canManageOwnedEntity } from '@/features/ownership/permissions'
 import { slugify } from '@/lib/text'
 import { formatWalletError, runWritePreflight } from '@/lib/wallet'
+import { TechnicalDetails } from '@/app/_components/technical-details'
 
 export type CreatePageFormProps = {
   spaceKey: Hex
@@ -90,7 +91,10 @@ export function CreatePageForm({ spaceKey, spaceSlug, spaceOwner, availableParen
   return (
     <form className="card stack" onSubmit={onSubmit}>
       <h1 className="title">Create Page</h1>
-      <p className="subtitle">This writes canonical page + revision entities to Arkiv. Only the space owner can submit.</p>
+      <p className="subtitle">Create a page in this space. Only the owner wallet can publish changes.</p>
+      <TechnicalDetails summary="Technical details (write path)">
+        <p className="subtitle">Submitting creates/updates canonical `kb.page` data and appends a `kb.revision` entry.</p>
+      </TechnicalDetails>
 
       <label>
         Title
@@ -142,8 +146,8 @@ export function CreatePageForm({ spaceKey, spaceSlug, spaceOwner, availableParen
         <input type="submit" disabled={!canSubmit} value={pending ? 'Saving...' : 'Create Page'} />
         {statusText ? <span className="subtitle">{statusText}</span> : null}
       </div>
-      {!isConnected ? <p className="subtitle">Connect wallet to create pages.</p> : null}
-      {isConnected && !isSpaceOwner ? <p className="subtitle">Only owner can create pages in this space.</p> : null}
+      {!isConnected ? <p className="subtitle">Connect the owner wallet to continue.</p> : null}
+      {isConnected && !isSpaceOwner ? <p className="subtitle">Switch to the owner wallet to continue.</p> : null}
     </form>
   )
 }

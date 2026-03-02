@@ -62,7 +62,7 @@ export default async function GlobalPageSearchRoute({
 
       <div className="card stack">
         <h1 className="title">Cross-Space Page Search</h1>
-        <p className="subtitle">Arkiv predicate search across all spaces. Reads stay public.</p>
+        <p className="subtitle">Search pages across spaces. Browsing stays public.</p>
       </div>
 
       <SpaceSearchForm

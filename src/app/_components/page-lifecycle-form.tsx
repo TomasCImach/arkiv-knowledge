@@ -8,6 +8,7 @@ import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
 import { canManageOwnedEntity } from '@/features/ownership/permissions'
 import { formatWalletError, runWritePreflight } from '@/lib/wallet'
 import { useAccount } from 'wagmi'
+import { TechnicalDetails } from '@/app/_components/technical-details'
 
 type PageLifecycleFormProps = {
   page: ParsedPage
@@ -123,9 +124,10 @@ export function PageLifecycleForm({ page, viewer }: PageLifecycleFormProps) {
   return (
     <div className="card stack">
       <h3 style={{ margin: 0 }}>Page Lifecycle</h3>
-      <p className="subtitle">
-        Owner-only actions. Archive keeps history for recovery; delete removes canonical page plus related links, presence, and revisions.
-      </p>
+      <p className="subtitle">Archive or delete this page. Only the owner wallet can run lifecycle actions.</p>
+      <TechnicalDetails summary="Technical details (lifecycle semantics)">
+        <p className="subtitle">Archive keeps revision history; delete removes canonical page plus linked `kb.link`, `kb.presence`, and `kb.revision` entities.</p>
+      </TechnicalDetails>
 
       <form onSubmit={onArchive}>
         <div className="toolbar">
@@ -149,8 +151,8 @@ export function PageLifecycleForm({ page, viewer }: PageLifecycleFormProps) {
       </form>
 
       {statusText ? <p className="subtitle">{statusText}</p> : null}
-      {!isConnected ? <p className="subtitle">Connect wallet to manage lifecycle actions.</p> : null}
-      {isConnected && !isOwner ? <p className="subtitle">Only owner can archive or delete this page.</p> : null}
+      {!isConnected ? <p className="subtitle">Connect the owner wallet to continue.</p> : null}
+      {isConnected && !isOwner ? <p className="subtitle">Switch to the owner wallet to continue.</p> : null}
     </div>
   )
 }

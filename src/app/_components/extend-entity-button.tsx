@@ -62,7 +62,7 @@ export function ExtendEntityButton({ entityKey, owner, expiresAtBlock, currentBl
         {pending ? 'Extending...' : `Extend ${kind}`}
       </button>
       {message ? <span className="subtitle">{message}</span> : null}
-      {!canExtend ? <span className="subtitle">Only owner can extend.</span> : null}
+      {!canExtend ? <span className="subtitle">Switch to the owner wallet to extend.</span> : null}
     </div>
   )
 }

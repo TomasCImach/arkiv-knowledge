@@ -7,6 +7,7 @@ import { PageLifecycleForm } from '@/app/_components/page-lifecycle-form'
 import { PageMarkdown } from '@/app/_components/page-markdown'
 import { PresencePanel } from '@/app/_components/presence-panel'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
+import { TechnicalDetails } from '@/app/_components/technical-details'
 import { TransferOwnershipForm } from '@/app/_components/transfer-ownership-form'
 import {
   fetchCurrentBlock,
@@ -131,7 +132,10 @@ export default async function PageRoute({
             <Link href={`/spaces/${spaceSlug}/${pageSlug}/edit`} className="button">
               Edit Page
             </Link>
-            <span className="badge">Canonical key: {page.entityKey.slice(0, 14)}...</span>
+          </div>
+          <p className="subtitle">Reading is open. To edit or transfer this page, switch to the owner wallet.</p>
+          <TechnicalDetails summary="Technical details (page entity)">
+            <span className="badge">Canonical key: {page.entityKey}</span>
             {currentBlock ? (
               <ExtendEntityButton
                 entityKey={page.entityKey}
@@ -141,15 +145,17 @@ export default async function PageRoute({
                 kind="page"
               />
             ) : null}
-          </div>
-          <p className="subtitle">Editing and ownership transfer are owner-only actions. Public read remains open.</p>
+          </TechnicalDetails>
         </div>
 
         <PageLifecycleForm page={page} viewer={viewer} />
 
         <div className="card stack">
           <h3 style={{ margin: 0 }}>Transfer Page Ownership</h3>
-          <p className="subtitle">Transfers canonical `kb.page` ownership to another wallet.</p>
+          <p className="subtitle">Transfer this page to another wallet.</p>
+          <TechnicalDetails summary="Technical details (ownership transfer)">
+            <p className="subtitle">This action updates canonical `kb.page` ownership using Arkiv `changeOwnership`.</p>
+          </TechnicalDetails>
           <TransferOwnershipForm entityKey={page.entityKey} entityOwner={page.owner} entityLabel="page" />
         </div>
         {queryErrors.length > 0 ? (
@@ -159,7 +165,10 @@ export default async function PageRoute({
         <PageMarkdown markdown={page.payload.bodyMarkdown} />
 
         <div className="card stack">
-          <h3 style={{ margin: 0 }}>Backlinks (from `kb.link` entities)</h3>
+          <h3 style={{ margin: 0 }}>Backlinks</h3>
+          <TechnicalDetails summary="Technical details (link index)">
+            <p className="subtitle">Backlinks are derived from `kb.link` relationship entities.</p>
+          </TechnicalDetails>
           {backlinks.length === 0 ? (
             <p className="subtitle">No backlinks currently indexed.</p>
           ) : (

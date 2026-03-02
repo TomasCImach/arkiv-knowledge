@@ -8,6 +8,7 @@ import { PageTreeNav } from '@/app/_components/page-tree-nav'
 import { QueryDebugPanel } from '@/app/_components/query-debug-panel'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
 import { SpaceSearchForm } from '@/app/_components/space-search-form'
+import { TechnicalDetails } from '@/app/_components/technical-details'
 import { buildPageSearchPredicates, fetchCurrentBlock, getSpaceBySlug, listPagesBySpaceKey, searchPages } from '@/arkiv/queries'
 import type { PageParentMode, PageSortMode, PageStatus, ParsedPage } from '@/arkiv/types'
 import { getAuthenticatedViewerAddress } from '@/features/auth/session'
@@ -132,7 +133,10 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
             <Link href={`/spaces/${spaceSlug}/settings`} className="button secondary">
               Space Settings
             </Link>
-            <span className="badge">Space key: {space.entityKey.slice(0, 14)}...</span>
+          </div>
+          <p className="subtitle">Browse without a wallet. To create pages or change settings, switch to the owner wallet.</p>
+          <TechnicalDetails summary="Technical details (space entity)">
+            <span className="badge">Space key: {space.entityKey}</span>
             {currentBlock ? (
               <ExtendEntityButton
                 entityKey={space.entityKey}
@@ -142,8 +146,8 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
                 kind="space"
               />
             ) : null}
-          </div>
-          <p className="subtitle">New page creation and settings updates are owner-only; reads remain public without wallet.</p>
+            <p className="subtitle">Retention controls and lifecycle metadata are shown here to keep browsing focused on content.</p>
+          </TechnicalDetails>
           {queryError ? <p className="notice">Page query degraded: {queryError}</p> : null}
         </div>
 

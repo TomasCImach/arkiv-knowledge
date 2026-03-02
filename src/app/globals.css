@@ -446,6 +446,43 @@ header.app-header .app-header-inner {
   padding: 0.6rem;
 }
 
+.technical-details {
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-md);
+  background: #f8f3e8;
+}
+
+.technical-summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 0.58rem 0.72rem;
+  font-family: var(--font-heading);
+  font-size: 0.84rem;
+  color: #355a56;
+  user-select: none;
+}
+
+.technical-summary::-webkit-details-marker {
+  display: none;
+}
+
+.technical-summary::before {
+  content: '▸';
+  display: inline-block;
+  margin-right: 0.45rem;
+  transition: transform 0.16s ease;
+}
+
+.technical-details[open] .technical-summary::before {
+  transform: rotate(90deg);
+}
+
+.technical-body {
+  padding: 0 0.72rem 0.72rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
 @media (max-width: 1080px) {
   .app-body {
     grid-template-columns: 1fr;

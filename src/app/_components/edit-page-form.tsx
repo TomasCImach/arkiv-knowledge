@@ -10,6 +10,7 @@ import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
 import { collectDescendantKeys, listPagesInTreeOrder } from '@/features/hierarchy/tree'
 import { canManageOwnedEntity } from '@/features/ownership/permissions'
 import { formatWalletError, runWritePreflight } from '@/lib/wallet'
+import { TechnicalDetails } from '@/app/_components/technical-details'
 
 export type EditPageFormProps = {
   spaceKey: Hex
@@ -107,7 +108,10 @@ export function EditPageForm({ spaceKey, spaceSlug, page, availableParents }: Ed
   return (
     <form className="card stack" onSubmit={onSubmit}>
       <h1 className="title">Edit Page</h1>
-      <p className="subtitle">Uses Arkiv mutate flow: update canonical + create revision + rewrite links.</p>
+      <p className="subtitle">Update page content and structure. Only the owner wallet can save changes.</p>
+      <TechnicalDetails summary="Technical details (write path)">
+        <p className="subtitle">Save uses an Arkiv mutate flow: update canonical page, append revision, and rewrite page links.</p>
+      </TechnicalDetails>
 
       <label>
         Title
@@ -157,8 +161,8 @@ export function EditPageForm({ spaceKey, spaceSlug, page, availableParents }: Ed
         <input type="submit" disabled={!canSubmit} value={pending ? 'Saving...' : 'Save Page'} />
         {statusText ? <span className="subtitle">{statusText}</span> : null}
       </div>
-      {!isConnected ? <p className="subtitle">Connect wallet to update pages.</p> : null}
-      {isConnected && !isOwner ? <p className="subtitle">Only owner can update this page.</p> : null}
+      {!isConnected ? <p className="subtitle">Connect the owner wallet to continue.</p> : null}
+      {isConnected && !isOwner ? <p className="subtitle">Switch to the owner wallet to continue.</p> : null}
     </form>
   )
 }

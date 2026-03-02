@@ -11,6 +11,7 @@ import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
 import { ensureWalletReadSession } from '@/features/auth/client-session'
 import { canManageOwnedEntity } from '@/features/ownership/permissions'
 import { formatWalletError, runWritePreflight } from '@/lib/wallet'
+import { TechnicalDetails } from '@/app/_components/technical-details'
 
 type EditSpaceFormProps = {
   space: ParsedSpace
@@ -84,7 +85,10 @@ export function EditSpaceForm({ space }: EditSpaceFormProps) {
   return (
     <form className="card stack" onSubmit={onSubmit}>
       <h1 className="title">Space Settings</h1>
-      <p className="subtitle">Slug is immutable. Only the owner wallet can update settings.</p>
+      <p className="subtitle">Update how this space appears. Only the owner wallet can save changes.</p>
+      <TechnicalDetails summary="Technical details (space settings)">
+        <p className="subtitle">Space slug is immutable. Visibility changes to `private` require private-read session verification.</p>
+      </TechnicalDetails>
 
       <label>
         Space slug
@@ -132,8 +136,8 @@ export function EditSpaceForm({ space }: EditSpaceFormProps) {
         {statusText ? <span className="subtitle">{statusText}</span> : null}
       </div>
 
-      {!isConnected ? <p className="subtitle">Connect wallet to update space settings.</p> : null}
-      {isConnected && !isOwner ? <p className="subtitle">Only owner can update space settings.</p> : null}
+      {!isConnected ? <p className="subtitle">Connect the owner wallet to continue.</p> : null}
+      {isConnected && !isOwner ? <p className="subtitle">Switch to the owner wallet to continue.</p> : null}
     </form>
   )
 }

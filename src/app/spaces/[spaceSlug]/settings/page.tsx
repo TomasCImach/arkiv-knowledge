@@ -1,6 +1,7 @@
 import { notFound } from 'next/navigation'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { EditSpaceForm } from '@/app/_components/edit-space-form'
+import { TechnicalDetails } from '@/app/_components/technical-details'
 import { TransferOwnershipForm } from '@/app/_components/transfer-ownership-form'
 import { getSpaceBySlug } from '@/arkiv/queries'
 import { getAuthenticatedViewerAddress } from '@/features/auth/session'
@@ -51,7 +52,10 @@ export default async function SpaceSettingsRoute({
       <EditSpaceForm space={space} />
       <div className="card stack">
         <h2 style={{ margin: 0 }}>Transfer Space Ownership</h2>
-        <p className="subtitle">Only current owner can transfer this canonical `kb.space` entity to another wallet.</p>
+        <p className="subtitle">Transfer this space to another wallet.</p>
+        <TechnicalDetails summary="Technical details (ownership transfer)">
+          <p className="subtitle">Only the current owner can transfer canonical `kb.space` ownership via Arkiv `changeOwnership`.</p>
+        </TechnicalDetails>
         <TransferOwnershipForm entityKey={space.entityKey} entityOwner={space.owner} entityLabel="space" />
       </div>
     </section>

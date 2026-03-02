@@ -88,8 +88,8 @@ export function TransferOwnershipForm({ entityKey, entityOwner, entityLabel }: T
         <input type="submit" disabled={!canSubmit} value={pending ? 'Transferring...' : `Transfer ${entityLabel} ownership`} />
         {statusText ? <span className="subtitle">{statusText}</span> : null}
       </div>
-      {!isConnected ? <p className="subtitle">Connect wallet to transfer ownership.</p> : null}
-      {isConnected && !isOwner ? <p className="subtitle">Only owner can transfer {entityLabel} ownership.</p> : null}
+      {!isConnected ? <p className="subtitle">Connect the owner wallet to continue.</p> : null}
+      {isConnected && !isOwner ? <p className="subtitle">Switch to the owner wallet to continue.</p> : null}
     </form>
   )
 }
