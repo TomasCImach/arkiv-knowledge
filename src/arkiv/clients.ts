@@ -15,7 +15,9 @@ import {
   type ExtendEntityReturnType,
   type DeleteEntityParameters,
   type DeleteEntityReturnType,
-  type MutateEntitiesReturnType
+  type MutateEntitiesReturnType,
+  type ChangeOwnershipParameters,
+  type ChangeOwnershipReturnType
 } from '@arkiv-network/sdk'
 import type { EIP1193Provider, Hex } from 'viem'
 import { getArkivConfig } from '@/arkiv/config'
@@ -193,6 +195,7 @@ export type ArkivWriteClient = {
   extendEntity: (data: ExtendEntityParameters) => Promise<ExtendEntityReturnType>
   deleteEntity: (data: DeleteEntityParameters) => Promise<DeleteEntityReturnType>
   mutateEntities: (data: MutateEntitiesParameters) => Promise<MutateEntitiesReturnType>
+  changeOwnership: (data: ChangeOwnershipParameters) => Promise<ChangeOwnershipReturnType>
 }
 
 export type ArkivMutationSummary = {
@@ -201,6 +204,7 @@ export type ArkivMutationSummary = {
   updatedEntities: Hex[]
   deletedEntities: Hex[]
   extendedEntities: Hex[]
+  ownershipChanges: Hex[]
 }
 
 export type MinimalEntity = Pick<Entity, 'key' | 'owner' | 'expiresAtBlock' | 'attributes' | 'toJson'>

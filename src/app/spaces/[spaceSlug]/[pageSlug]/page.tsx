@@ -2,51 +2,78 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { ExtendEntityButton } from '@/app/_components/extend-entity-button'
+import { PageTreeNav } from '@/app/_components/page-tree-nav'
+import { PageLifecycleForm } from '@/app/_components/page-lifecycle-form'
 import { PageMarkdown } from '@/app/_components/page-markdown'
 import { PresencePanel } from '@/app/_components/presence-panel'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
+import { RetryButton } from '@/app/_components/retry-button'
+import { RouteStateCard, RouteStateLinkAction } from '@/app/_components/route-state-card'
+import { TechnicalDetails } from '@/app/_components/technical-details'
+import { TransferOwnershipForm } from '@/app/_components/transfer-ownership-form'
 import {
   fetchCurrentBlock,
-  getPageBySlug,
+  getPageBySlugInSpace,
   getSpaceBySlug,
   listBacklinks,
-  listPagesBySpace,
+  listPagesBySpaceKey,
   listPresenceForPage,
   listRevisionsByPage
 } from '@/arkiv/queries'
 import type { ParsedPage } from '@/arkiv/types'
+import { getAuthenticatedViewerAddress } from '@/features/auth/session'
+import { buildAncestorChain } from '@/features/hierarchy/tree'
+import { canViewSpace } from '@/features/visibility/access'
 import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
 
-export default async function PageRoute({ params }: { params: Promise<{ spaceSlug: string; pageSlug: string }> }) {
+export default async function PageRoute({
+  params,
+  searchParams: _
+}: {
+  params: Promise<{ spaceSlug: string; pageSlug: string }>
+  searchParams: Promise<Record<string, string | string[] | undefined>>
+}) {
   const { spaceSlug, pageSlug } = await params
 
   let space
   let page
   let spacePages: ParsedPage[] = []
   try {
-    ;[space, page, spacePages] = await Promise.all([
-      getSpaceBySlug(spaceSlug),
-      getPageBySlug(spaceSlug, pageSlug),
-      listPagesBySpace(spaceSlug)
+    space = await getSpaceBySlug(spaceSlug)
+    if (!space) {
+      notFound()
+    }
+
+    ;[page, spacePages] = await Promise.all([
+      getPageBySlugInSpace(space.entityKey, pageSlug),
+      listPagesBySpaceKey(space.entityKey)
     ])
   } catch (error) {
     const message = formatReadError(error)
     return (
-      <section className="stack">
-        <div className="card stack">
-          <h1 className="title">Page temporarily unavailable</h1>
-          <p className="notice">Could not load page data from Arkiv: {message}</p>
-          <Link href={`/spaces/${spaceSlug}`} className="button secondary">
-            Back to space
-          </Link>
-        </div>
+      <section className="stack doc-column">
+        <RouteStateCard
+          tone="error"
+          title="Page temporarily unavailable"
+          message={`Could not load page data from Arkiv: ${message}`}
+          action={
+            <>
+              <RetryButton label="Retry page read" />
+              <RouteStateLinkAction href={`/spaces/${spaceSlug}`} label="Back to space" secondary />
+            </>
+          }
+        />
       </section>
     )
   }
 
   if (!space || !page) {
+    notFound()
+  }
+  const viewer = await getAuthenticatedViewerAddress()
+  if (!canViewSpace(space, viewer)) {
     notFound()
   }
 
@@ -70,6 +97,7 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
   ]
     .filter(Boolean)
     .map((reason) => formatReadError(reason))
+  const ancestors = buildAncestorChain(spacePages, page)
 
   return (
     <section className="doc-layout">
@@ -82,18 +110,7 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
             New Page
           </Link>
         </div>
-        <div className="nav-tree">
-          {spacePages.map((spacePage) => (
-            <Link
-              key={spacePage.entityKey}
-              href={`/spaces/${spaceSlug}/${spacePage.pageSlug}`}
-              className={`nav-tree-item ${spacePage.pageSlug === pageSlug ? 'active' : ''}`}
-            >
-              <span>{spacePage.payload.title}</span>
-              <span className="nav-tree-meta">{spacePage.status}</span>
-            </Link>
-          ))}
-        </div>
+        <PageTreeNav spaceSlug={spaceSlug} pages={spacePages} activePageSlug={pageSlug} />
       </aside>
 
       <div className="stack doc-column">
@@ -101,6 +118,10 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
           items={[
             { href: '/', label: 'Knowledge Base' },
             { href: `/spaces/${spaceSlug}`, label: space.payload.name },
+            ...ancestors.map((ancestor) => ({
+              href: `/spaces/${spaceSlug}/${ancestor.pageSlug}`,
+              label: ancestor.payload.title
+            })),
             { label: page.payload.title }
           ]}
         />
@@ -117,7 +138,10 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
             <Link href={`/spaces/${spaceSlug}/${pageSlug}/edit`} className="button">
               Edit Page
             </Link>
-            <span className="badge">Canonical key: {page.entityKey.slice(0, 14)}...</span>
+          </div>
+          <p className="subtitle">Reading is open. To edit or transfer this page, switch to the owner wallet.</p>
+          <TechnicalDetails summary="Technical details (page entity)">
+            <span className="badge">Canonical key: {page.entityKey}</span>
             {currentBlock ? (
               <ExtendEntityButton
                 entityKey={page.entityKey}
@@ -127,16 +151,35 @@ export default async function PageRoute({ params }: { params: Promise<{ spaceSlu
                 kind="page"
               />
             ) : null}
-          </div>
+          </TechnicalDetails>
+        </div>
+
+        <PageLifecycleForm page={page} viewer={viewer} />
+
+        <div className="card stack">
+          <h3 style={{ margin: 0 }}>Transfer Page Ownership</h3>
+          <p className="subtitle">Transfer this page to another wallet.</p>
+          <TechnicalDetails summary="Technical details (ownership transfer)">
+            <p className="subtitle">This action updates canonical `kb.page` ownership using Arkiv `changeOwnership`.</p>
+          </TechnicalDetails>
+          <TransferOwnershipForm entityKey={page.entityKey} entityOwner={page.owner} entityLabel="page" />
         </div>
         {queryErrors.length > 0 ? (
-          <div className="notice">Some live Arkiv data is temporarily unavailable. Retry to refresh relationship/presence panels.</div>
+          <RouteStateCard
+            tone="error"
+            title="Some live panels are degraded"
+            message="Arkiv relationship, revision, or presence reads are temporarily unavailable."
+            action={<RetryButton label="Retry live panels" />}
+          />
         ) : null}
 
         <PageMarkdown markdown={page.payload.bodyMarkdown} />
 
         <div className="card stack">
-          <h3 style={{ margin: 0 }}>Backlinks (from `kb.link` entities)</h3>
+          <h3 style={{ margin: 0 }}>Backlinks</h3>
+          <TechnicalDetails summary="Technical details (link index)">
+            <p className="subtitle">Backlinks are derived from `kb.link` relationship entities.</p>
+          </TechnicalDetails>
           {backlinks.length === 0 ? (
             <p className="subtitle">No backlinks currently indexed.</p>
           ) : (

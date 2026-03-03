@@ -1,7 +1,10 @@
 import Link from 'next/link'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
+import { RetryButton } from '@/app/_components/retry-button'
+import { RouteStateCard, RouteStateLinkAction } from '@/app/_components/route-state-card'
 import { listSpaces } from '@/arkiv/queries'
 import type { ParsedSpace } from '@/arkiv/types'
+import { filterListedSpaces } from '@/features/visibility/access'
 import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
@@ -15,6 +18,7 @@ export default async function HomePage() {
   } catch (error) {
     loadError = formatReadError(error, 'Failed to load spaces from Arkiv.')
   }
+  const listedSpaces = filterListedSpaces(spaces)
 
   return (
     <section className="stack doc-column">
@@ -30,22 +34,35 @@ export default async function HomePage() {
           <Link href="/new/space" className="button">
             Create Space
           </Link>
+          <Link href="/my/spaces" className="button secondary">
+            My Spaces
+          </Link>
           <span className="badge">Core data is stored as Arkiv entities</span>
         </div>
-        {loadError ? <p className="notice">Arkiv read is temporarily unavailable: {loadError}</p> : null}
       </div>
 
-      {spaces.length === 0 ? (
-        <div className="card stack">
-          <p className="subtitle">No spaces yet. Connect a wallet and create the first one.</p>
-        </div>
+      {loadError ? (
+        <RouteStateCard
+          tone="error"
+          title="Space listing temporarily unavailable"
+          message={`Arkiv read degraded: ${loadError}`}
+          action={<RetryButton label="Retry space query" />}
+        />
+      ) : null}
+
+      {listedSpaces.length === 0 ? (
+        <RouteStateCard
+          title="No spaces yet"
+          message="Connect the owner wallet and create the first space to start your knowledge base."
+          action={<RouteStateLinkAction href="/new/space" label="Create first space" />}
+        />
       ) : (
         <div className="card stack">
           <div className="toolbar" style={{ justifyContent: 'space-between' }}>
             <h2 style={{ margin: 0 }}>All Spaces</h2>
-            <span className="badge">{spaces.length} total</span>
+            <span className="badge">{listedSpaces.length} total</span>
           </div>
-          {spaces.map((space) => (
+          {listedSpaces.map((space) => (
             <Link key={space.entityKey} href={`/spaces/${space.spaceSlug}`} className="doc-list-item">
               <div className="toolbar doc-list-head">
                 <h2 style={{ margin: 0 }}>{space.payload.name}</h2>

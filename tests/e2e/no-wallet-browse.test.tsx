@@ -20,6 +20,9 @@ vi.mock('wagmi', () => ({
   useAccount: () => ({
     isConnected: false,
     address: undefined
+  }),
+  useSignMessage: () => ({
+    signMessageAsync: vi.fn()
   })
 }))
 

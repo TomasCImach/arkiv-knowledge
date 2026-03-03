@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="en" className={`${headingFont.variable} ${bodyFont.variable}`}>
-      <body style={{ fontFamily: 'var(--font-heading)' }}>
+      <body>
         <Providers>
           <AppShell>{children}</AppShell>
         </Providers>

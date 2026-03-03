@@ -1,22 +1,27 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
+import type { Hex } from 'viem'
+import { isAddress } from 'viem'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { ExtendEntityButton } from '@/app/_components/extend-entity-button'
+import { PageTreeNav } from '@/app/_components/page-tree-nav'
+import { QueryDebugPanel } from '@/app/_components/query-debug-panel'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
+import { RetryButton } from '@/app/_components/retry-button'
+import { RouteStateCard, RouteStateLinkAction } from '@/app/_components/route-state-card'
 import { SpaceSearchForm } from '@/app/_components/space-search-form'
-import { fetchCurrentBlock, getSpaceBySlug, listPagesBySpace, searchPages } from '@/arkiv/queries'
-import type { PageStatus, ParsedPage } from '@/arkiv/types'
+import { TechnicalDetails } from '@/app/_components/technical-details'
+import { buildPageSearchPredicates, fetchCurrentBlock, getSpaceBySlug, listPagesBySpaceKey, searchPages } from '@/arkiv/queries'
+import type { PageParentMode, PageSortMode, PageStatus, ParsedPage } from '@/arkiv/types'
+import { getAuthenticatedViewerAddress } from '@/features/auth/session'
+import { canViewSpace, firstQueryValue } from '@/features/visibility/access'
 import { formatReadError } from '@/lib/wallet'
 
 export const dynamic = 'force-dynamic'
 
-type SpaceRouteProps = {
+export type SpaceRouteProps = {
   params: Promise<{ spaceSlug: string }>
   searchParams: Promise<Record<string, string | string[] | undefined>>
-}
-
-function firstValue(value: string | string[] | undefined): string {
-  return Array.isArray(value) ? value[0] ?? '' : value ?? ''
 }
 
 export default async function SpacePage({ params, searchParams }: SpaceRouteProps) {
@@ -29,14 +34,18 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
   } catch (error) {
     const message = formatReadError(error)
     return (
-      <section className="stack">
-        <div className="card stack">
-          <h1 className="title">Space temporarily unavailable</h1>
-          <p className="notice">Could not read this space from Arkiv: {message}</p>
-          <Link href="/" className="button secondary">
-            Back to spaces
-          </Link>
-        </div>
+      <section className="stack doc-column">
+        <RouteStateCard
+          tone="error"
+          title="Space temporarily unavailable"
+          message={`Could not read this space from Arkiv: ${message}`}
+          action={
+            <>
+              <RetryButton label="Retry space read" />
+              <RouteStateLinkAction href="/" label="Back to spaces" secondary />
+            </>
+          }
+        />
       </section>
     )
   }
@@ -44,19 +53,42 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
   if (!space) {
     notFound()
   }
+  const viewer = await getAuthenticatedViewerAddress()
+  if (!canViewSpace(space, viewer)) {
+    notFound()
+  }
 
-  const q = firstValue(query.q)
-  const status = firstValue(query.status) as PageStatus | ''
+  const q = firstQueryValue(query.q)
+  const status = firstQueryValue(query.status) as PageStatus | ''
+  const parentRaw = firstQueryValue(query.parent)
+  const parentMode: PageParentMode =
+    parentRaw === 'root' || parentRaw === 'child' ? (parentRaw as PageParentMode) : 'all'
+  const ownerRaw = firstQueryValue(query.owner).trim()
+  const owner = ownerRaw.length > 0 && isAddress(ownerRaw) ? (ownerRaw as Hex) : undefined
+  const sortRaw = firstQueryValue(query.sort)
+  const sort: PageSortMode =
+    sortRaw === 'updated_asc' || sortRaw === 'title_asc' ? (sortRaw as PageSortMode) : 'updated_desc'
   let currentBlock: bigint | undefined
   let allPages: ParsedPage[] = []
   let pages: ParsedPage[] = []
   let queryError = ''
+  const hasActiveQuery = q.length > 0 || Boolean(status) || parentMode !== 'all' || Boolean(owner) || sort !== 'updated_desc'
 
   try {
     const [block, indexedPages, filteredPages] = await Promise.all([
       fetchCurrentBlock(),
-      listPagesBySpace(spaceSlug),
-      q || status ? searchPages({ spaceSlug, q, status: status || undefined }) : Promise.resolve<ParsedPage[] | null>(null)
+      listPagesBySpaceKey(space.entityKey),
+      hasActiveQuery
+        ? searchPages({
+            spaceKey: space.entityKey,
+            spaceSlug,
+            q,
+            status: status || undefined,
+            parentMode,
+            owner,
+            sort
+          })
+        : Promise.resolve<ParsedPage[] | null>(null)
     ])
     currentBlock = block
     allPages = indexedPages
@@ -64,6 +96,20 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
   } catch (error) {
     queryError = formatReadError(error, 'Failed to query pages.')
   }
+
+  if (ownerRaw.length > 0 && !owner) {
+    queryError = queryError ? `${queryError} Invalid owner filter ignored.` : 'Invalid owner filter ignored.'
+  }
+
+  const activePredicates = buildPageSearchPredicates({
+    spaceKey: space.entityKey,
+    spaceSlug,
+    q,
+    status: status || undefined,
+    parentMode,
+    owner,
+    sort
+  })
 
   return (
     <section className="doc-layout">
@@ -74,18 +120,7 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
           <strong>Space Contents</strong>
           <span className="badge">{allPages.length} pages</span>
         </div>
-        {allPages.length === 0 ? (
-          <p className="subtitle">No pages created yet.</p>
-        ) : (
-          <div className="nav-tree">
-            {allPages.map((page) => (
-              <Link key={page.entityKey} href={`/spaces/${spaceSlug}/${page.pageSlug}`} className="nav-tree-item">
-                <span>{page.payload.title}</span>
-                <span className="nav-tree-meta">{page.status}</span>
-              </Link>
-            ))}
-          </div>
-        )}
+        <PageTreeNav spaceSlug={spaceSlug} pages={allPages} />
       </aside>
 
       <div className="stack doc-column">
@@ -101,7 +136,13 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
             <Link href={`/spaces/${spaceSlug}/new`} className="button">
               New Page
             </Link>
-            <span className="badge">Space key: {space.entityKey.slice(0, 14)}...</span>
+            <Link href={`/spaces/${spaceSlug}/settings`} className="button secondary">
+              Space Settings
+            </Link>
+          </div>
+          <p className="subtitle">Browse without a wallet. To create pages or change settings, switch to the owner wallet.</p>
+          <TechnicalDetails summary="Technical details (space entity)">
+            <span className="badge">Space key: {space.entityKey}</span>
             {currentBlock ? (
               <ExtendEntityButton
                 entityKey={space.entityKey}
@@ -111,22 +152,60 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
                 kind="space"
               />
             ) : null}
-          </div>
-          {queryError ? <p className="notice">Page query degraded: {queryError}</p> : null}
+            <p className="subtitle">Retention controls and lifecycle metadata are shown here to keep browsing focused on content.</p>
+          </TechnicalDetails>
         </div>
 
-        <SpaceSearchForm initialQ={q} initialStatus={status || undefined} />
+        <SpaceSearchForm
+          initialQ={q}
+          initialStatus={status || undefined}
+          initialParentMode={parentMode}
+          initialOwner={ownerRaw}
+          initialSort={sort}
+        />
 
-        {pages.length === 0 ? (
-          <div className="card stack">
-            <p className="subtitle">No pages match the current Arkiv query.</p>
-          </div>
+        <QueryDebugPanel
+          title="Space Query Debug"
+          summary={{
+            spaceKey: space.entityKey,
+            spaceSlug,
+            q: q || '(empty)',
+            status: status || '(any)',
+            parentMode,
+            owner: owner ?? '(any)',
+            sort
+          }}
+          predicates={activePredicates}
+        />
+
+        {queryError ? (
+          <RouteStateCard
+            tone="error"
+            title="Page query degraded"
+            message={queryError}
+            action={<RetryButton label="Retry page query" />}
+          />
+        ) : pages.length === 0 ? (
+          <RouteStateCard
+            title="No pages in this view"
+            message={
+              hasActiveQuery
+                ? `Showing 0 pages in ${space.payload.name} for the active filters.`
+                : `Showing 0 pages in ${space.payload.name}.`
+            }
+            action={<RouteStateLinkAction href={`/spaces/${spaceSlug}/new`} label="Create first page" />}
+          />
         ) : (
           <div className="card stack">
             <div className="toolbar" style={{ justifyContent: 'space-between' }}>
               <h2 style={{ margin: 0 }}>Pages</h2>
               <span className="badge">{pages.length} results</span>
             </div>
+            <p className="subtitle">
+              {hasActiveQuery
+                ? `Showing ${pages.length} page${pages.length === 1 ? '' : 's'} in ${space.payload.name} for the active filters.`
+                : `Showing all ${pages.length} page${pages.length === 1 ? '' : 's'} in ${space.payload.name}.`}
+            </p>
             {pages.map((page) => (
               <Link key={page.entityKey} href={`/spaces/${spaceSlug}/${page.pageSlug}`} className="doc-list-item">
                 <div className="toolbar doc-list-head">

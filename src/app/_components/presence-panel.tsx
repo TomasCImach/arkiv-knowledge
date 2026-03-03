@@ -9,6 +9,7 @@ import { joinPresence, leavePresence } from '@/arkiv/mutations/presence'
 import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
 import { usePresenceHeartbeat } from '@/features/presence/usePresenceHeartbeat'
 import { formatWalletError, runWritePreflight } from '@/lib/wallet'
+import { TechnicalDetails } from '@/app/_components/technical-details'
 
 type PresencePanelProps = {
   spaceKey: Hex
@@ -125,8 +126,10 @@ export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps
     <section className="card stack">
       <div className="toolbar" style={{ justifyContent: 'space-between' }}>
         <h3 style={{ margin: 0 }}>Live Presence</h3>
-        <span className="badge">TTL 90s with heartbeat</span>
       </div>
+      <TechnicalDetails summary="Technical details (presence retention)">
+        <span className="badge">Presence TTL: 90s with heartbeat extension</span>
+      </TechnicalDetails>
 
       <div className="toolbar">
         <button type="button" onClick={onJoin} disabled={pending || Boolean(joinedEntityKey)}>
@@ -137,6 +140,7 @@ export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps
         </button>
         {statusText ? <span className="subtitle">{statusText}</span> : null}
       </div>
+      {!address ? <p className="subtitle">Connect your wallet to join presence.</p> : null}
 
       <div className="stack" style={{ gap: '0.5rem' }}>
         {records.length === 0 ? <p className="subtitle">No active viewers right now.</p> : null}

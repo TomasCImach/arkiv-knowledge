@@ -1,21 +1,28 @@
 'use client'
 
 import { FormEvent, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import type { Hex } from 'viem'
 import { useAccount } from 'wagmi'
+import { MarkdownEditorField } from '@/app/_components/markdown-editor-field'
 import { createPage } from '@/arkiv/mutations/pages'
+import type { ParsedPage } from '@/arkiv/types'
 import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
+import { useUnsavedChangesGuard } from '@/features/forms/useUnsavedChangesGuard'
+import { listPagesInTreeOrder } from '@/features/hierarchy/tree'
+import { canManageOwnedEntity } from '@/features/ownership/permissions'
 import { slugify } from '@/lib/text'
 import { formatWalletError, runWritePreflight } from '@/lib/wallet'
+import { TechnicalDetails } from '@/app/_components/technical-details'
 
 export type CreatePageFormProps = {
   spaceKey: Hex
   spaceSlug: string
+  spaceOwner: Hex | undefined
+  availableParents: ParsedPage[]
 }
 
-export function CreatePageForm({ spaceKey, spaceSlug }: CreatePageFormProps) {
-  const router = useRouter()
+export function CreatePageForm({ spaceKey, spaceSlug, spaceOwner, availableParents }: CreatePageFormProps) {
   const walletClient = useArkivWalletClient()
   const { address, chainId, isConnected } = useAccount()
 
@@ -24,34 +31,54 @@ export function CreatePageForm({ spaceKey, spaceSlug }: CreatePageFormProps) {
   const [summary, setSummary] = useState('')
   const [status, setStatus] = useState<'draft' | 'published' | 'archived'>('published')
   const [bodyMarkdown, setBodyMarkdown] = useState('')
-  const [statusText, setStatusText] = useState('')
+  const [parentPageKey, setParentPageKey] = useState('')
+  const [feedback, setFeedback] = useState<{ tone: 'error' | 'success'; text: string } | null>(null)
+  const [createdPageSlug, setCreatedPageSlug] = useState('')
   const [pending, setPending] = useState(false)
+  const parentOptions = listPagesInTreeOrder(availableParents)
+  const isSpaceOwner = canManageOwnedEntity(spaceOwner, address)
+  const canSubmit = Boolean(walletClient && isConnected && address && isSpaceOwner && !pending)
+  const isDirty =
+    title.trim().length > 0 ||
+    pageSlug.trim().length > 0 ||
+    summary.trim().length > 0 ||
+    bodyMarkdown.trim().length > 0 ||
+    parentPageKey.length > 0 ||
+    status !== 'published'
+
+  useUnsavedChangesGuard(isDirty && !pending)
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
     if (!walletClient || !address || !isConnected) {
-      setStatusText('Connect wallet to create pages.')
+      setFeedback({ tone: 'error', text: 'Connect wallet to create pages.' })
+      return
+    }
+
+    if (!isSpaceOwner) {
+      setFeedback({ tone: 'error', text: 'Only owner can create pages in this space.' })
       return
     }
 
     const preflight = await runWritePreflight(address, chainId)
     if (!preflight.ok) {
-      setStatusText(preflight.message)
+      setFeedback({ tone: 'error', text: preflight.message })
       return
     }
 
     const finalSlug = slugify(pageSlug || title)
     if (!finalSlug) {
-      setStatusText('Provide a valid page slug or title.')
+      setFeedback({ tone: 'error', text: 'Provide a valid page slug or title.' })
       return
     }
 
     setPending(true)
-    setStatusText('')
+    setFeedback(null)
+    setCreatedPageSlug('')
 
     try {
-      const result = await createPage(walletClient, {
+      await createPage(walletClient, {
         spaceKey,
         spaceSlug,
         pageSlug: finalSlug,
@@ -59,14 +86,20 @@ export function CreatePageForm({ spaceKey, spaceSlug }: CreatePageFormProps) {
         summary,
         status,
         bodyMarkdown,
-        editor: address
+        editor: address,
+        parentPageKey: parentPageKey ? (parentPageKey as Hex) : undefined
       })
-      setStatusText(`Created page ${result.pageKey.slice(0, 10)}...`)
-      router.push(`/spaces/${spaceSlug}/${finalSlug}`)
-      router.refresh()
+      setFeedback({ tone: 'success', text: 'Page created successfully. Choose what to do next.' })
+      setCreatedPageSlug(finalSlug)
+      setTitle('')
+      setPageSlug('')
+      setSummary('')
+      setStatus('published')
+      setBodyMarkdown('')
+      setParentPageKey('')
     } catch (error) {
       console.error('create-page failed', error)
-      setStatusText(formatWalletError(error, 'Failed to create page.'))
+      setFeedback({ tone: 'error', text: formatWalletError(error, 'Failed to create page.') })
     } finally {
       setPending(false)
     }
@@ -75,7 +108,10 @@ export function CreatePageForm({ spaceKey, spaceSlug }: CreatePageFormProps) {
   return (
     <form className="card stack" onSubmit={onSubmit}>
       <h1 className="title">Create Page</h1>
-      <p className="subtitle">This writes canonical page + revision entities to Arkiv.</p>
+      <p className="subtitle">Create a page in this space. Only the owner wallet can publish changes.</p>
+      <TechnicalDetails summary="Technical details (write path)">
+        <p className="subtitle">Submitting creates/updates canonical `kb.page` data and appends a `kb.revision` entry.</p>
+      </TechnicalDetails>
 
       <label>
         Title
@@ -102,19 +138,44 @@ export function CreatePageForm({ spaceKey, spaceSlug }: CreatePageFormProps) {
       </label>
 
       <label>
-        Markdown body
-        <textarea
-          required
-          value={bodyMarkdown}
-          onChange={(event) => setBodyMarkdown(event.target.value)}
-          placeholder="Write docs and link with [[other-page]]"
-        />
+        Parent page
+        <select value={parentPageKey} onChange={(event) => setParentPageKey(event.target.value)}>
+          <option value="">Root (no parent)</option>
+          {parentOptions.map(({ page, depth }) => (
+            <option key={page.entityKey} value={page.entityKey}>
+              {`${'-- '.repeat(depth)}${page.payload.title}`}
+            </option>
+          ))}
+        </select>
       </label>
 
-      <div className="toolbar">
-        <input type="submit" disabled={pending} value={pending ? 'Saving...' : 'Create Page'} />
-        {statusText ? <span className="subtitle">{statusText}</span> : null}
+      <MarkdownEditorField
+        value={bodyMarkdown}
+        onChange={setBodyMarkdown}
+        placeholder="Write docs and link with [[other-page]]"
+      />
+
+      {feedback ? (
+        <div className={`form-callout ${feedback.tone === 'success' ? 'success' : 'error'}`}>
+          <p className="subtitle">{feedback.text}</p>
+          {feedback.tone === 'success' && createdPageSlug ? (
+            <div className="toolbar form-callout-actions">
+              <Link href={`/spaces/${spaceSlug}/${createdPageSlug}`} className="button secondary">
+                Open page
+              </Link>
+              <Link href={`/spaces/${spaceSlug}`} className="button secondary">
+                Back to space
+              </Link>
+            </div>
+          ) : null}
+        </div>
+      ) : null}
+
+      <div className="toolbar form-actions mobile-action-bar">
+        <input type="submit" disabled={!canSubmit} value={pending ? 'Saving...' : 'Create Page'} />
       </div>
+      {!isConnected ? <p className="subtitle">Connect the owner wallet to continue.</p> : null}
+      {isConnected && !isSpaceOwner ? <p className="subtitle">Switch to the owner wallet to continue.</p> : null}
     </form>
   )
 }

@@ -1,7 +1,9 @@
 import type { Hex } from 'viem'
 import type { ArkivWriteClient } from '@/arkiv/clients'
-import { listOutgoingLinks } from '@/arkiv/queries/links'
-import { getPageBySlug, listRevisionsByPage } from '@/arkiv/queries/pages'
+import { transferEntityOwnership } from '@/arkiv/mutations/ownership'
+import { listBacklinks, listOutgoingLinks } from '@/arkiv/queries/links'
+import { getPageBySlugInSpace, listRevisionsByPage } from '@/arkiv/queries/pages'
+import { listPresenceForPage } from '@/arkiv/queries/presence'
 import {
   buildLinkCreateEntity,
   buildPageCreateEntity,
@@ -24,10 +26,15 @@ export type SavePageInput = {
   parentPageKey?: Hex
 }
 
-async function resolveLinkTargetPages(spaceSlug: string, targetSlugs: string[]) {
+type CreatePageRepairResult = {
+  hasInitialRevision: boolean
+  txHash?: Hex
+}
+
+async function resolveLinkTargetPages(spaceKey: Hex, targetSlugs: string[]) {
   const resolved = await Promise.all(
     targetSlugs.map(async (targetSlug) => {
-      const page = await getPageBySlug(spaceSlug, targetSlug)
+      const page = await getPageBySlugInSpace(spaceKey, targetSlug)
       if (!page) {
         return null
       }
@@ -47,6 +54,11 @@ function buildSearchTokens(title: string, summary: string, bodyMarkdown: string)
 }
 
 export async function createPage(client: ArkivWriteClient, input: SavePageInput): Promise<{ pageKey: Hex; txHash: Hex }> {
+  const existingPage = await getPageBySlugInSpace(input.spaceKey, input.pageSlug)
+  if (existingPage) {
+    throw new Error(`Page slug "${input.pageSlug}" already exists in this space. Choose a different slug.`)
+  }
+
   const timestamp = nowIso()
   const updatedAtMs = nowMs()
   const searchTokens = buildSearchTokens(input.title, input.summary, input.bodyMarkdown)
@@ -93,25 +105,66 @@ export async function createPage(client: ArkivWriteClient, input: SavePageInput)
 
   const links = await buildLinkCreatesForBody({
     spaceKey: input.spaceKey,
-    spaceSlug: input.spaceSlug,
     fromPageKey: createdPage.entityKey,
     fromPageSlug: input.pageSlug,
     bodyMarkdown: input.bodyMarkdown
   })
 
-  const mutate = await client.mutateEntities({
-    creates: [finalRevision, ...links]
-  })
+  try {
+    const mutate = await client.mutateEntities({
+      creates: [finalRevision, ...links]
+    })
 
-  return {
-    pageKey: createdPage.entityKey,
-    txHash: mutate.txHash
+    return {
+      pageKey: createdPage.entityKey,
+      txHash: mutate.txHash
+    }
+  } catch (error) {
+    console.error('create-page follow-up mutation failed; attempting repair', {
+      pageKey: createdPage.entityKey,
+      linkCount: links.length,
+      error
+    })
+
+    let repair: CreatePageRepairResult = {
+      hasInitialRevision: false
+    }
+    try {
+      repair = await repairCreatePageFollowUp({
+        client,
+        pageKey: createdPage.entityKey,
+        revisionCreate: finalRevision,
+        linkCreates: links
+      })
+    } catch (repairError) {
+      console.error('create-page repair failed', {
+        pageKey: createdPage.entityKey,
+        repairError
+      })
+    }
+
+    if (repair.hasInitialRevision) {
+      const recoveredTxHash = repair.txHash ?? createdPage.txHash
+      console.warn('create-page recovered via repair path', {
+        pageKey: createdPage.entityKey,
+        txHash: recoveredTxHash
+      })
+      return {
+        pageKey: createdPage.entityKey,
+        txHash: recoveredTxHash
+      }
+    }
+
+    throw new Error(
+      `Page ${createdPage.entityKey} was created but revision/link follow-up failed. Open the page and save again to repair history.`
+    )
   }
 }
 
 export type EditPageInput = SavePageInput & {
   pageKey: Hex
   editSummary: string
+  createdAt?: string
 }
 
 export async function editPage(client: ArkivWriteClient, input: EditPageInput): Promise<{
@@ -122,9 +175,13 @@ export async function editPage(client: ArkivWriteClient, input: EditPageInput): 
   const timestamp = nowIso()
   const updatedAtMs = nowMs()
   const searchTokens = buildSearchTokens(input.title, input.summary, input.bodyMarkdown)
-
-  const revisionCount = (await listRevisionsByPage(input.pageKey)).length
-  const nextRevision = revisionCount + 1
+  const [revisions, existingPage] = await Promise.all([
+    listRevisionsByPage(input.pageKey),
+    getPageBySlugInSpace(input.spaceKey, input.pageSlug)
+  ])
+  const highestRevisionNo = revisions.reduce((max, revision) => Math.max(max, revision.revisionNo), 0)
+  const nextRevision = highestRevisionNo + 1
+  const createdAt = existingPage?.payload.createdAt ?? input.createdAt ?? timestamp
 
   const pageUpdate = buildPageUpdateEntity(input.pageKey, {
     spaceKey: input.spaceKey,
@@ -138,7 +195,7 @@ export async function editPage(client: ArkivWriteClient, input: EditPageInput): 
       title: input.title,
       bodyMarkdown: input.bodyMarkdown,
       summary: input.summary,
-      createdAt: timestamp,
+      createdAt,
       updatedAt: timestamp
     },
     searchTokens
@@ -160,7 +217,6 @@ export async function editPage(client: ArkivWriteClient, input: EditPageInput): 
   const outgoingLinks = await listOutgoingLinks(input.pageKey)
   const newLinkCreates = await buildLinkCreatesForBody({
     spaceKey: input.spaceKey,
-    spaceSlug: input.spaceSlug,
     fromPageKey: input.pageKey,
     fromPageSlug: input.pageSlug,
     bodyMarkdown: input.bodyMarkdown
@@ -179,9 +235,52 @@ export async function editPage(client: ArkivWriteClient, input: EditPageInput): 
   }
 }
 
+type RepairCreatePageFollowUpInput = {
+  client: ArkivWriteClient
+  pageKey: Hex
+  revisionCreate: ReturnType<typeof buildRevisionCreateEntity>
+  linkCreates: ReturnType<typeof buildLinkCreateEntity>[]
+}
+
+async function repairCreatePageFollowUp(input: RepairCreatePageFollowUpInput): Promise<CreatePageRepairResult> {
+  let hasInitialRevision = false
+  let repairTxHash: Hex | undefined
+
+  try {
+    const revisions = await listRevisionsByPage(input.pageKey)
+    hasInitialRevision = revisions.some((revision) => revision.revisionNo === 1)
+  } catch {
+    // Best effort read; create attempt below will repair when possible.
+  }
+
+  if (!hasInitialRevision) {
+    const repairedRevision = await input.client.createEntity(input.revisionCreate)
+    hasInitialRevision = true
+    repairTxHash = repairedRevision.txHash
+  }
+
+  if (input.linkCreates.length > 0) {
+    try {
+      const repairedLinks = await input.client.mutateEntities({
+        creates: input.linkCreates
+      })
+      repairTxHash = repairTxHash ?? repairedLinks.txHash
+    } catch (error) {
+      console.warn('create-page link repair failed; backlinks will recover on next edit', {
+        pageKey: input.pageKey,
+        error
+      })
+    }
+  }
+
+  return {
+    hasInitialRevision,
+    txHash: repairTxHash
+  }
+}
+
 type BuildLinkCreatesForBodyInput = {
   spaceKey: Hex
-  spaceSlug: string
   fromPageKey: Hex
   fromPageSlug: string
   bodyMarkdown: string
@@ -193,7 +292,7 @@ async function buildLinkCreatesForBody(input: BuildLinkCreatesForBodyInput) {
     return []
   }
 
-  const resolvedTargets = await resolveLinkTargetPages(input.spaceSlug, linkTargets)
+  const resolvedTargets = await resolveLinkTargetPages(input.spaceKey, linkTargets)
   const timestamp = nowMs()
 
   return resolvedTargets.map((target) =>
@@ -208,4 +307,90 @@ async function buildLinkCreatesForBody(input: BuildLinkCreatesForBodyInput) {
       }
     })
   )
+}
+
+export async function transferPageOwnership(
+  client: ArkivWriteClient,
+  pageKey: Hex,
+  newOwner: Hex
+): Promise<{ entityKey: Hex; txHash: Hex }> {
+  return transferEntityOwnership(client, pageKey, newOwner)
+}
+
+export type ArchivePageInput = {
+  spaceKey: Hex
+  spaceSlug: string
+  pageKey: Hex
+  pageSlug: string
+  title: string
+  bodyMarkdown: string
+  summary: string
+  editor: Hex
+  parentPageKey?: Hex
+  createdAt?: string
+  editSummary?: string
+}
+
+export async function archivePage(client: ArkivWriteClient, input: ArchivePageInput) {
+  return editPage(client, {
+    spaceKey: input.spaceKey,
+    spaceSlug: input.spaceSlug,
+    pageKey: input.pageKey,
+    pageSlug: input.pageSlug,
+    title: input.title,
+    bodyMarkdown: input.bodyMarkdown,
+    summary: input.summary,
+    status: 'archived',
+    editor: input.editor,
+    parentPageKey: input.parentPageKey,
+    createdAt: input.createdAt,
+    editSummary: input.editSummary ?? 'Archived page'
+  })
+}
+
+export type DeletePageWithCleanupResult = {
+  pageKey: Hex
+  txHash: Hex
+  deletedKeys: Hex[]
+  deletedCounts: {
+    revisions: number
+    links: number
+    presence: number
+  }
+}
+
+export async function deletePageWithCleanup(
+  client: ArkivWriteClient,
+  pageKey: Hex
+): Promise<DeletePageWithCleanupResult> {
+  const [revisions, outgoingLinks, incomingLinks, presenceRecords] = await Promise.all([
+    listRevisionsByPage(pageKey),
+    listOutgoingLinks(pageKey),
+    listBacklinks(pageKey),
+    listPresenceForPage(pageKey)
+  ])
+
+  const uniqueKeys = new Set<Hex>([
+    pageKey,
+    ...revisions.map((revision) => revision.entityKey),
+    ...outgoingLinks.map((link) => link.entityKey),
+    ...incomingLinks.map((link) => link.entityKey),
+    ...presenceRecords.map((presence) => presence.entityKey)
+  ])
+  const deletedKeys = Array.from(uniqueKeys)
+
+  const mutation = await client.mutateEntities({
+    deletes: deletedKeys.map((entityKey) => ({ entityKey }))
+  })
+
+  return {
+    pageKey,
+    txHash: mutation.txHash,
+    deletedKeys,
+    deletedCounts: {
+      revisions: revisions.length,
+      links: outgoingLinks.length + incomingLinks.length,
+      presence: presenceRecords.length
+    }
+  }
 }

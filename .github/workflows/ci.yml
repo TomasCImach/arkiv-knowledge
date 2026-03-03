@@ -29,3 +29,18 @@ jobs:
 
       - name: Verify
         run: pnpm verify
+
+      - name: Verify Submission Assets
+        run: pnpm verify:submission
+
+      - name: Capture Evidence Pack (fail-soft)
+        run: pnpm evidence:capture
+        continue-on-error: true
+
+      - name: Upload Evidence Artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidence-pack
+          path: output/playwright/evidence-pack
+          if-no-files-found: ignore

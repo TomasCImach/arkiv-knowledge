@@ -1,5 +1,7 @@
 import type { Hex } from 'viem'
 import type { ArkivWriteClient } from '@/arkiv/clients'
+import { transferEntityOwnership } from '@/arkiv/mutations/ownership'
+import { getSpaceBySlug } from '@/arkiv/queries/spaces'
 import { buildSpaceCreateEntity, buildSpaceUpdateEntity } from '@/arkiv/schema'
 import type { SpaceStatus, SpaceVisibility } from '@/arkiv/types'
 import { nowIso, nowMs } from '@/lib/time'
@@ -12,7 +14,21 @@ export type CreateSpaceInput = {
   status?: SpaceStatus
 }
 
+export type UpdateSpaceInput = {
+  spaceSlug: string
+  name: string
+  description: string
+  visibility: SpaceVisibility
+  status?: SpaceStatus
+  createdAt: string
+}
+
 export async function createSpace(client: ArkivWriteClient, input: CreateSpaceInput): Promise<{ entityKey: Hex; txHash: Hex }> {
+  const existingSpace = await getSpaceBySlug(input.spaceSlug)
+  if (existingSpace) {
+    throw new Error(`Space slug "${input.spaceSlug}" already exists. Choose a different slug.`)
+  }
+
   const timestamp = nowIso()
   const updatedAtMs = nowMs()
 
@@ -40,7 +56,7 @@ export async function createSpace(client: ArkivWriteClient, input: CreateSpaceIn
 export async function updateSpace(
   client: ArkivWriteClient,
   entityKey: Hex,
-  input: CreateSpaceInput
+  input: UpdateSpaceInput
 ): Promise<{ entityKey: Hex; txHash: Hex }> {
   const timestamp = nowIso()
   const updatedAtMs = nowMs()
@@ -54,7 +70,7 @@ export async function updateSpace(
       payload: {
         name: input.name,
         description: input.description,
-        createdAt: timestamp,
+        createdAt: input.createdAt,
         updatedAt: timestamp
       }
     })
@@ -64,4 +80,12 @@ export async function updateSpace(
     entityKey: result.entityKey,
     txHash: result.txHash
   }
+}
+
+export async function transferSpaceOwnership(
+  client: ArkivWriteClient,
+  spaceKey: Hex,
+  newOwner: Hex
+): Promise<{ entityKey: Hex; txHash: Hex }> {
+  return transferEntityOwnership(client, spaceKey, newOwner)
 }
