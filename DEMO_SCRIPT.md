@@ -87,12 +87,12 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - Verbalize: “Backlinks are persisted as `kb.link` entities and queried, not computed only in UI.”
 
 ### 8) Expiration + Presence
-- On page detail, click `Join Presence`.
-- Point out there is no wallet transaction popup for join/renew.
+- Open a page while wallet is connected and show presence activates automatically.
+- Point out there is no wallet transaction popup for auto join/renew.
 - Show live viewers list with TTL behavior.
 - Use extension button on near-expiry entity (if visible) or explain trigger threshold.
 - Optional debug proof: open browser console and show `[presence-heartbeat]` logs while renewals are delegated through `/api/presence`.
-- Verbalize: “Presence lifecycle writes are server-signed; users still join as their wallet identity without transaction prompts.”
+- Verbalize: “Presence lifecycle writes are server-signed and auto-managed while wallet is connected.”
 
 ### 9) Realtime Signal + Resilience
 - Keep same page open in Tab A and Tab B.

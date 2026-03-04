@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import type { Hex } from 'viem'
 import { useAccount } from 'wagmi'
 import type { ParsedPresence } from '@/arkiv/types'
 import { joinPresence, leavePresence } from '@/arkiv/mutations/presence'
 import { usePresenceHeartbeat } from '@/features/presence/usePresenceHeartbeat'
+import { equalAddress } from '@/features/ownership/permissions'
 import { TechnicalDetails } from '@/app/_components/technical-details'
 
 type PresencePanelProps = {
@@ -23,8 +24,12 @@ export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps
   const router = useRouter()
   const { address } = useAccount()
   const [joinedEntityKey, setJoinedEntityKey] = useState<Hex | undefined>()
+  const [joinedViewer, setJoinedViewer] = useState<Hex | undefined>()
   const [statusText, setStatusText] = useState('')
   const [pending, setPending] = useState(false)
+  const isMountedRef = useRef(true)
+  const joinInFlightRef = useRef(false)
+  const leaveInFlightRef = useRef(false)
 
   const sessionId = useMemo(() => {
     if (typeof window === 'undefined') {
@@ -41,6 +46,34 @@ export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps
     return generated
   }, [])
 
+  const existingSessionRecord = useMemo(() => {
+    if (!address) {
+      return undefined
+    }
+
+    return records.find((record) => equalAddress(record.viewer, address) && record.sessionId === sessionId)
+  }, [address, records, sessionId])
+
+  useEffect(() => {
+    isMountedRef.current = true
+    return () => {
+      isMountedRef.current = false
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!existingSessionRecord || !address) {
+      return
+    }
+
+    if (joinedEntityKey === existingSessionRecord.entityKey && equalAddress(joinedViewer, address)) {
+      return
+    }
+
+    setJoinedEntityKey(existingSessionRecord.entityKey)
+    setJoinedViewer(address)
+  }, [address, existingSessionRecord, joinedEntityKey, joinedViewer])
+
   usePresenceHeartbeat({ entityKey: joinedEntityKey })
 
   useEffect(() => {
@@ -53,12 +86,44 @@ export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps
     }
   }, [joinedEntityKey])
 
-  async function onJoin() {
-    if (!address) {
-      setStatusText('Connect wallet to join presence.')
+  useEffect(() => {
+    if (!joinedEntityKey) {
       return
     }
 
+    const isSameViewer = Boolean(address && joinedViewer && equalAddress(joinedViewer, address))
+    if (isSameViewer || leaveInFlightRef.current) {
+      return
+    }
+
+    leaveInFlightRef.current = true
+    setPending(true)
+    console.info('[presence] requesting server-side leave', {
+      joinedEntityKey
+    })
+
+    void leavePresence(joinedEntityKey)
+      .catch((error) => {
+        console.error('leave-presence failed', error)
+      })
+      .finally(() => {
+        leaveInFlightRef.current = false
+        if (isMountedRef.current) {
+          setJoinedEntityKey(undefined)
+          setJoinedViewer(undefined)
+          setPending(false)
+          setStatusText('')
+          router.refresh()
+        }
+      })
+  }, [address, joinedEntityKey, joinedViewer, router])
+
+  useEffect(() => {
+    if (!address || joinedEntityKey || existingSessionRecord || joinInFlightRef.current || leaveInFlightRef.current) {
+      return
+    }
+
+    joinInFlightRef.current = true
     setPending(true)
     setStatusText('')
     console.info('[presence] requesting server-side join', {
@@ -67,48 +132,35 @@ export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps
       sessionId
     })
 
-    try {
-      const result = await joinPresence({
-        spaceKey,
-        pageKey,
-        viewer: address,
-        sessionId,
-        displayName: shortAddress(address)
-      })
-      setJoinedEntityKey(result.entityKey)
-      setStatusText(`Joined (${result.txHash.slice(0, 10)}...)`)
-      router.refresh()
-    } catch (error) {
-      console.error('join-presence failed', error)
-      setStatusText(error instanceof Error ? error.message : 'Could not join presence.')
-    } finally {
-      setPending(false)
-    }
-  }
-
-  async function onLeave() {
-    if (!joinedEntityKey) {
-      return
-    }
-
-    setPending(true)
-    setStatusText('')
-    console.info('[presence] requesting server-side leave', {
-      joinedEntityKey
+    void joinPresence({
+      spaceKey,
+      pageKey,
+      viewer: address,
+      sessionId,
+      displayName: shortAddress(address)
     })
-
-    try {
-      const result = await leavePresence(joinedEntityKey)
-      setStatusText(`Left (${result.txHash.slice(0, 10)}...)`)
-      setJoinedEntityKey(undefined)
-      router.refresh()
-    } catch (error) {
-      console.error('leave-presence failed', error)
-      setStatusText(error instanceof Error ? error.message : 'Could not leave presence.')
-    } finally {
-      setPending(false)
-    }
-  }
+      .then((result) => {
+        if (!isMountedRef.current) {
+          return
+        }
+        setJoinedEntityKey(result.entityKey)
+        setJoinedViewer(address)
+        setStatusText(`Presence active (${result.txHash.slice(0, 10)}...)`)
+        router.refresh()
+      })
+      .catch((error) => {
+        console.error('join-presence failed', error)
+        if (isMountedRef.current) {
+          setStatusText(error instanceof Error ? error.message : 'Could not join presence.')
+        }
+      })
+      .finally(() => {
+        joinInFlightRef.current = false
+        if (isMountedRef.current) {
+          setPending(false)
+        }
+      })
+  }, [address, existingSessionRecord, joinedEntityKey, pageKey, router, sessionId, spaceKey])
 
   return (
     <section className="card stack">
@@ -119,16 +171,14 @@ export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps
         <span className="badge">Presence TTL: 90s with server-signed heartbeat extension</span>
       </TechnicalDetails>
 
-      <div className="toolbar">
-        <button type="button" onClick={onJoin} disabled={pending || Boolean(joinedEntityKey)}>
-          {pending ? 'Joining...' : joinedEntityKey ? 'Joined' : 'Join Presence'}
-        </button>
-        <button type="button" className="secondary" onClick={onLeave} disabled={pending || !joinedEntityKey}>
-          Leave
-        </button>
-        {statusText ? <span className="subtitle">{statusText}</span> : null}
-      </div>
-      {!address ? <p className="subtitle">Connect your wallet to join presence.</p> : null}
+      <p className="subtitle">
+        {address
+          ? pending
+            ? 'Syncing your live presence...'
+            : 'Live presence is handled automatically while your wallet is connected.'
+          : 'Connect your wallet to appear as an active viewer automatically.'}
+      </p>
+      {statusText ? <p className="subtitle">{statusText}</p> : null}
 
       <div className="stack" style={{ gap: '0.5rem' }}>
         {records.length === 0 ? <p className="subtitle">No active viewers right now.</p> : null}

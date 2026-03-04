@@ -401,3 +401,14 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: open page detail, click `Join Presence`, show no wallet transaction popup while active viewer list updates and heartbeat renewals continue.
   - notes/screenshots: delegated signer route in `src/app/api/presence/route.ts`; server signer config via `ARKIV_PRESENCE_PRIVATE_KEY`.
 - **Next bottleneck:** refresh evidence capture artifacts so the walkthrough explicitly shows presence join/renew without wallet transaction prompts.
+
+### 2026-03-04 — Iteration 34 (Automatic Presence While Connected)
+- **Objective:** remove manual presence controls so connected wallets are handled automatically.
+- **Implemented:** refactored `PresencePanel` to auto-join when wallet is connected, auto-leave on disconnect/account switch/unmount, and removed `Join Presence`/`Leave` buttons; retained delegated server signer + heartbeat renewal path.
+- **Rubric targets:** UX (`frictionless collaboration`, primary) / integration (`presence lifecycle completeness`, secondary).
+- **Expected score delta:** medium-high.
+- **Evidence:**
+  - tests: added `tests/e2e/presence-panel-auto.test.tsx`; verification via `pnpm lint`, `pnpm typecheck`, `pnpm test:e2e`, `pnpm build`.
+  - demo step: open a page with wallet connected and show active presence appears automatically (no button click, no wallet tx popup).
+  - notes/screenshots: auto lifecycle logic in `src/app/_components/presence-panel.tsx`.
+- **Next bottleneck:** update evidence capture walkthrough to explicitly show auto-presence activation/deactivation in the recorded flow.

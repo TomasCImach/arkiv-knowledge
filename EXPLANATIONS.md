@@ -471,3 +471,19 @@ Iteration 33 centralizes `kb.presence` lifecycle writes on the server:
 - aligns with delegated execution goals without introducing off-chain core-data mirrors.
 
 **Scoring impact:** High uplift on integration depth (advanced lifecycle orchestration) and medium-high uplift on UX smoothness.
+
+---
+
+## 33) Automatic Presence Lifecycle While Connected (Iteration 34)
+Iteration 34 removes manual presence controls and makes the lifecycle automatic:
+- removed `Join Presence` / `Leave` buttons from page UX,
+- auto-joins presence when wallet is connected on the page,
+- auto-leaves on disconnect/account switch/unmount with best-effort cleanup,
+- keeps server-delegated renewal heartbeat active while joined.
+
+**Why this matters:**
+- lowers user action friction in collaborative read flows,
+- keeps `kb.presence` lifecycle fully observable and deterministic (`create -> extend -> leave/expire`),
+- improves demo quality by removing manual toggles and reducing operator steps.
+
+**Scoring impact:** Medium-high uplift on UX smoothness and medium uplift on integration lifecycle clarity.

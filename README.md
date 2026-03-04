@@ -191,7 +191,7 @@ pnpm verify:phase all      # file-level phase verification
 8. Edit page and show canonical page key stability + growing revision list.
 9. Transfer canonical page ownership and demonstrate old-owner block/new-owner handoff.
 10. Add wiki links and show backlinks sourced from `kb.link` queries.
-11. Join presence (no wallet tx popup) and show short-lived active viewers.
+11. Open a page with wallet connected and show presence auto-joins (no wallet tx popup) with short-lived active viewers.
 12. Archive a page, then delete a different page and show post-delete navigation consistency.
 13. Show realtime refresh with two sessions.
 14. Show generated evidence pack (`ARTIFACT_INDEX.md` + screenshots + walkthrough clip + hash manifest + realtime status report).
