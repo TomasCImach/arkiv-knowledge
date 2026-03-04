@@ -15,6 +15,7 @@ Arkiv-first documentation app built for the Arkiv Builders Challenge.
 - Page edits preserve canonical `createdAt` and bump revisions using `max(revisionNo)+1`.
 - Relationships are persisted as first-class link entities (`kb.link`) and rendered via query results.
 - Expiration is intentional per entity type, with owner extension controls and short-lived presence entities.
+- Presence writes are delegated to a server-owned signer so users do not approve transaction popups for join/renew.
 - Browsing is public (no wallet). Wallet connection is required only for writes.
 - Canonical slug reads are deterministic, and duplicate slug writes are rejected before mutation.
 - Visibility semantics are enforced (`public` listable, `unlisted` direct-link readable, `private` owner-context only).
@@ -25,12 +26,14 @@ Arkiv-first documentation app built for the Arkiv Builders Challenge.
 flowchart LR
   UI["Next.js App Router UI"] --> Q["Arkiv Query Paths"]
   UI --> W["Wallet-Gated Write Forms"]
+  UI --> PAPI["/api/presence (server signer)"]
   Q --> S["kb.space"]
   Q --> P["kb.page"]
   Q --> R["kb.revision"]
   Q --> L["kb.link"]
   Q --> PR["kb.presence"]
   W --> M["mutateEntities / updateEntity / deleteEntity / changeOwnership"]
+  PAPI --> PR
   M --> S
   M --> P
   M --> R
@@ -68,6 +71,10 @@ ARKIV_AUTH_SECRET=<random-long-secret>
 # Optional live write tests / seed scripts
 ARKIV_LIVE_TEST_PRIVATE_KEY=<0x...>
 ARKIV_DEMO_PRIVATE_KEY=<0x...>
+
+# Presence delegation signer (server-side join/renew/leave)
+ARKIV_PRESENCE_PRIVATE_KEY=<0x...>
+
 ARKIV_CHAIN=kaolin
 ARKIV_RPC_URL=https://kaolin.hoodi.arkiv.network/rpc
 ```
@@ -127,7 +134,8 @@ const transfer = await walletClient.changeOwnership({
 
 ## Ownership and Read/Write Boundary
 - Read routes (`/`, `/spaces/[spaceSlug]`, `/spaces/[spaceSlug]/[pageSlug]`) are public.
-- Write routes and buttons (`/new/space`, create/edit page, `/spaces/[spaceSlug]/settings`, presence join, extend TTL) require wallet connection.
+- Write routes and buttons (`/new/space`, create/edit page, `/spaces/[spaceSlug]/settings`, transfer, archive/delete, extend TTL) require wallet connection + wallet signatures.
+- Presence join/renew/leave are delegated to `/api/presence` and signed by a server-owned private key; users still connect wallet for viewer identity but do not sign presence transactions.
 - Space settings updates and transfer are owner-gated; non-owners can view settings in read-only mode with explicit messaging.
 - Private space reads require wallet-authenticated session verification (signed message challenge, HttpOnly cookie).
 - Canonical page edit and transfer are owner-gated; non-owners can browse page content but cannot submit edits.
@@ -140,7 +148,7 @@ const transfer = await walletClient.changeOwnership({
 - Long-lived: spaces and published pages (365d)
 - Medium: revisions (180d)
 - Regenerated medium: links (30d)
-- Ephemeral: presence (90s) with heartbeat extension
+- Ephemeral: presence (90s) with server-signed heartbeat extension
 - Revision retention policy:
   - archive: preserve full revision history (append archive revision),
   - delete: remove canonical page and all revisions in the same cleanup mutation.
@@ -183,7 +191,7 @@ pnpm verify:phase all      # file-level phase verification
 8. Edit page and show canonical page key stability + growing revision list.
 9. Transfer canonical page ownership and demonstrate old-owner block/new-owner handoff.
 10. Add wiki links and show backlinks sourced from `kb.link` queries.
-11. Join presence and show short-lived active viewers.
+11. Join presence (no wallet tx popup) and show short-lived active viewers.
 12. Archive a page, then delete a different page and show post-delete navigation consistency.
 13. Show realtime refresh with two sessions.
 14. Show generated evidence pack (`ARTIFACT_INDEX.md` + screenshots + walkthrough clip + hash manifest + realtime status report).

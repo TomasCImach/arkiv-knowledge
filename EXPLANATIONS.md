@@ -454,3 +454,20 @@ Iteration 32 standardizes route-state behavior for reliability and demo clarity:
 - turns degraded read paths into recoverable flows instead of dead-end warnings.
 
 **Scoring impact:** Medium-high uplift on UX reliability and medium uplift on functionality resilience.
+
+---
+
+## 32) Server-Delegated Presence Signing (Iteration 33)
+Iteration 33 centralizes `kb.presence` lifecycle writes on the server:
+- added a server-only Arkiv signer client backed by owned private key env (`ARKIV_PRESENCE_PRIVATE_KEY`),
+- added `/api/presence` route handlers for join (`POST`), renewal (`PATCH`), and leave (`DELETE`),
+- refactored client presence flows to call server API instead of wallet `createEntity`/`extendEntity`/`deleteEntity`,
+- removed wallet preflight + wallet transaction dependency from presence join/heartbeat UX.
+
+**Why this matters:**
+- preserves Arkiv-first storage while improving collaboration UX (no periodic wallet tx prompts for heartbeat),
+- keeps lifecycle completeness explicit (create/extend/delete still on-chain, now server-operated),
+- improves demo reliability by avoiding wallet popup interruptions in presence flows,
+- aligns with delegated execution goals without introducing off-chain core-data mirrors.
+
+**Scoring impact:** High uplift on integration depth (advanced lifecycle orchestration) and medium-high uplift on UX smoothness.

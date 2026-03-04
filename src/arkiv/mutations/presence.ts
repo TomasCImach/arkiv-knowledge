@@ -1,8 +1,5 @@
 import type { Hex } from 'viem'
-import type { ArkivWriteClient } from '@/arkiv/clients'
-import { EXPIRATION_SECONDS } from '@/arkiv/schema'
-import { buildPresenceCreateEntity } from '@/arkiv/schema/presence'
-import { nowIso } from '@/lib/time'
+import { isHex } from 'viem'
 
 export type JoinPresenceInput = {
   spaceKey: Hex
@@ -12,54 +9,61 @@ export type JoinPresenceInput = {
   displayName: string
 }
 
-export async function joinPresence(
-  client: ArkivWriteClient,
-  input: JoinPresenceInput
+type PresenceMutationResponse = {
+  entityKey?: string
+  txHash?: string
+  error?: string
+}
+
+async function readError(response: Response, fallback: string): Promise<string> {
+  try {
+    const payload = (await response.json()) as PresenceMutationResponse
+    if (payload.error && typeof payload.error === 'string') {
+      return payload.error
+    }
+  } catch {
+    // Ignore parse errors and return fallback.
+  }
+
+  return fallback
+}
+
+async function callPresenceApi(
+  method: 'POST' | 'PATCH' | 'DELETE',
+  body: Record<string, string>,
+  fallback: string
 ): Promise<{ entityKey: Hex; txHash: Hex }> {
-  const result = await client.createEntity(
-    buildPresenceCreateEntity({
-      spaceKey: input.spaceKey,
-      pageKey: input.pageKey,
-      viewer: input.viewer,
-      sessionId: input.sessionId,
-      payload: {
-        displayName: input.displayName,
-        joinedAt: nowIso()
-      }
-    })
-  )
+  const response = await fetch('/api/presence', {
+    method,
+    headers: {
+      'content-type': 'application/json'
+    },
+    cache: 'no-store',
+    body: JSON.stringify(body)
+  })
+  if (!response.ok) {
+    throw new Error(await readError(response, fallback))
+  }
+
+  const payload = (await response.json()) as PresenceMutationResponse
+  if (!payload.entityKey || !payload.txHash || !isHex(payload.entityKey) || !isHex(payload.txHash)) {
+    throw new Error(fallback)
+  }
 
   return {
-    entityKey: result.entityKey,
-    txHash: result.txHash
+    entityKey: payload.entityKey as Hex,
+    txHash: payload.txHash as Hex
   }
 }
 
-export async function heartbeatPresence(
-  client: ArkivWriteClient,
-  entityKey: Hex
-): Promise<{ entityKey: Hex; txHash: Hex }> {
-  const result = await client.extendEntity({
-    entityKey,
-    expiresIn: EXPIRATION_SECONDS.presence
-  })
-
-  return {
-    entityKey: result.entityKey,
-    txHash: result.txHash
-  }
+export async function joinPresence(input: JoinPresenceInput): Promise<{ entityKey: Hex; txHash: Hex }> {
+  return callPresenceApi('POST', input, 'Could not join presence.')
 }
 
-export async function leavePresence(
-  client: ArkivWriteClient,
-  entityKey: Hex
-): Promise<{ entityKey: Hex; txHash: Hex }> {
-  const result = await client.deleteEntity({
-    entityKey
-  })
+export async function heartbeatPresence(entityKey: Hex): Promise<{ entityKey: Hex; txHash: Hex }> {
+  return callPresenceApi('PATCH', { entityKey }, 'Could not renew presence.')
+}
 
-  return {
-    entityKey: result.entityKey,
-    txHash: result.txHash
-  }
+export async function leavePresence(entityKey: Hex): Promise<{ entityKey: Hex; txHash: Hex }> {
+  return callPresenceApi('DELETE', { entityKey }, 'Could not leave presence.')
 }

@@ -88,10 +88,11 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 
 ### 8) Expiration + Presence
 - On page detail, click `Join Presence`.
+- Point out there is no wallet transaction popup for join/renew.
 - Show live viewers list with TTL behavior.
 - Use extension button on near-expiry entity (if visible) or explain trigger threshold.
-- Optional debug proof: open browser console and show `[presence-heartbeat]` + `[arkiv-tx:*]` logs for each periodic extension prompt.
-- Verbalize: “Expiration and extension are intentional per entity class.”
+- Optional debug proof: open browser console and show `[presence-heartbeat]` logs while renewals are delegated through `/api/presence`.
+- Verbalize: “Presence lifecycle writes are server-signed; users still join as their wallet identity without transaction prompts.”
 
 ### 9) Realtime Signal + Resilience
 - Keep same page open in Tab A and Tab B.

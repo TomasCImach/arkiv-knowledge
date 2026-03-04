@@ -271,6 +271,17 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Empty states provide clear next actions instead of dead-end messaging.
 - Read degradation paths now provide recoverable retry controls instead of static warnings.
 
+### Phase 26 — Server-Delegated Presence Lifecycle (Iteration 33)
+- [x] Added server-owned Arkiv signer client for presence writes (`ARKIV_PRESENCE_PRIVATE_KEY`).
+- [x] Added centralized `/api/presence` route for join/renew/leave with request validation.
+- [x] Migrated presence panel + heartbeat from wallet tx signing to server-side execution.
+- [x] Added unit coverage for presence API mutation client behavior and error handling.
+
+**Exit criteria status:** met.
+- Presence creation/renew/delete remain Arkiv entities and are fully demo-observable.
+- Users no longer approve wallet tx prompts for presence join/heartbeat.
+- Lifecycle semantics remain explicit: create -> extend -> leave/expire.
+
 ## Current Verification Snapshot
 - Last full pass: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`, `pnpm build` on 2026-03-01 (post iteration 26 wallet-auth visibility rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
@@ -280,6 +291,7 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Iteration 30 check: `pnpm typecheck` + `pnpm test:e2e` pass on 2026-03-02 after authoring UX (preview tabs + unsaved guard + callouts) rollout.
 - Iteration 31 check: `pnpm typecheck` + `pnpm test:e2e` pass on 2026-03-02 after mobile drawer/action ergonomics rollout.
 - Iteration 32 check: `pnpm typecheck` + `pnpm test:e2e` pass on 2026-03-02 after unified route loading/empty/error/retry states rollout.
+- Iteration 33 check: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` pass on 2026-03-04 after server-delegated presence migration.
 - Added passing integrity coverage for canonical selection + duplicate guards (`tests/integration/canonical-resolution.test.ts`, `tests/integration/create-conflict-guards.test.ts`).
 - Added lifecycle hardening coverage (`tests/integration/edit-page-mutate.test.ts`, `tests/integration/create-page-repair.test.ts`).
 - Added visibility/realtime coverage (`tests/unit/visibility-access.test.ts`, `tests/e2e/private-visibility-routes.test.tsx`, `tests/e2e/use-arkiv-events.test.tsx`).

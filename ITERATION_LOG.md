@@ -390,3 +390,14 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: trigger/loading transition to show skeleton states, run a filtered search with no matches to show CTA empty state, then simulate degraded read path and use retry action.
   - notes/screenshots: shared state components in `src/app/_components/route-state-card.tsx`, `src/app/_components/route-loading-state.tsx`, and route updates across home/search/space/page/new/edit/settings.
 - **Next bottleneck:** refresh submission evidence captures to include new mobile and recovery-state walkthrough screenshots.
+
+### 2026-03-04 — Iteration 33 (Server-Delegated Presence Lifecycle)
+- **Objective:** remove wallet transaction signing friction from `kb.presence` create/renew flows by centralizing execution on a server-owned key.
+- **Implemented:** added server-only presence signer client (`src/arkiv/server-presence-client.ts`); added centralized node runtime route (`/api/presence`) supporting join (`POST`), renew (`PATCH`), leave (`DELETE`); migrated `PresencePanel` and `usePresenceHeartbeat` to API-based flow; replaced wallet-client presence mutations with server API client wrappers.
+- **Rubric targets:** integration (`advanced lifecycle orchestration`, primary) / UX (`write friction reduction`, secondary) / functionality (`presence reliability`, secondary).
+- **Expected score delta:** high.
+- **Evidence:**
+  - tests: added `tests/unit/presence-mutations.test.ts`; verification via `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`.
+  - demo step: open page detail, click `Join Presence`, show no wallet transaction popup while active viewer list updates and heartbeat renewals continue.
+  - notes/screenshots: delegated signer route in `src/app/api/presence/route.ts`; server signer config via `ARKIV_PRESENCE_PRIVATE_KEY`.
+- **Next bottleneck:** refresh evidence capture artifacts so the walkthrough explicitly shows presence join/renew without wallet transaction prompts.

@@ -3,17 +3,15 @@
 import { useEffect } from 'react'
 import type { Hex } from 'viem'
 import { heartbeatPresence } from '@/arkiv/mutations/presence'
-import type { ArkivWriteClient } from '@/arkiv/clients'
 
 type UsePresenceHeartbeatInput = {
-  client?: ArkivWriteClient
   entityKey?: Hex
   intervalMs?: number
 }
 
-export function usePresenceHeartbeat({ client, entityKey, intervalMs = 30000 }: UsePresenceHeartbeatInput) {
+export function usePresenceHeartbeat({ entityKey, intervalMs = 30000 }: UsePresenceHeartbeatInput) {
   useEffect(() => {
-    if (!client || !entityKey) {
+    if (!entityKey) {
       return
     }
 
@@ -32,7 +30,7 @@ export function usePresenceHeartbeat({ client, entityKey, intervalMs = 30000 }: 
           pathname: window.location.pathname
         })
       }
-      void heartbeatPresence(client, entityKey).catch(() => {
+      void heartbeatPresence(entityKey).catch(() => {
         // Keep heartbeat failure non-fatal for UX; panel shows stale viewers until refresh.
       })
     }, intervalMs)
@@ -46,5 +44,5 @@ export function usePresenceHeartbeat({ client, entityKey, intervalMs = 30000 }: 
         })
       }
     }
-  }, [client, entityKey, intervalMs])
+  }, [entityKey, intervalMs])
 }

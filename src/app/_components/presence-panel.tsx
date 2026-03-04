@@ -6,9 +6,7 @@ import type { Hex } from 'viem'
 import { useAccount } from 'wagmi'
 import type { ParsedPresence } from '@/arkiv/types'
 import { joinPresence, leavePresence } from '@/arkiv/mutations/presence'
-import { useArkivWalletClient } from '@/arkiv/useArkivWallet'
 import { usePresenceHeartbeat } from '@/features/presence/usePresenceHeartbeat'
-import { formatWalletError, runWritePreflight } from '@/lib/wallet'
 import { TechnicalDetails } from '@/app/_components/technical-details'
 
 type PresencePanelProps = {
@@ -23,8 +21,7 @@ function shortAddress(address: Hex): string {
 
 export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps) {
   const router = useRouter()
-  const walletClient = useArkivWalletClient()
-  const { address, chainId } = useAccount()
+  const { address } = useAccount()
   const [joinedEntityKey, setJoinedEntityKey] = useState<Hex | undefined>()
   const [statusText, setStatusText] = useState('')
   const [pending, setPending] = useState(false)
@@ -44,43 +41,34 @@ export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps
     return generated
   }, [])
 
-  usePresenceHeartbeat({
-    client: walletClient,
-    entityKey: joinedEntityKey
-  })
+  usePresenceHeartbeat({ entityKey: joinedEntityKey })
 
   useEffect(() => {
     return () => {
-      if (walletClient && joinedEntityKey) {
-        void leavePresence(walletClient, joinedEntityKey).catch(() => {
+      if (joinedEntityKey) {
+        void leavePresence(joinedEntityKey).catch(() => {
           // Best effort cleanup.
         })
       }
     }
-  }, [joinedEntityKey, walletClient])
+  }, [joinedEntityKey])
 
   async function onJoin() {
-    if (!walletClient || !address) {
+    if (!address) {
       setStatusText('Connect wallet to join presence.')
-      return
-    }
-
-    const preflight = await runWritePreflight(address, chainId)
-    if (!preflight.ok) {
-      setStatusText(preflight.message)
       return
     }
 
     setPending(true)
     setStatusText('')
-    console.info('[presence] requesting join signature', {
+    console.info('[presence] requesting server-side join', {
       spaceKey,
       pageKey,
       sessionId
     })
 
     try {
-      const result = await joinPresence(walletClient, {
+      const result = await joinPresence({
         spaceKey,
         pageKey,
         viewer: address,
@@ -92,31 +80,31 @@ export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps
       router.refresh()
     } catch (error) {
       console.error('join-presence failed', error)
-      setStatusText(formatWalletError(error, 'Could not join presence.'))
+      setStatusText(error instanceof Error ? error.message : 'Could not join presence.')
     } finally {
       setPending(false)
     }
   }
 
   async function onLeave() {
-    if (!walletClient || !joinedEntityKey) {
+    if (!joinedEntityKey) {
       return
     }
 
     setPending(true)
     setStatusText('')
-    console.info('[presence] requesting leave signature', {
+    console.info('[presence] requesting server-side leave', {
       joinedEntityKey
     })
 
     try {
-      const result = await leavePresence(walletClient, joinedEntityKey)
+      const result = await leavePresence(joinedEntityKey)
       setStatusText(`Left (${result.txHash.slice(0, 10)}...)`)
       setJoinedEntityKey(undefined)
       router.refresh()
     } catch (error) {
       console.error('leave-presence failed', error)
-      setStatusText(formatWalletError(error, 'Could not leave presence.'))
+      setStatusText(error instanceof Error ? error.message : 'Could not leave presence.')
     } finally {
       setPending(false)
     }
@@ -128,7 +116,7 @@ export function PresencePanel({ spaceKey, pageKey, records }: PresencePanelProps
         <h3 style={{ margin: 0 }}>Live Presence</h3>
       </div>
       <TechnicalDetails summary="Technical details (presence retention)">
-        <span className="badge">Presence TTL: 90s with heartbeat extension</span>
+        <span className="badge">Presence TTL: 90s with server-signed heartbeat extension</span>
       </TechnicalDetails>
 
       <div className="toolbar">
