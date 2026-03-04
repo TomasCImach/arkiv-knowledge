@@ -28,6 +28,12 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - Open create/edit/search forms and scroll; show sticky mobile action bars for `Create`, `Save`, and `Apply query`.
 - Verbalize: “Navigation remains explicit on mobile, and critical actions stay reachable while scrolling.”
 
+### 1.6) GitBook Migration Path (No Wallet)
+- Open `/migrate/gitbook`.
+- Paste sample GitBook markdown containing frontmatter description, `{% embed %}`, and `{% code %}` wrappers.
+- Show converted markdown + preview and transform summary.
+- Verbalize: “Migration from GitBook is deterministic and does not require wallet access.”
+
 ### 2) Wallet-Gated Write
 - Connect wallet.
 - Create a new space at `/new/space`.
@@ -119,6 +125,7 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - “Ownership transfer is explicit on canonical space/page entities.”
 - “Search, filters, sorting, and relationships are Arkiv-query-driven.”
 - “Presence and expiration are product features, not incidental metadata.”
+- “GitBook markdown migration is supported through built-in converter and write-path normalization.”
 
 ## Backup Paths (If Live Demo Fails)
 - Run `pnpm restore:demo` to recover dataset.

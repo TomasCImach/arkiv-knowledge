@@ -487,3 +487,21 @@ Iteration 34 removes manual presence controls and makes the lifecycle automatic:
 - improves demo quality by removing manual toggles and reducing operator steps.
 
 **Scoring impact:** Medium-high uplift on UX smoothness and medium uplift on integration lifecycle clarity.
+
+---
+
+## 34) GitBook Migration Compatibility Layer (Iteration 35)
+Iteration 35 adds a deterministic migration bridge from GitBook markdown to Arkiv Knowledge authoring/read flows:
+- introduced shared normalization utility for known GitBook syntax blockers (`{% embed %}`, `{% code %}` wrappers, heading anchor tags, GitBook frontmatter description),
+- wired normalization into canonical page create/edit mutation path so imported markdown is stored in compatible form,
+- wired normalization into markdown preview/read rendering path so existing GitBook-formatted pages remain readable immediately,
+- added public `/migrate/gitbook` converter route and CLI script (`pnpm migrate:gitbook`) for operator-friendly bulk and ad-hoc migration workflows,
+- added one-click `Normalize GitBook Markdown` action directly in create/edit forms for seamless paste-and-fix authoring.
+
+**Why this matters:**
+- lowers adoption friction for teams migrating from GitBook by reducing manual content cleanup,
+- improves deterministic judge demoability: migration behavior is visible in UI and script output with transform summaries,
+- keeps Arkiv-first architecture intact because converted content still lands in canonical `kb.page`/`kb.revision` entities,
+- strengthens query/relationship quality because search tokenization and link extraction now operate on normalized markdown.
+
+**Scoring impact:** High uplift on functionality migration-readiness and medium-high uplift on integration depth via deterministic write-path compatibility.

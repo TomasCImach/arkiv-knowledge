@@ -1,8 +1,13 @@
 'use client'
 
-import { useId, useState } from 'react'
+import { useId, useMemo, useState } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import {
+  hasGitBookMarkdownSyntax,
+  normalizeGitBookMarkdown,
+  summarizeGitBookNormalization
+} from '@/features/migration/gitbook-markdown'
 
 export type MarkdownEditorFieldProps = {
   value: string
@@ -32,6 +37,24 @@ type MarkdownTabsProps = {
 
 function MarkdownTabs({ value, onChange, readOnly, placeholder, textareaId }: MarkdownTabsProps) {
   const [mode, setMode] = useState<'edit' | 'preview'>('edit')
+  const [migrationFeedback, setMigrationFeedback] = useState<string>('')
+  const previewMarkdown = useMemo(() => normalizeGitBookMarkdown(value).markdown, [value])
+  const hasGitBookSyntax = useMemo(() => hasGitBookMarkdownSyntax(value), [value])
+
+  function normalizeGitBookInput() {
+    const result = normalizeGitBookMarkdown(value)
+    onChange(result.markdown)
+
+    if (!result.changed) {
+      setMigrationFeedback('No GitBook-specific syntax detected.')
+      return
+    }
+
+    const summary = summarizeGitBookNormalization(result.summary)
+    setMigrationFeedback(
+      summary.length > 0 ? `GitBook normalization applied (${summary.join('; ')}).` : 'GitBook normalization applied.'
+    )
+  }
 
   return (
     <div className="stack" style={{ gap: '0.55rem' }}>
@@ -52,7 +75,15 @@ function MarkdownTabs({ value, onChange, readOnly, placeholder, textareaId }: Ma
         >
           Preview
         </button>
+        {!readOnly ? (
+          <button type="button" className="secondary" onClick={normalizeGitBookInput}>
+            Normalize GitBook Markdown
+          </button>
+        ) : null}
+        {!readOnly && hasGitBookSyntax ? <span className="badge">GitBook syntax detected</span> : null}
       </div>
+
+      {migrationFeedback ? <p className="subtitle">{migrationFeedback}</p> : null}
 
       {mode === 'edit' ? (
         <textarea
@@ -65,7 +96,11 @@ function MarkdownTabs({ value, onChange, readOnly, placeholder, textareaId }: Ma
         />
       ) : (
         <div className="markdown-preview markdown doc-reader">
-          {value.trim().length > 0 ? <Markdown remarkPlugins={[remarkGfm]}>{value}</Markdown> : <p className="subtitle">Nothing to preview yet.</p>}
+          {previewMarkdown.trim().length > 0 ? (
+            <Markdown remarkPlugins={[remarkGfm]}>{previewMarkdown}</Markdown>
+          ) : (
+            <p className="subtitle">Nothing to preview yet.</p>
+          )}
         </div>
       )}
     </div>

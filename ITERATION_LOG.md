@@ -412,3 +412,15 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: open a page with wallet connected and show active presence appears automatically (no button click, no wallet tx popup).
   - notes/screenshots: auto lifecycle logic in `src/app/_components/presence-panel.tsx`.
 - **Next bottleneck:** update evidence capture walkthrough to explicitly show auto-presence activation/deactivation in the recorded flow.
+
+### 2026-03-04 — Iteration 35 (GitBook Migration Compatibility)
+- **Objective:** make GitBook-to-Arkiv markdown migration seamless and judge-observable with both UI and script paths.
+- **Implemented:** added shared GitBook markdown normalizer (`src/features/migration/gitbook-markdown.ts`), integrated normalization into page read/preview and create/edit mutations, added migration route (`/migrate/gitbook`) + reusable converter component, added one-click authoring action (`Normalize GitBook Markdown`), and added CLI script (`pnpm migrate:gitbook`).
+- **Rubric targets:** functionality (`migration/import readiness`, primary) / integration (`write-path compatibility + deterministic rendering`, secondary) / UX (`low-friction onboarding`, secondary).
+- **Expected score delta:** high.
+- **Evidence:**
+  - tests: added `tests/unit/gitbook-markdown.test.ts`, `tests/e2e/gitbook-migration-tool.test.tsx`; extended `tests/e2e/page-authoring-ux.test.tsx`.
+  - verification: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`.
+  - demo step: open `/migrate/gitbook`, paste GitBook markdown, show converted output/preview, then paste into create/edit form and run one-click normalization.
+  - notes/screenshots: migration tooling in `src/app/migrate/gitbook/page.tsx`, `src/app/_components/gitbook-migration-tool.tsx`, and `scripts/migrate-gitbook-markdown.ts`.
+- **Next bottleneck:** extend converter for multi-file GitBook exports (folder-aware link remapping) and add deterministic batch migration demo fixture.

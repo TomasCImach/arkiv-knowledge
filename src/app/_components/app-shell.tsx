@@ -50,6 +50,9 @@ export async function AppShell({ children }: { children: ReactNode }) {
           <Link href="/my/spaces" className="badge">
             My Spaces
           </Link>
+          <Link href="/migrate/gitbook" className="badge">
+            GitBook Migration
+          </Link>
         </div>
       </div>
       <div className="stack sidebar-space-groups" style={{ gap: '0.4rem' }}>
@@ -108,6 +111,9 @@ export async function AppShell({ children }: { children: ReactNode }) {
             </Link>
             <Link href="/my/spaces" className="button secondary desktop-nav-action">
               My Spaces
+            </Link>
+            <Link href="/migrate/gitbook" className="button secondary desktop-nav-action">
+              Migrate GitBook
             </Link>
             <Link href="/new/space" className="button secondary desktop-nav-action">
               New Space

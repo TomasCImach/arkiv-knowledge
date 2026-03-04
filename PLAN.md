@@ -293,6 +293,17 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Manual action overhead is removed from collaborative presence path.
 - Lifecycle remains Arkiv-first and server-delegated.
 
+### Phase 28 — GitBook Migration Compatibility Layer (Iteration 35)
+- [x] Added deterministic GitBook markdown normalization utility for known migration blockers (`embed`, `code` wrappers, heading anchors, frontmatter description).
+- [x] Added public migration route at `/migrate/gitbook` with paste/convert/preview workflow.
+- [x] Added one-click `Normalize GitBook Markdown` action in page create/edit authoring flows.
+- [x] Added CLI migration script (`pnpm migrate:gitbook -- <input.md> [output.md] [--summary]`) and targeted unit/e2e coverage.
+
+**Exit criteria status:** met.
+- GitBook markdown can be converted from UI and CLI without wallet.
+- Converted content renders correctly in page preview/read paths and is stored normalized on write.
+- Migration behavior is deterministic and test-covered for judge-observable proof.
+
 ## Current Verification Snapshot
 - Last full pass: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`, `pnpm build` on 2026-03-01 (post iteration 26 wallet-auth visibility rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
@@ -304,6 +315,7 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Iteration 32 check: `pnpm typecheck` + `pnpm test:e2e` pass on 2026-03-02 after unified route loading/empty/error/retry states rollout.
 - Iteration 33 check: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build` pass on 2026-03-04 after server-delegated presence migration.
 - Iteration 34 check: `pnpm lint`, `pnpm typecheck`, `pnpm test:e2e`, `pnpm build` pass on 2026-03-04 after automatic presence lifecycle rollout.
+- Iteration 35 check: `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm test:e2e` pass on 2026-03-04 after GitBook migration compatibility rollout.
 - Added passing integrity coverage for canonical selection + duplicate guards (`tests/integration/canonical-resolution.test.ts`, `tests/integration/create-conflict-guards.test.ts`).
 - Added lifecycle hardening coverage (`tests/integration/edit-page-mutate.test.ts`, `tests/integration/create-page-repair.test.ts`).
 - Added visibility/realtime coverage (`tests/unit/visibility-access.test.ts`, `tests/e2e/private-visibility-routes.test.tsx`, `tests/e2e/use-arkiv-events.test.tsx`).

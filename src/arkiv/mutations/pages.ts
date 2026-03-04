@@ -11,6 +11,7 @@ import {
   buildRevisionCreateEntity
 } from '@/arkiv/schema'
 import type { PageStatus } from '@/arkiv/types'
+import { normalizeGitBookMarkdown } from '@/features/migration/gitbook-markdown'
 import { extractWikiLinks, tokenizeForSearch } from '@/lib/text'
 import { nowIso, nowMs } from '@/lib/time'
 
@@ -59,9 +60,10 @@ export async function createPage(client: ArkivWriteClient, input: SavePageInput)
     throw new Error(`Page slug "${input.pageSlug}" already exists in this space. Choose a different slug.`)
   }
 
+  const normalizedBodyMarkdown = normalizeGitBookMarkdown(input.bodyMarkdown).markdown
   const timestamp = nowIso()
   const updatedAtMs = nowMs()
-  const searchTokens = buildSearchTokens(input.title, input.summary, input.bodyMarkdown)
+  const searchTokens = buildSearchTokens(input.title, input.summary, normalizedBodyMarkdown)
 
   const pageCreate = buildPageCreateEntity({
     spaceKey: input.spaceKey,
@@ -73,7 +75,7 @@ export async function createPage(client: ArkivWriteClient, input: SavePageInput)
     updatedAtMs,
     payload: {
       title: input.title,
-      bodyMarkdown: input.bodyMarkdown,
+      bodyMarkdown: normalizedBodyMarkdown,
       summary: input.summary,
       createdAt: timestamp,
       updatedAt: timestamp
@@ -89,7 +91,7 @@ export async function createPage(client: ArkivWriteClient, input: SavePageInput)
     editor: input.editor,
     payload: {
       title: input.title,
-      bodyMarkdown: input.bodyMarkdown,
+      bodyMarkdown: normalizedBodyMarkdown,
       editSummary: 'Initial version'
     }
   })
@@ -107,7 +109,7 @@ export async function createPage(client: ArkivWriteClient, input: SavePageInput)
     spaceKey: input.spaceKey,
     fromPageKey: createdPage.entityKey,
     fromPageSlug: input.pageSlug,
-    bodyMarkdown: input.bodyMarkdown
+    bodyMarkdown: normalizedBodyMarkdown
   })
 
   try {
@@ -172,9 +174,10 @@ export async function editPage(client: ArkivWriteClient, input: EditPageInput): 
   txHash: Hex
   createdRevisions: Hex[]
 }> {
+  const normalizedBodyMarkdown = normalizeGitBookMarkdown(input.bodyMarkdown).markdown
   const timestamp = nowIso()
   const updatedAtMs = nowMs()
-  const searchTokens = buildSearchTokens(input.title, input.summary, input.bodyMarkdown)
+  const searchTokens = buildSearchTokens(input.title, input.summary, normalizedBodyMarkdown)
   const [revisions, existingPage] = await Promise.all([
     listRevisionsByPage(input.pageKey),
     getPageBySlugInSpace(input.spaceKey, input.pageSlug)
@@ -193,7 +196,7 @@ export async function editPage(client: ArkivWriteClient, input: EditPageInput): 
     updatedAtMs,
     payload: {
       title: input.title,
-      bodyMarkdown: input.bodyMarkdown,
+      bodyMarkdown: normalizedBodyMarkdown,
       summary: input.summary,
       createdAt,
       updatedAt: timestamp
@@ -209,7 +212,7 @@ export async function editPage(client: ArkivWriteClient, input: EditPageInput): 
     editor: input.editor,
     payload: {
       title: input.title,
-      bodyMarkdown: input.bodyMarkdown,
+      bodyMarkdown: normalizedBodyMarkdown,
       editSummary: input.editSummary
     }
   })
@@ -219,7 +222,7 @@ export async function editPage(client: ArkivWriteClient, input: EditPageInput): 
     spaceKey: input.spaceKey,
     fromPageKey: input.pageKey,
     fromPageSlug: input.pageSlug,
-    bodyMarkdown: input.bodyMarkdown
+    bodyMarkdown: normalizedBodyMarkdown
   })
 
   const mutation = await client.mutateEntities({

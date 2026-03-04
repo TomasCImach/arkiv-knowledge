@@ -37,6 +37,9 @@ export default async function HomePage() {
           <Link href="/my/spaces" className="button secondary">
             My Spaces
           </Link>
+          <Link href="/migrate/gitbook" className="button secondary">
+            Migrate GitBook
+          </Link>
           <span className="badge">Core data is stored as Arkiv entities</span>
         </div>
       </div>

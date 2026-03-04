@@ -1,4 +1,4 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import React from 'react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
@@ -67,6 +67,36 @@ describe('page authoring ux', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Preview' }))
 
     expect(screen.getByRole('heading', { name: 'Heading' })).toBeInTheDocument()
+  })
+
+  it('normalizes gitbook markdown in-place before save', async () => {
+    render(
+      <CreatePageForm
+        spaceKey="0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        spaceSlug="space"
+        spaceOwner="0x1111111111111111111111111111111111111111"
+        availableParents={[]}
+      />
+    )
+
+    fireEvent.change(screen.getByLabelText('Markdown body'), {
+      target: {
+        value:
+          `{% embed url="https://example.com/video" %}\n` +
+          `{% code title="demo.ts" lineNumbers="true" %}\n` +
+          '```ts\n' +
+          'const ok = true\n' +
+          '```\n' +
+          '{% endcode %}'
+      }
+    })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Normalize GitBook Markdown' }))
+
+    const textarea = screen.getByLabelText('Markdown body') as HTMLTextAreaElement
+    expect(textarea.value).toContain('[Embedded content](https://example.com/video)')
+    expect(textarea.value).not.toContain('{% code')
+    expect(await screen.findByText(/GitBook normalization applied/)).toBeInTheDocument()
   })
 
   it('warns before leaving when form has unsaved changes', async () => {

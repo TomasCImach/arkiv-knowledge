@@ -17,6 +17,7 @@ Arkiv-first documentation app built for the Arkiv Builders Challenge.
 - Expiration is intentional per entity type, with owner extension controls and short-lived presence entities.
 - Presence writes are delegated to a server-owned signer so users do not approve transaction popups for join/renew.
 - Browsing is public (no wallet). Wallet connection is required only for writes.
+- GitBook migration path is built-in via `/migrate/gitbook`, plus one-click normalization in page authoring forms.
 - Canonical slug reads are deterministic, and duplicate slug writes are rejected before mutation.
 - Visibility semantics are enforced (`public` listable, `unlisted` direct-link readable, `private` owner-context only).
 - Page lifecycle includes owner-only archive and delete cleanup for canonical + relationship entities.
@@ -134,6 +135,7 @@ const transfer = await walletClient.changeOwnership({
 
 ## Ownership and Read/Write Boundary
 - Read routes (`/`, `/spaces/[spaceSlug]`, `/spaces/[spaceSlug]/[pageSlug]`) are public.
+- Migration route (`/migrate/gitbook`) is public and can be used without wallet.
 - Write routes and buttons (`/new/space`, create/edit page, `/spaces/[spaceSlug]/settings`, transfer, archive/delete, extend TTL) require wallet connection + wallet signatures.
 - Presence join/renew/leave are delegated to `/api/presence` and signed by a server-owned private key; users still connect wallet for viewer identity but do not sign presence transactions.
 - Space settings updates and transfer are owner-gated; non-owners can view settings in read-only mode with explicit messaging.
@@ -156,6 +158,7 @@ const transfer = await walletClient.changeOwnership({
 ## Scripts
 ```bash
 pnpm verify                # lint + typecheck + tests + build + live smoke (skip-safe)
+pnpm migrate:gitbook -- <input.md> [output.md] [--summary]  # normalize GitBook markdown for import
 pnpm verify:evidence       # checks required submission/evidence docs and capture script presence
 pnpm verify:submission     # validates README submission sections/assets and clip+manifest capture support
 pnpm evidence:capture      # deterministic Playwright screenshot/report artifact pack (fail-soft realtime)
@@ -182,16 +185,17 @@ pnpm verify:phase all      # file-level phase verification
 
 ## Demo Flow (3–5 min)
 1. Browse spaces publicly from `/` without wallet.
-2. Connect wallet and create a space (`/new/space`).
-3. Open space settings (`/spaces/<slug>/settings`) and update description/visibility as owner, then show owner-only transfer control.
-4. Create root + child pages with parent selector (`/spaces/<slug>/new`) as the owner wallet.
-5. Show nested sidebar tree and ancestor breadcrumbs on child page.
-6. Apply space search filters (`parent`, `owner`, `sort`) and show Arkiv-query-driven result changes.
-7. Open global route `/search/pages` and show cross-space page discovery with same filter/sort semantics.
-8. Edit page and show canonical page key stability + growing revision list.
-9. Transfer canonical page ownership and demonstrate old-owner block/new-owner handoff.
-10. Add wiki links and show backlinks sourced from `kb.link` queries.
-11. Open a page with wallet connected and show presence auto-joins (no wallet tx popup) with short-lived active viewers.
-12. Archive a page, then delete a different page and show post-delete navigation consistency.
-13. Show realtime refresh with two sessions.
-14. Show generated evidence pack (`ARTIFACT_INDEX.md` + screenshots + walkthrough clip + hash manifest + realtime status report).
+2. Open `/migrate/gitbook`, paste GitBook markdown, and show converted output/preview.
+3. Connect wallet and create a space (`/new/space`).
+4. Open space settings (`/spaces/<slug>/settings`) and update description/visibility as owner, then show owner-only transfer control.
+5. Create root + child pages with parent selector (`/spaces/<slug>/new`) as the owner wallet.
+6. Show nested sidebar tree and ancestor breadcrumbs on child page.
+7. Apply space search filters (`parent`, `owner`, `sort`) and show Arkiv-query-driven result changes.
+8. Open global route `/search/pages` and show cross-space page discovery with same filter/sort semantics.
+9. Edit page and show canonical page key stability + growing revision list.
+10. Transfer canonical page ownership and demonstrate old-owner block/new-owner handoff.
+11. Add wiki links and show backlinks sourced from `kb.link` queries.
+12. Open a page with wallet connected and show presence auto-joins (no wallet tx popup) with short-lived active viewers.
+13. Archive a page, then delete a different page and show post-delete navigation consistency.
+14. Show realtime refresh with two sessions.
+15. Show generated evidence pack (`ARTIFACT_INDEX.md` + screenshots + walkthrough clip + hash manifest + realtime status report).
