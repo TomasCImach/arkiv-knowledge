@@ -356,9 +356,10 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Strict evidence proof: `EVIDENCE_FAIL_SOFT=0 pnpm evidence:capture` passes and records `realtime-two-tab` as captured (with explicit diagnostic fallback detail when direct two-tab observation times out).
 
 ## Next Bottlenecks (Optional Improvements)
-1. Capture and commit refreshed desktop/mobile UX evidence screenshots for iteration 31/32 state surfaces.
-2. Add wallet session expiry indicator + proactive re-verification prompt in header for longer demos.
-3. Add reproducible public deployment pipeline + pinned demo URL for final submission handoff.
+1. Add payload encryption for private spaces/pages (currently out of challenge scope): encrypted private page/revision payloads plus authorized wallet decryption flow.
+2. Capture and commit refreshed desktop/mobile UX evidence screenshots for iteration 31/32 state surfaces.
+3. Add wallet session expiry indicator + proactive re-verification prompt in header for longer demos.
+4. Add reproducible public deployment pipeline + pinned demo URL for final submission handoff.
 
 ## Plan V1 (2026-02-25)
 - See [planV1.md](/Users/tomas/Dev/Personal/arkiv-knowledge/planV1.md) for the next rubric-weighted iteration sequence.

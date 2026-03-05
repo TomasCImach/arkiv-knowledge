@@ -148,6 +148,7 @@ const transfer = await walletClient.changeOwnership({
 - Presence join/renew/leave are delegated to `/api/presence` and signed by a server-owned private key; users still connect wallet for viewer identity but do not sign presence transactions.
 - Space settings updates and transfer are owner-gated; non-owners can view settings in read-only mode with explicit messaging.
 - Private space reads require wallet-authenticated session verification (signed message challenge, HttpOnly cookie).
+- Private visibility currently enforces access control at the app/query layer; private page payloads are not encrypted at rest in this challenge-scope build.
 - Canonical page edit and transfer are owner-gated; non-owners can browse page content but cannot submit edits.
 - Canonical page lifecycle actions are owner-gated:
   - owner lifecycle/transfer cards render on the edit route (`/spaces/[spaceSlug]/[pageSlug]/edit`) only,
@@ -163,6 +164,11 @@ const transfer = await walletClient.changeOwnership({
 - Revision retention policy:
   - archive: preserve full revision history (append archive revision),
   - delete: remove canonical page and all revisions in the same cleanup mutation.
+
+## Known Limitation (Planned Next Iteration)
+- Private pages are currently access-controlled but not end-to-end encrypted.
+- This was intentionally left out of the challenge submission scope to prioritize rubric-critical Arkiv entity lifecycle depth.
+- Next iteration TODO: add payload encryption for private content (encrypted page/revision markdown + key management/decryption flow for authorized wallets).
 
 ## Scripts
 ```bash
