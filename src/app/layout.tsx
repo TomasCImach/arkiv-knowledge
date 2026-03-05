@@ -1,17 +1,12 @@
 import type { Metadata } from 'next'
-import { Space_Grotesk, Noto_Serif } from 'next/font/google'
+import { Inter } from 'next/font/google'
 import { AppShell } from '@/app/_components/app-shell'
 import { Providers } from '@/app/providers'
 import '@/app/globals.css'
 
-const headingFont = Space_Grotesk({
+const uiFont = Inter({
   subsets: ['latin'],
-  variable: '--font-heading'
-})
-
-const bodyFont = Noto_Serif({
-  subsets: ['latin'],
-  variable: '--font-body'
+  variable: '--font-ui'
 })
 
 export const metadata: Metadata = {
@@ -21,7 +16,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" className={`${headingFont.variable} ${bodyFont.variable}`}>
+    <html lang="en" className={uiFont.variable}>
       <body>
         <Providers>
           <AppShell>{children}</AppShell>

@@ -96,11 +96,11 @@ export default async function PageRoute({
   const isVerifiedOwnerSession = equalAddress(page.owner, viewer)
 
   return (
-    <section className="doc-layout">
+    <section className="content-view-layout">
       <RealtimeRefresh spaceKey={space.entityKey} pageKey={page.entityKey} />
 
-      <aside className="card stack doc-aside">
-        <div className="toolbar" style={{ justifyContent: 'space-between' }}>
+      <aside className="card stack doc-aside content-left-aside">
+        <div className="toolbar dashboard-section-head">
           <strong>{space.payload.name}</strong>
           <Link href={`/spaces/${spaceSlug}/new`} className="badge">
             New Page
@@ -109,7 +109,7 @@ export default async function PageRoute({
         <PageTreeNav spaceSlug={spaceSlug} pages={spacePages} activePageSlug={pageSlug} />
       </aside>
 
-      <div className="stack doc-column">
+      <div className="stack doc-column content-main-column">
         <Breadcrumbs
           items={[
             { href: '/', label: 'Knowledge Base' },
@@ -122,13 +122,18 @@ export default async function PageRoute({
           ]}
         />
 
-        <div className="card stack">
-          <div className="toolbar" style={{ justifyContent: 'space-between' }}>
+        <article className="card stack page-hero-card">
+          <div className="toolbar dashboard-section-head">
             <h1 className="title">{page.payload.title}</h1>
             <span className="badge">{page.status}</span>
           </div>
 
           <p className="subtitle">{page.payload.summary}</p>
+          <div className="toolbar page-meta-bar">
+            <span className="badge">space: {space.spaceSlug}</span>
+            <span className="badge">slug: {page.pageSlug}</span>
+            <span className="badge">{page.parentPageKey ? 'child page' : 'root page'}</span>
+          </div>
 
           <OwnerEditPageCta
             href={`/spaces/${spaceSlug}/${pageSlug}/edit`}
@@ -139,7 +144,8 @@ export default async function PageRoute({
           <TechnicalDetails summary="Technical details (page entity)">
             <span className="badge">Canonical key: {page.entityKey}</span>
           </TechnicalDetails>
-        </div>
+        </article>
+
         {queryErrors.length > 0 ? (
           <RouteStateCard
             tone="error"
@@ -149,10 +155,12 @@ export default async function PageRoute({
           />
         ) : null}
 
-        <PageMarkdown markdown={page.payload.bodyMarkdown} />
+        <section id="article-content">
+          <PageMarkdown markdown={page.payload.bodyMarkdown} />
+        </section>
 
-        <div className="card stack">
-          <h3 style={{ margin: 0 }}>Backlinks</h3>
+        <section id="backlinks" className="card stack">
+          <h3 className="section-title">Backlinks</h3>
           <TechnicalDetails summary="Technical details (link index)">
             <p className="subtitle">Backlinks are derived from `kb.link` relationship entities.</p>
           </TechnicalDetails>
@@ -169,10 +177,10 @@ export default async function PageRoute({
               </Link>
             ))
           )}
-        </div>
+        </section>
 
-        <div className="card stack">
-          <h3 style={{ margin: 0 }}>Revision Log</h3>
+        <section id="revision-log" className="card stack">
+          <h3 className="section-title">Revision Log</h3>
           {revisions.length === 0 ? (
             <p className="subtitle">No revisions found.</p>
           ) : (
@@ -189,10 +197,26 @@ export default async function PageRoute({
                 </div>
               ))
           )}
-        </div>
+        </section>
 
-        <PresencePanel spaceKey={space.entityKey} pageKey={page.entityKey} records={activePresence} />
+        <section id="live-presence">
+          <PresencePanel spaceKey={space.entityKey} pageKey={page.entityKey} records={activePresence} />
+        </section>
       </div>
+
+      <aside className="card stack page-outline-aside">
+        <h4 style={{ margin: 0 }}>On this page</h4>
+        <nav className="page-outline-nav">
+          <a href="#article-content">Page content</a>
+          <a href="#backlinks">Backlinks</a>
+          <a href="#revision-log">Revision log</a>
+          <a href="#live-presence">Live presence</a>
+        </nav>
+        <div className="notice">
+          <strong>Need help?</strong>
+          <p className="subtitle">Owner wallet signatures are required for edit, lifecycle, and ownership updates.</p>
+        </div>
+      </aside>
     </section>
   )
 }

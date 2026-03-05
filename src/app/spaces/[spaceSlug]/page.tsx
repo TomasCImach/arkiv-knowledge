@@ -112,26 +112,27 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
   })
 
   return (
-    <section className="doc-layout">
+    <section className="space-view-layout">
       <RealtimeRefresh spaceKey={space.entityKey} />
 
-      <aside className="card stack doc-aside">
-        <div className="toolbar" style={{ justifyContent: 'space-between' }}>
-          <strong>Space Contents</strong>
+      <aside className="card stack doc-aside space-left-aside">
+        <div className="toolbar dashboard-section-head">
+          <strong>Active Spaces</strong>
           <span className="badge">{allPages.length} pages</span>
         </div>
         <PageTreeNav spaceSlug={spaceSlug} pages={allPages} />
       </aside>
 
-      <div className="stack doc-column">
+      <div className="stack doc-column space-main-column">
         <Breadcrumbs items={[{ href: '/', label: 'Knowledge Base' }, { label: space.payload.name }]} />
 
-        <div className="card stack">
-          <div className="toolbar" style={{ justifyContent: 'space-between' }}>
+        <div className="card stack space-hero-card">
+          <div className="toolbar dashboard-section-head">
             <h1 className="title">{space.payload.name}</h1>
             <span className="badge">{space.visibility}</span>
           </div>
           <p className="subtitle">{space.payload.description}</p>
+          <p className="subtitle">Browse without a wallet. To create pages or change settings, switch to the owner wallet.</p>
           <div className="toolbar">
             <Link href={`/spaces/${spaceSlug}/new`} className="button">
               New Page
@@ -140,7 +141,6 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
               Space Settings
             </Link>
           </div>
-          <p className="subtitle">Browse without a wallet. To create pages or change settings, switch to the owner wallet.</p>
           <TechnicalDetails summary="Technical details (space entity)">
             <span className="badge">Space key: {space.entityKey}</span>
             {currentBlock ? (
@@ -197,8 +197,8 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
           />
         ) : (
           <div className="card stack">
-            <div className="toolbar" style={{ justifyContent: 'space-between' }}>
-              <h2 style={{ margin: 0 }}>Pages</h2>
+            <div className="toolbar dashboard-section-head">
+              <h2 className="section-title">Pages</h2>
               <span className="badge">{pages.length} results</span>
             </div>
             <p className="subtitle">
@@ -206,22 +206,34 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
                 ? `Showing ${pages.length} page${pages.length === 1 ? '' : 's'} in ${space.payload.name} for the active filters.`
                 : `Showing all ${pages.length} page${pages.length === 1 ? '' : 's'} in ${space.payload.name}.`}
             </p>
-            {pages.map((page) => (
-              <Link key={page.entityKey} href={`/spaces/${spaceSlug}/${page.pageSlug}`} className="doc-list-item">
-                <div className="toolbar doc-list-head">
-                  <strong>{page.payload.title}</strong>
-                  <span className="badge">{page.status}</span>
-                </div>
-                <p className="subtitle">{page.payload.summary}</p>
-                <div className="toolbar doc-list-meta">
-                  <span className="badge">slug: {page.pageSlug}</span>
-                  {page.parentPageKey ? <span className="badge">child</span> : <span className="badge">root</span>}
-                </div>
-              </Link>
-            ))}
+            <div className="space-card-grid">
+              {pages.map((page) => (
+                <Link key={page.entityKey} href={`/spaces/${spaceSlug}/${page.pageSlug}`} className="space-card">
+                  <div className="toolbar doc-list-head">
+                    <strong>{page.payload.title}</strong>
+                    <span className="badge">{page.status}</span>
+                  </div>
+                  <p className="subtitle">{page.payload.summary}</p>
+                  <div className="toolbar doc-list-meta">
+                    <span className="badge">slug: {page.pageSlug}</span>
+                    {page.parentPageKey ? <span className="badge">child</span> : <span className="badge">root</span>}
+                  </div>
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </div>
+
+      <aside className="card stack space-right-aside">
+        <h3 style={{ margin: 0 }}>Space Contents</h3>
+        <p className="subtitle">Quick tree navigation for this space.</p>
+        <PageTreeNav spaceSlug={spaceSlug} pages={allPages} />
+        <div className="notice">
+          <strong>Integration note</strong>
+          <p className="subtitle">Use migration tools to sync and validate imported structures from GitBook sources.</p>
+        </div>
+      </aside>
     </section>
   )
 }

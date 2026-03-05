@@ -21,26 +21,29 @@ export default async function HomePage() {
   const listedSpaces = filterListedSpaces(spaces)
 
   return (
-    <section className="stack doc-column">
+    <section className="stack doc-column dashboard-page">
       <Breadcrumbs items={[{ label: 'Knowledge Base' }]} />
-      <div className="card stack">
-        <h1 className="title">
-          Arklib
-        </h1>
-        <p className="subtitle">
-          Public browsing does not require a wallet. Wallet signatures are required only for writes.
-        </p>
-        <div className="toolbar">
+
+      <div className="card dashboard-hero">
+        <div className="stack" style={{ gap: '0.8rem' }}>
+          <span className="eyebrow">Arkiv-First Knowledge Base</span>
+          <h1 className="title">Arklib</h1>
+          <p className="subtitle">
+            Public browsing does not require a wallet. Wallet signatures are required only for writes, so anyone can
+            explore documentation while ownership stays verifiable.
+          </p>
+          <div className="toolbar">
+            <span className="badge">Core data is stored as Arkiv entities</span>
+            <span className="badge">Lifecycle-aware updates and expiration</span>
+          </div>
+        </div>
+        <div className="toolbar dashboard-hero-actions">
           <Link href="/new/space" className="button">
             Create Space
           </Link>
           <Link href="/my/spaces" className="button secondary">
             My Spaces
           </Link>
-          <Link href="/migrate/gitbook" className="button secondary">
-            Migrate GitBook
-          </Link>
-          <span className="badge">Core data is stored as Arkiv entities</span>
         </div>
       </div>
 
@@ -53,6 +56,36 @@ export default async function HomePage() {
         />
       ) : null}
 
+      <div className="dashboard-quick-grid">
+        <Link href="/new/space" className="dashboard-quick-card">
+          <div className="toolbar">
+            <span className="material-symbols-outlined dashboard-quick-icon" aria-hidden>
+              add_box
+            </span>
+            <strong>Create Space</strong>
+          </div>
+          <p className="subtitle">Initialize a new Arkiv-backed documentation space.</p>
+        </Link>
+        <Link href="/my/spaces" className="dashboard-quick-card">
+          <div className="toolbar">
+            <span className="material-symbols-outlined dashboard-quick-icon" aria-hidden>
+              layers
+            </span>
+            <strong>My Spaces</strong>
+          </div>
+          <p className="subtitle">Manage private and unlisted spaces for your verified owner wallet.</p>
+        </Link>
+        <Link href="/migrate/gitbook" className="dashboard-quick-card">
+          <div className="toolbar">
+            <span className="material-symbols-outlined dashboard-quick-icon" aria-hidden>
+              move_to_inbox
+            </span>
+            <strong>Migrate GitBook</strong>
+          </div>
+          <p className="subtitle">Import existing docs while preserving hierarchy and links.</p>
+        </Link>
+      </div>
+
       {listedSpaces.length === 0 ? (
         <RouteStateCard
           title="No spaces yet"
@@ -61,23 +94,25 @@ export default async function HomePage() {
         />
       ) : (
         <div className="card stack">
-          <div className="toolbar" style={{ justifyContent: 'space-between' }}>
-            <h2 style={{ margin: 0 }}>All Spaces</h2>
+          <div className="toolbar dashboard-section-head">
+            <h2 className="section-title">All Spaces</h2>
             <span className="badge">{listedSpaces.length} total</span>
           </div>
-          {listedSpaces.map((space) => (
-            <Link key={space.entityKey} href={`/spaces/${space.spaceSlug}`} className="doc-list-item">
-              <div className="toolbar doc-list-head">
-                <h2 style={{ margin: 0 }}>{space.payload.name}</h2>
-                <span className="badge">{space.visibility}</span>
-              </div>
-              <p className="subtitle">{space.payload.description}</p>
-              <div className="toolbar doc-list-meta">
-                <span className="badge">status: {space.status}</span>
-                <span className="subtitle">slug: {space.spaceSlug}</span>
-              </div>
-            </Link>
-          ))}
+          <div className="space-card-grid">
+            {listedSpaces.map((space) => (
+              <Link key={space.entityKey} href={`/spaces/${space.spaceSlug}`} className="space-card">
+                <div className="toolbar doc-list-head">
+                  <h3 className="space-card-title">{space.payload.name}</h3>
+                  <span className="badge">{space.visibility}</span>
+                </div>
+                <p className="subtitle">{space.payload.description}</p>
+                <div className="toolbar doc-list-meta">
+                  <span className="badge">status: {space.status}</span>
+                  <span className="subtitle">slug: {space.spaceSlug}</span>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
       )}
     </section>

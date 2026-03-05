@@ -17,7 +17,11 @@ export function Breadcrumbs({ items }: { items: BreadcrumbItem[] }) {
           ) : (
             <span className="breadcrumb-current">{item.label}</span>
           )}
-          {index < items.length - 1 ? <span className="breadcrumb-separator">/</span> : null}
+          {index < items.length - 1 ? (
+            <span className="material-symbols-outlined breadcrumb-separator" aria-hidden>
+              chevron_right
+            </span>
+          ) : null}
         </span>
       ))}
     </nav>
