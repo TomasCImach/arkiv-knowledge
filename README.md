@@ -28,12 +28,16 @@ flowchart LR
   UI["Next.js App Router UI"] --> Q["Arkiv Query Paths"]
   UI --> W["Wallet-Gated Write Forms"]
   UI --> PAPI["/api/presence (server signer)"]
+  AGENT["AI Agent"] --> AAPI["/api/agent/v1 (read + intents)"]
+  AAPI --> Q
+  AAPI --> IEXEC["Wallet-Signed Intent Execution"]
   Q --> S["kb.space"]
   Q --> P["kb.page"]
   Q --> R["kb.revision"]
   Q --> L["kb.link"]
   Q --> PR["kb.presence"]
   W --> M["mutateEntities / updateEntity / deleteEntity / changeOwnership"]
+  IEXEC --> M
   PAPI --> PR
   M --> S
   M --> P
@@ -167,6 +171,39 @@ pnpm seed:demo             # idempotent demo data seed (requires key)
 pnpm restore:demo          # re-run seed script for fallback dataset
 pnpm verify:phase all      # file-level phase verification
 ```
+
+## Agent-Friendly API (`/api/agent/v1`)
+- OpenAPI spec: `GET /api/agent/v1/openapi`
+- Session introspection: `GET /api/agent/v1/auth/session`
+- Deterministic read paths:
+  - `GET /api/agent/v1/meta`
+  - `GET /api/agent/v1/spaces`
+  - `GET /api/agent/v1/spaces/{spaceSlug}`
+  - `GET /api/agent/v1/spaces/{spaceSlug}/pages`
+  - `GET /api/agent/v1/spaces/{spaceSlug}/pages/{pageSlug}`
+  - `GET /api/agent/v1/spaces/{spaceSlug}/pages/{pageSlug}/revisions`
+  - `GET /api/agent/v1/spaces/{spaceSlug}/pages/{pageSlug}/backlinks`
+  - `GET /api/agent/v1/search/pages`
+- Write-intent paths (wallet-signed execution model):
+  - `POST /api/agent/v1/intents/spaces/create`
+  - `POST /api/agent/v1/intents/spaces/update`
+  - `POST /api/agent/v1/intents/spaces/transfer`
+  - `POST /api/agent/v1/intents/pages/create`
+  - `POST /api/agent/v1/intents/pages/update`
+  - `POST /api/agent/v1/intents/pages/archive`
+  - `POST /api/agent/v1/intents/pages/delete`
+  - `POST /api/agent/v1/intents/pages/transfer`
+  - `POST /api/agent/v1/intents/entities/extend`
+- Presence wrappers:
+  - `POST /api/agent/v1/presence/join`
+  - `PATCH /api/agent/v1/presence/renew`
+  - `DELETE /api/agent/v1/presence/leave`
+
+Intent responses return serialized `AgentWriteIntent` objects (`sdkCall` + optional `followUpCalls` + `postconditions`) that are executed client-side with wallet signatures. Use `executeAgentIntent` from `src/features/agent/execute-intent.ts` for in-app agents.
+
+## Official Agent Skill
+- Root skill file: `SKILL.md`
+- Covers setup, wallet challenge/session flow, read usage, write-intent execution, and error semantics.
 
 ## Testing
 - Unit: schema contracts, parser behavior, expiration policy, link extraction, hierarchy tree logic, ownership permission rules

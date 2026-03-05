@@ -1,10 +1,7 @@
 import type { Hex } from 'viem'
 import type { ArkivWriteClient } from '@/arkiv/clients'
-import { transferEntityOwnership } from '@/arkiv/mutations/ownership'
-import { getSpaceBySlug } from '@/arkiv/queries/spaces'
-import { buildSpaceCreateEntity, buildSpaceUpdateEntity } from '@/arkiv/schema'
+import { buildCreateSpaceParams, buildTransferOwnershipParams, buildUpdateSpaceParams } from '@/arkiv/mutations/plans'
 import type { SpaceStatus, SpaceVisibility } from '@/arkiv/types'
-import { nowIso, nowMs } from '@/lib/time'
 
 export type CreateSpaceInput = {
   spaceSlug: string
@@ -24,28 +21,7 @@ export type UpdateSpaceInput = {
 }
 
 export async function createSpace(client: ArkivWriteClient, input: CreateSpaceInput): Promise<{ entityKey: Hex; txHash: Hex }> {
-  const existingSpace = await getSpaceBySlug(input.spaceSlug)
-  if (existingSpace) {
-    throw new Error(`Space slug "${input.spaceSlug}" already exists. Choose a different slug.`)
-  }
-
-  const timestamp = nowIso()
-  const updatedAtMs = nowMs()
-
-  const result = await client.createEntity(
-    buildSpaceCreateEntity({
-      spaceSlug: input.spaceSlug,
-      visibility: input.visibility,
-      status: input.status ?? 'active',
-      updatedAtMs,
-      payload: {
-        name: input.name,
-        description: input.description,
-        createdAt: timestamp,
-        updatedAt: timestamp
-      }
-    })
-  )
+  const result = await client.createEntity(await buildCreateSpaceParams(input))
 
   return {
     entityKey: result.entityKey,
@@ -58,23 +34,7 @@ export async function updateSpace(
   entityKey: Hex,
   input: UpdateSpaceInput
 ): Promise<{ entityKey: Hex; txHash: Hex }> {
-  const timestamp = nowIso()
-  const updatedAtMs = nowMs()
-
-  const result = await client.updateEntity(
-    buildSpaceUpdateEntity(entityKey, {
-      spaceSlug: input.spaceSlug,
-      visibility: input.visibility,
-      status: input.status ?? 'active',
-      updatedAtMs,
-      payload: {
-        name: input.name,
-        description: input.description,
-        createdAt: input.createdAt,
-        updatedAt: timestamp
-      }
-    })
-  )
+  const result = await client.updateEntity(buildUpdateSpaceParams(entityKey, input))
 
   return {
     entityKey: result.entityKey,
@@ -87,5 +47,10 @@ export async function transferSpaceOwnership(
   spaceKey: Hex,
   newOwner: Hex
 ): Promise<{ entityKey: Hex; txHash: Hex }> {
-  return transferEntityOwnership(client, spaceKey, newOwner)
+  const result = await client.changeOwnership(buildTransferOwnershipParams(spaceKey, newOwner))
+
+  return {
+    entityKey: result.entityKey,
+    txHash: result.txHash as Hex
+  }
 }

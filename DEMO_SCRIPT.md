@@ -112,6 +112,13 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - Show `MANIFEST.sha256` hash list for artifact integrity.
 - Verbalize: “Evidence capture is deterministic, hash-verifiable, and CI-uploaded in both fail-soft and strict modes.”
 
+### 10.5) Agent API + SKILL Proof
+- Open `SKILL.md` and show wallet-session + write-intent workflow instructions.
+- Call `GET /api/agent/v1/meta` and `GET /api/agent/v1/openapi` from terminal.
+- Call one read route (`/api/agent/v1/spaces` or `/api/agent/v1/search/pages`) and show envelope response.
+- Call one write-intent route (for example `/api/agent/v1/intents/pages/update`) and show returned `operation`, `sdkCall`, and `postconditions`.
+- Verbalize: “Agents get deterministic read endpoints and owner-safe write intents; transactions are still wallet-signed.”
+
 ### 11) Recovery UX (Loading/Empty/Error)
 - Navigate between routes and briefly show loading skeleton cards.
 - Run a search that returns zero results and show task-oriented empty-state CTA.

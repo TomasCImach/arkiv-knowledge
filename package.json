@@ -19,7 +19,8 @@
     "verify": "pnpm lint && pnpm typecheck && pnpm test && pnpm test:e2e && pnpm build && pnpm verify:evidence && pnpm verify:submission && pnpm test:live",
     "seed:demo": "tsx scripts/seed-demo.ts",
     "restore:demo": "tsx scripts/restore-demo.ts",
-    "verify:phase": "tsx scripts/verify-phase.ts"
+    "verify:phase": "tsx scripts/verify-phase.ts",
+    "publish:agent-docs": "tsx scripts/publish-agent-docs.ts"
   },
   "dependencies": {
     "@arkiv-network/sdk": "^0.6.0",

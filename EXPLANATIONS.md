@@ -520,3 +520,22 @@ Iteration 36 tightens owner-surface placement and eligibility:
 - increases permission clarity by tying edit entry to connected owner wallet and verification state.
 
 **Scoring impact:** Medium-high uplift on UX permission clarity and medium uplift on ownership model demoability.
+
+---
+
+## 36) Agent-Friendly REST API + Official Root Skill (Iteration 37)
+Iteration 37 adds an explicit machine-facing integration layer without changing Arkiv-first core storage:
+- introduced versioned agent routes under `/api/agent/v1` for deterministic reads (spaces/pages/revisions/backlinks/global search),
+- added OpenAPI publication (`/api/agent/v1/openapi`) so tool-driven agents can discover path contracts without prompt engineering,
+- added wallet-session-gated write-intent endpoints for space/page lifecycle operations and expiration extension,
+- preserved owner semantics by returning validated intent payloads for wallet-signed execution rather than server-custodied writes,
+- added authenticated presence wrappers that reject viewer spoofing and keep presence lifecycle server-signed,
+- added root `SKILL.md` as the official operator/agent runbook for setup, auth challenge flow, reads, intents, and error handling.
+
+**Why this matters:**
+- increases integration depth by exposing Arkiv model semantics through explicit machine contracts, not only UI interactions,
+- improves demoability: judges can verify API capability + ownership boundaries quickly with deterministic JSON responses,
+- preserves challenge constraints (Arkiv as source of truth, no off-chain core mirror, wallet-only writes for ownership actions),
+- reduces agent integration ambiguity through OpenAPI + skill-driven workflow instructions.
+
+**Scoring impact:** High uplift on integration depth, medium uplift on functionality interoperability, medium uplift on docs/demo clarity.

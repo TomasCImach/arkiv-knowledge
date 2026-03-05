@@ -435,3 +435,15 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: open page route as non-owner/disconnected viewer and show no owner cards + disabled edit CTA; switch to owner verified session and show edit CTA enabled with lifecycle/transfer cards on edit route.
   - notes/screenshots: gating and relocation in `src/app/spaces/[spaceSlug]/[pageSlug]/page.tsx`, `src/app/_components/owner-edit-page-cta.tsx`, and `src/app/spaces/[spaceSlug]/[pageSlug]/edit/page.tsx`.
 - **Next bottleneck:** refresh evidence capture script to explicitly include read-route non-owner CTA suppression and edit-route owner-card visibility.
+
+### 2026-03-05 — Iteration 37 (Agent-Friendly REST API + Official Skill)
+- **Objective:** make the app first-class AI-agent consumable with deterministic read APIs, owner-safe write intents, and an official skill entrypoint.
+- **Implemented:** added versioned `/api/agent/v1` read routes (`meta`, `openapi`, `auth/session`, spaces/page/revisions/backlinks/global search); added wallet-session-gated write-intent routes for space/page CRUD+lifecycle+transfer+extend; added agent presence wrappers with viewer spoof protection; added shared agent contract layer (`src/features/agent/*`), intent execution helper (`executeAgentIntent`), and root `SKILL.md`; extracted shared write-plan builders (`src/arkiv/mutations/plans.ts`) and refactored mutation modules to reuse them.
+- **Rubric targets:** integration (`machine-facing Arkiv integration depth`, primary) / functionality (`agent interoperability`, secondary) / code quality-docs (`official skill + OpenAPI`, secondary).
+- **Expected score delta:** high.
+- **Evidence:**
+  - tests: `tests/unit/agent-read-api-routes.test.ts`, `tests/unit/agent-intent-auth-routes.test.ts`, `tests/integration/agent-intents.test.ts`, `tests/unit/agent-presence-routes.test.ts`, `tests/unit/agent-openapi.test.ts`, `tests/unit/agent-execute-intent.test.ts`.
+  - verification: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`, `pnpm build`.
+  - demo step: open `SKILL.md`, call `/api/agent/v1/meta` + `/api/agent/v1/openapi`, then call one read endpoint and one write-intent endpoint and show `sdkCall` + `postconditions`.
+  - notes/screenshots: new route inventory visible in Next build output under `/api/agent/v1/*`.
+- **Next bottleneck:** add deterministic CLI fixture that executes returned intents against a connected wallet to produce repeatable tx-level artifacts for judge evidence.

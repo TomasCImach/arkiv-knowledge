@@ -1,121 +1,42 @@
+import type { CreateEntityParameters, MutateEntitiesParameters } from '@arkiv-network/sdk'
 import type { Hex } from 'viem'
 import type { ArkivWriteClient } from '@/arkiv/clients'
-import { transferEntityOwnership } from '@/arkiv/mutations/ownership'
-import { listBacklinks, listOutgoingLinks } from '@/arkiv/queries/links'
-import { getPageBySlugInSpace, listRevisionsByPage } from '@/arkiv/queries/pages'
-import { listPresenceForPage } from '@/arkiv/queries/presence'
 import {
-  buildLinkCreateEntity,
-  buildPageCreateEntity,
-  buildPageUpdateEntity,
-  buildRevisionCreateEntity
-} from '@/arkiv/schema'
-import type { PageStatus } from '@/arkiv/types'
-import { normalizeGitBookMarkdown } from '@/features/migration/gitbook-markdown'
-import { extractWikiLinks, tokenizeForSearch } from '@/lib/text'
-import { nowIso, nowMs } from '@/lib/time'
+  buildArchivePageMutateParams,
+  buildCreatePageFollowUpMutateParams,
+  buildCreatePagePrimaryParams,
+  buildDeletePageWithCleanupPlan,
+  buildEditPageMutateParams,
+  buildTransferOwnershipParams,
+  type ArchivePagePlanInput,
+  type EditPagePlanInput,
+  type SavePagePlanInput
+} from '@/arkiv/mutations/plans'
+import { listRevisionsByPage } from '@/arkiv/queries/pages'
 
-export type SavePageInput = {
-  spaceKey: Hex
-  spaceSlug: string
-  pageSlug: string
-  title: string
-  bodyMarkdown: string
-  summary: string
-  status: PageStatus
-  editor: Hex
-  parentPageKey?: Hex
-}
+export type SavePageInput = SavePagePlanInput
 
 type CreatePageRepairResult = {
   hasInitialRevision: boolean
   txHash?: Hex
 }
 
-async function resolveLinkTargetPages(spaceKey: Hex, targetSlugs: string[]) {
-  const resolved = await Promise.all(
-    targetSlugs.map(async (targetSlug) => {
-      const page = await getPageBySlugInSpace(spaceKey, targetSlug)
-      if (!page) {
-        return null
-      }
-
-      return {
-        slug: targetSlug,
-        key: page.entityKey
-      }
-    })
-  )
-
-  return resolved.filter((entry): entry is { slug: string; key: Hex } => entry !== null)
-}
-
-function buildSearchTokens(title: string, summary: string, bodyMarkdown: string): string[] {
-  return tokenizeForSearch(`${title} ${summary} ${bodyMarkdown}`).slice(0, 20)
-}
-
 export async function createPage(client: ArkivWriteClient, input: SavePageInput): Promise<{ pageKey: Hex; txHash: Hex }> {
-  const existingPage = await getPageBySlugInSpace(input.spaceKey, input.pageSlug)
-  if (existingPage) {
-    throw new Error(`Page slug "${input.pageSlug}" already exists in this space. Choose a different slug.`)
-  }
+  const primaryPlan = await buildCreatePagePrimaryParams(input)
+  const createdPage = await client.createEntity(primaryPlan.params)
 
-  const normalizedBodyMarkdown = normalizeGitBookMarkdown(input.bodyMarkdown).markdown
-  const timestamp = nowIso()
-  const updatedAtMs = nowMs()
-  const searchTokens = buildSearchTokens(input.title, input.summary, normalizedBodyMarkdown)
-
-  const pageCreate = buildPageCreateEntity({
+  const followUpPlan = await buildCreatePageFollowUpMutateParams({
     spaceKey: input.spaceKey,
-    spaceSlug: input.spaceSlug,
+    pageKey: createdPage.entityKey,
     pageSlug: input.pageSlug,
     title: input.title,
-    status: input.status,
-    parentPageKey: input.parentPageKey,
-    updatedAtMs,
-    payload: {
-      title: input.title,
-      bodyMarkdown: normalizedBodyMarkdown,
-      summary: input.summary,
-      createdAt: timestamp,
-      updatedAt: timestamp
-    },
-    searchTokens
-  })
-
-  const initialRevision = buildRevisionCreateEntity({
-    spaceKey: input.spaceKey,
-    pageKey: '0x0000000000000000000000000000000000000000000000000000000000000000',
-    revisionNo: 1,
-    editedAtMs: updatedAtMs,
-    editor: input.editor,
-    payload: {
-      title: input.title,
-      bodyMarkdown: normalizedBodyMarkdown,
-      editSummary: 'Initial version'
-    }
-  })
-
-  const createdPage = await client.createEntity(pageCreate)
-
-  const finalRevision = {
-    ...initialRevision,
-    attributes: initialRevision.attributes.map((attribute) =>
-      attribute.key === 'pageKey' ? { ...attribute, value: createdPage.entityKey } : attribute
-    )
-  }
-
-  const links = await buildLinkCreatesForBody({
-    spaceKey: input.spaceKey,
-    fromPageKey: createdPage.entityKey,
-    fromPageSlug: input.pageSlug,
-    bodyMarkdown: normalizedBodyMarkdown
+    summary: input.summary,
+    normalizedBodyMarkdown: primaryPlan.normalizedBodyMarkdown,
+    editor: input.editor
   })
 
   try {
-    const mutate = await client.mutateEntities({
-      creates: [finalRevision, ...links]
-    })
+    const mutate = await client.mutateEntities(followUpPlan)
 
     return {
       pageKey: createdPage.entityKey,
@@ -124,7 +45,6 @@ export async function createPage(client: ArkivWriteClient, input: SavePageInput)
   } catch (error) {
     console.error('create-page follow-up mutation failed; attempting repair', {
       pageKey: createdPage.entityKey,
-      linkCount: links.length,
       error
     })
 
@@ -135,8 +55,7 @@ export async function createPage(client: ArkivWriteClient, input: SavePageInput)
       repair = await repairCreatePageFollowUp({
         client,
         pageKey: createdPage.entityKey,
-        revisionCreate: finalRevision,
-        linkCreates: links
+        followUpPlan
       })
     } catch (repairError) {
       console.error('create-page repair failed', {
@@ -163,73 +82,14 @@ export async function createPage(client: ArkivWriteClient, input: SavePageInput)
   }
 }
 
-export type EditPageInput = SavePageInput & {
-  pageKey: Hex
-  editSummary: string
-  createdAt?: string
-}
+export type EditPageInput = EditPagePlanInput
 
 export async function editPage(client: ArkivWriteClient, input: EditPageInput): Promise<{
   pageKey: Hex
   txHash: Hex
   createdRevisions: Hex[]
 }> {
-  const normalizedBodyMarkdown = normalizeGitBookMarkdown(input.bodyMarkdown).markdown
-  const timestamp = nowIso()
-  const updatedAtMs = nowMs()
-  const searchTokens = buildSearchTokens(input.title, input.summary, normalizedBodyMarkdown)
-  const [revisions, existingPage] = await Promise.all([
-    listRevisionsByPage(input.pageKey),
-    getPageBySlugInSpace(input.spaceKey, input.pageSlug)
-  ])
-  const highestRevisionNo = revisions.reduce((max, revision) => Math.max(max, revision.revisionNo), 0)
-  const nextRevision = highestRevisionNo + 1
-  const createdAt = existingPage?.payload.createdAt ?? input.createdAt ?? timestamp
-
-  const pageUpdate = buildPageUpdateEntity(input.pageKey, {
-    spaceKey: input.spaceKey,
-    spaceSlug: input.spaceSlug,
-    pageSlug: input.pageSlug,
-    title: input.title,
-    status: input.status,
-    parentPageKey: input.parentPageKey,
-    updatedAtMs,
-    payload: {
-      title: input.title,
-      bodyMarkdown: normalizedBodyMarkdown,
-      summary: input.summary,
-      createdAt,
-      updatedAt: timestamp
-    },
-    searchTokens
-  })
-
-  const revisionCreate = buildRevisionCreateEntity({
-    spaceKey: input.spaceKey,
-    pageKey: input.pageKey,
-    revisionNo: nextRevision,
-    editedAtMs: updatedAtMs,
-    editor: input.editor,
-    payload: {
-      title: input.title,
-      bodyMarkdown: normalizedBodyMarkdown,
-      editSummary: input.editSummary
-    }
-  })
-
-  const outgoingLinks = await listOutgoingLinks(input.pageKey)
-  const newLinkCreates = await buildLinkCreatesForBody({
-    spaceKey: input.spaceKey,
-    fromPageKey: input.pageKey,
-    fromPageSlug: input.pageSlug,
-    bodyMarkdown: normalizedBodyMarkdown
-  })
-
-  const mutation = await client.mutateEntities({
-    updates: [pageUpdate],
-    creates: [revisionCreate, ...newLinkCreates],
-    deletes: outgoingLinks.map((link) => ({ entityKey: link.entityKey }))
-  })
+  const mutation = await client.mutateEntities(await buildEditPageMutateParams(input))
 
   return {
     pageKey: input.pageKey,
@@ -241,8 +101,7 @@ export async function editPage(client: ArkivWriteClient, input: EditPageInput): 
 type RepairCreatePageFollowUpInput = {
   client: ArkivWriteClient
   pageKey: Hex
-  revisionCreate: ReturnType<typeof buildRevisionCreateEntity>
-  linkCreates: ReturnType<typeof buildLinkCreateEntity>[]
+  followUpPlan: MutateEntitiesParameters
 }
 
 async function repairCreatePageFollowUp(input: RepairCreatePageFollowUpInput): Promise<CreatePageRepairResult> {
@@ -256,16 +115,20 @@ async function repairCreatePageFollowUp(input: RepairCreatePageFollowUpInput): P
     // Best effort read; create attempt below will repair when possible.
   }
 
-  if (!hasInitialRevision) {
-    const repairedRevision = await input.client.createEntity(input.revisionCreate)
+  const followUpCreates = input.followUpPlan.creates ?? []
+  const revisionCreate = followUpCreates[0]
+  const linkCreates = followUpCreates.slice(1)
+
+  if (!hasInitialRevision && revisionCreate) {
+    const repairedRevision = await input.client.createEntity(revisionCreate as CreateEntityParameters)
     hasInitialRevision = true
     repairTxHash = repairedRevision.txHash
   }
 
-  if (input.linkCreates.length > 0) {
+  if (linkCreates.length > 0) {
     try {
       const repairedLinks = await input.client.mutateEntities({
-        creates: input.linkCreates
+        creates: linkCreates as CreateEntityParameters[]
       })
       repairTxHash = repairTxHash ?? repairedLinks.txHash
     } catch (error) {
@@ -282,73 +145,29 @@ async function repairCreatePageFollowUp(input: RepairCreatePageFollowUpInput): P
   }
 }
 
-type BuildLinkCreatesForBodyInput = {
-  spaceKey: Hex
-  fromPageKey: Hex
-  fromPageSlug: string
-  bodyMarkdown: string
-}
-
-async function buildLinkCreatesForBody(input: BuildLinkCreatesForBodyInput) {
-  const linkTargets = extractWikiLinks(input.bodyMarkdown)
-  if (linkTargets.length === 0) {
-    return []
-  }
-
-  const resolvedTargets = await resolveLinkTargetPages(input.spaceKey, linkTargets)
-  const timestamp = nowMs()
-
-  return resolvedTargets.map((target) =>
-    buildLinkCreateEntity({
-      spaceKey: input.spaceKey,
-      fromPageKey: input.fromPageKey,
-      toPageKey: target.key,
-      updatedAtMs: timestamp,
-      payload: {
-        sourceSlug: input.fromPageSlug,
-        targetSlug: target.slug
-      }
-    })
-  )
-}
-
 export async function transferPageOwnership(
   client: ArkivWriteClient,
   pageKey: Hex,
   newOwner: Hex
 ): Promise<{ entityKey: Hex; txHash: Hex }> {
-  return transferEntityOwnership(client, pageKey, newOwner)
+  const result = await client.changeOwnership(buildTransferOwnershipParams(pageKey, newOwner))
+
+  return {
+    entityKey: result.entityKey,
+    txHash: result.txHash as Hex
+  }
 }
 
-export type ArchivePageInput = {
-  spaceKey: Hex
-  spaceSlug: string
-  pageKey: Hex
-  pageSlug: string
-  title: string
-  bodyMarkdown: string
-  summary: string
-  editor: Hex
-  parentPageKey?: Hex
-  createdAt?: string
-  editSummary?: string
-}
+export type ArchivePageInput = ArchivePagePlanInput
 
 export async function archivePage(client: ArkivWriteClient, input: ArchivePageInput) {
-  return editPage(client, {
-    spaceKey: input.spaceKey,
-    spaceSlug: input.spaceSlug,
+  const mutation = await client.mutateEntities(await buildArchivePageMutateParams(input))
+
+  return {
     pageKey: input.pageKey,
-    pageSlug: input.pageSlug,
-    title: input.title,
-    bodyMarkdown: input.bodyMarkdown,
-    summary: input.summary,
-    status: 'archived',
-    editor: input.editor,
-    parentPageKey: input.parentPageKey,
-    createdAt: input.createdAt,
-    editSummary: input.editSummary ?? 'Archived page'
-  })
+    txHash: mutation.txHash,
+    createdRevisions: mutation.createdEntities
+  }
 }
 
 export type DeletePageWithCleanupResult = {
@@ -366,34 +185,13 @@ export async function deletePageWithCleanup(
   client: ArkivWriteClient,
   pageKey: Hex
 ): Promise<DeletePageWithCleanupResult> {
-  const [revisions, outgoingLinks, incomingLinks, presenceRecords] = await Promise.all([
-    listRevisionsByPage(pageKey),
-    listOutgoingLinks(pageKey),
-    listBacklinks(pageKey),
-    listPresenceForPage(pageKey)
-  ])
-
-  const uniqueKeys = new Set<Hex>([
-    pageKey,
-    ...revisions.map((revision) => revision.entityKey),
-    ...outgoingLinks.map((link) => link.entityKey),
-    ...incomingLinks.map((link) => link.entityKey),
-    ...presenceRecords.map((presence) => presence.entityKey)
-  ])
-  const deletedKeys = Array.from(uniqueKeys)
-
-  const mutation = await client.mutateEntities({
-    deletes: deletedKeys.map((entityKey) => ({ entityKey }))
-  })
+  const plan = await buildDeletePageWithCleanupPlan(pageKey)
+  const mutation = await client.mutateEntities(plan.params)
 
   return {
     pageKey,
     txHash: mutation.txHash,
-    deletedKeys,
-    deletedCounts: {
-      revisions: revisions.length,
-      links: outgoingLinks.length + incomingLinks.length,
-      presence: presenceRecords.length
-    }
+    deletedKeys: plan.deletedKeys,
+    deletedCounts: plan.deletedCounts
   }
 }
