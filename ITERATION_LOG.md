@@ -447,3 +447,16 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: open `SKILL.md`, call `/api/agent/v1/meta` + `/api/agent/v1/openapi`, then call one read endpoint and one write-intent endpoint and show `sdkCall` + `postconditions`.
   - notes/screenshots: new route inventory visible in Next build output under `/api/agent/v1/*`.
 - **Next bottleneck:** add deterministic CLI fixture that executes returned intents against a connected wallet to produce repeatable tx-level artifacts for judge evidence.
+
+### 2026-03-05 — Iteration 38 (Code Quality & Docs Lift)
+- **Objective:** raise Code Quality & Docs rubric confidence with judge-friendly engineering documentation and non-blocking docs quality reporting.
+- **Implemented:** added engineering docs bundle (`docs/README.md`, `docs/ARCHITECTURE.md`, `docs/SECURITY_MODEL.md`, `docs/QUALITY_STANDARDS.md`, `docs/RUBRIC_QUALITY_MAP.md`) plus root `CONTRIBUTING.md`; added `scripts/verify-docs-quality.ts` and `pnpm verify:docs-quality`; added non-blocking CI docs quality step + artifact upload in `.github/workflows/ci.yml`; updated `README.md` and `SUBMISSION_EVIDENCE.md` to surface new quality/doc artifacts in judge path.
+- **Rubric targets:** code quality-docs (`README clarity`, `code organization clarity`, `quality process visibility`, primary).
+- **Expected score delta:** medium-high.
+- **Evidence:**
+  - verification: `pnpm lint`, `pnpm typecheck`, `pnpm verify:docs-quality`, `pnpm verify:submission`, `pnpm test`, `pnpm test:e2e`.
+  - artifact/report: `output/docs-quality/report.json` with summary `{ errors: 0, warnings: 0, filesScanned: 12 }`.
+  - local checker probes (fixture root, no tracked-file mutation): missing-heading case reported `errors: 1` with `MISSING_HEADING`; broken-link probe reported `BROKEN_LOCAL_LINK` findings.
+  - demo step: open `README.md` -> `Engineering Documentation`, then open `docs/RUBRIC_QUALITY_MAP.md` and show command/artifact mapping for rubric 10%.
+  - notes/screenshots: CI now uploads `docs-quality-report` artifact in `.github/workflows/ci.yml`.
+- **Next bottleneck:** decide whether to promote docs-quality checks from informational mode to fail-hard mode after submission window closes.

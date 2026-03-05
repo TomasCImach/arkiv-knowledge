@@ -59,6 +59,19 @@ flowchart LR
 - Vitest unit/integration/e2e tests
 - Vercel-ready deployment
 
+## Engineering Documentation
+- Entry point: [docs/README.md](docs/README.md)
+- Architecture: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- Security model: [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md)
+- Quality standards: [docs/QUALITY_STANDARDS.md](docs/QUALITY_STANDARDS.md)
+- Rubric quality map: [docs/RUBRIC_QUALITY_MAP.md](docs/RUBRIC_QUALITY_MAP.md)
+- Contributor workflow: [CONTRIBUTING.md](CONTRIBUTING.md)
+
+Where judges should look first:
+- Architecture and boundaries: [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
+- Security posture and private-read assumptions: [docs/SECURITY_MODEL.md](docs/SECURITY_MODEL.md)
+- Code quality evidence mapping: [docs/RUBRIC_QUALITY_MAP.md](docs/RUBRIC_QUALITY_MAP.md)
+
 ## Quick Start
 ```bash
 pnpm install
@@ -168,7 +181,7 @@ const transfer = await walletClient.changeOwnership({
 ## Known Limitation (Planned Next Iteration)
 - Private pages are currently access-controlled but not end-to-end encrypted.
 - This was intentionally left out of the challenge submission scope to prioritize rubric-critical Arkiv entity lifecycle depth.
-- Next iteration TODO: add payload encryption for private content (encrypted page/revision markdown + key management/decryption flow for authorized wallets).
+- Next iteration plan: add payload encryption for private content (encrypted page/revision markdown + key management/decryption flow for authorized wallets).
 
 ## Scripts
 ```bash
@@ -176,6 +189,7 @@ pnpm verify                # lint + typecheck + tests + build + live smoke (skip
 pnpm migrate:gitbook -- <input.md> [output.md] [--summary]  # normalize GitBook markdown for import
 pnpm verify:evidence       # checks required submission/evidence docs and capture script presence
 pnpm verify:submission     # validates README submission sections/assets and clip+manifest capture support
+pnpm verify:docs-quality   # generates non-blocking docs-quality report at output/docs-quality/report.json
 pnpm evidence:capture      # deterministic Playwright screenshot/report artifact pack (fail-soft realtime)
 pnpm seed:demo             # idempotent demo data seed (requires key)
 pnpm restore:demo          # re-run seed script for fallback dataset

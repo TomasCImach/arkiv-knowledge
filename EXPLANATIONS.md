@@ -539,3 +539,21 @@ Iteration 37 adds an explicit machine-facing integration layer without changing 
 - reduces agent integration ambiguity through OpenAPI + skill-driven workflow instructions.
 
 **Scoring impact:** High uplift on integration depth, medium uplift on functionality interoperability, medium uplift on docs/demo clarity.
+
+---
+
+## 37) Code Quality & Docs Lift (Iteration 38)
+Iteration 38 targets the rubric's Code Quality & Docs area with a submission-focused, low-risk documentation and automation pass:
+- added an engineering docs bundle under `docs/` (`README`, `ARCHITECTURE`, `SECURITY_MODEL`, `QUALITY_STANDARDS`, `RUBRIC_QUALITY_MAP`) and root `CONTRIBUTING.md`,
+- linked these artifacts from README in a dedicated "Engineering Documentation" section with judge-oriented wayfinding,
+- added `scripts/verify-docs-quality.ts` and `pnpm verify:docs-quality` to generate a non-blocking quality report (`output/docs-quality/report.json`) covering required docs/sections/placeholders/local links,
+- added a non-blocking CI step and artifact upload for docs quality reports in `.github/workflows/ci.yml`,
+- expanded `SUBMISSION_EVIDENCE.md` to map the 10% rubric area to the new docs and verification artifacts.
+
+**Why this matters:**
+- reduces judge effort by making architecture, security posture, and quality process auditable in a few clicks,
+- increases confidence in code organization quality without risky code movement late in submission hardening,
+- keeps merge velocity stable by reporting docs quality in CI without fail-hard friction,
+- improves rubric traceability by linking claims to repeatable commands and machine-readable reports.
+
+**Scoring impact:** Medium-high uplift on Code Quality & Docs with near-zero regression risk.

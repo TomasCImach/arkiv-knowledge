@@ -7,11 +7,13 @@ Map each Arkiv Builders Challenge rubric area to concrete code paths, tests, and
 ```bash
 pnpm verify
 pnpm verify:submission
+pnpm verify:docs-quality
 pnpm evidence:capture
 EVIDENCE_FAIL_SOFT=0 pnpm evidence:capture
 ```
 
 Artifacts are written to `output/playwright/evidence-pack/`.
+Docs quality report is written to `output/docs-quality/report.json`.
 
 ## Rubric Mapping
 | Rubric Area | Code Paths | Tests | Demo / Artifact Proof |
@@ -19,7 +21,7 @@ Artifacts are written to `output/playwright/evidence-pack/`.
 | Arkiv integration depth (40%) | `src/arkiv/schema/*`, `src/arkiv/queries/*`, `src/arkiv/mutations/*`, `src/arkiv/events/useArkivEvents.ts` | `tests/unit/schema-builders.test.ts`, `tests/integration/edit-page-mutate.test.ts`, `tests/integration/ownership-transfer.test.ts`, `tests/integration/search-predicates.test.ts`, `tests/integration/canonical-resolution.test.ts`, `tests/integration/create-page-repair.test.ts`, `tests/integration/delete-page-cleanup.test.ts` | Demo steps 3-10 in `DEMO_SCRIPT.md`; `output/playwright/evidence-pack/traces/*` |
 | Functionality (30%) | `src/app/spaces/[spaceSlug]/settings/page.tsx`, `src/app/spaces/[spaceSlug]/new/page.tsx`, `src/app/spaces/[spaceSlug]/[pageSlug]/edit/page.tsx`, `src/app/spaces/[spaceSlug]/[pageSlug]/page.tsx`, `src/app/search/pages/page.tsx`, `src/arkiv/mutations/spaces.ts`, `src/arkiv/mutations/pages.ts` | `tests/e2e/edit-space-owner.test.tsx`, `tests/e2e/create-page-parent-selector.test.tsx`, `tests/e2e/transfer-ownership-form.test.tsx`, `tests/e2e/space-search-form-filters.test.tsx`, `tests/e2e/private-visibility-routes.test.tsx`, `tests/e2e/page-lifecycle-form.test.tsx`, `tests/integration/create-conflict-guards.test.ts`, `tests/integration/create-page-repair.test.ts`, `tests/integration/delete-page-cleanup.test.ts` | Demo steps 2-8; screenshots in `output/playwright/evidence-pack/screenshots/*` |
 | UX / usability (20%) | `src/app/_components/app-shell.tsx`, `src/app/_components/breadcrumbs.tsx`, `src/app/_components/page-tree-nav.tsx`, `src/features/visibility/access.ts`, `src/app/globals.css` | `tests/e2e/no-wallet-browse.test.tsx`, `tests/e2e/create-page-owner-guard.test.tsx`, `tests/e2e/edit-page-owner-guard.test.tsx`, `tests/unit/visibility-access.test.ts`, `tests/e2e/private-visibility-routes.test.tsx` | Demo steps 1, 4, 6; screenshots `home.png`, `space.png`, `hierarchy.png` |
-| Code quality / docs (10%) | `scripts/verify-phase.ts`, `scripts/verify-evidence.ts`, `scripts/verify-submission.ts`, `scripts/capture-evidence.ts`, `.github/workflows/ci.yml`, `.github/workflows/evidence-strict.yml` | `pnpm verify` end-to-end (lint/type/test/build/live skip-safe), `pnpm verify:submission` | `PLAN.md`, `EXPLANATIONS.md`, `ITERATION_LOG.md`, `DEMO_SCRIPT.md`, `README.md`, this file |
+| Code quality / docs (10%) | `scripts/verify-phase.ts`, `scripts/verify-evidence.ts`, `scripts/verify-submission.ts`, `scripts/verify-docs-quality.ts`, `scripts/capture-evidence.ts`, `.github/workflows/ci.yml`, `.github/workflows/evidence-strict.yml`, `docs/ARCHITECTURE.md`, `docs/SECURITY_MODEL.md`, `docs/QUALITY_STANDARDS.md`, `docs/RUBRIC_QUALITY_MAP.md`, `CONTRIBUTING.md` | `pnpm verify` end-to-end (lint/type/test/build/live skip-safe), `pnpm verify:submission`, `pnpm verify:docs-quality` | `PLAN.md`, `EXPLANATIONS.md`, `ITERATION_LOG.md`, `DEMO_SCRIPT.md`, `README.md`, `docs/README.md`, `output/docs-quality/report.json`, this file |
 
 ## Ownership-Specific Evidence
 - Transfer flow code:

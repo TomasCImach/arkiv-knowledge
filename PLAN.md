@@ -328,6 +328,18 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Write paths remain wallet-signed and owner-gated through validated intents (no server-custodied owner mutation path).
 - Agent usage is demoable in <60 seconds via `SKILL.md` + one read + one intent request.
 
+### Phase 31 — Code Quality & Docs Lift (Iteration 38)
+- [x] Added an engineering docs bundle (`docs/README`, architecture, security model, quality standards, rubric map) plus root `CONTRIBUTING.md`.
+- [x] Added non-blocking docs quality report automation (`pnpm verify:docs-quality`) with JSON output at `output/docs-quality/report.json`.
+- [x] Added non-blocking CI step + artifact upload for docs quality report.
+- [x] Updated README/submission-evidence/iteration docs to reference quality artifacts directly.
+
+**Exit criteria status:** met.
+- Judges can locate architecture/security/quality docs directly from README in under 60 seconds.
+- Code organization intent is explicitly documented through module-boundary guidance.
+- Docs quality checks are visible in CI artifacts without blocking merge flow.
+- Rubric claims now map to concrete quality/doc artifacts.
+
 ## Current Verification Snapshot
 - Last full pass: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`, `pnpm build` on 2026-03-01 (post iteration 26 wallet-auth visibility rollout).
 - Result: lint/typecheck/unit/integration/e2e/build all pass; live test remains skip-safe when private key is absent.
@@ -342,6 +354,7 @@ Ship a high-scoring Arkiv-first Knowledge Base submission with clear evidence ac
 - Iteration 35 check: `pnpm lint`, `pnpm typecheck`, `pnpm test`, and `pnpm test:e2e` pass on 2026-03-04 after GitBook migration compatibility rollout.
 - Iteration 36 check: `pnpm lint`, `pnpm typecheck`, `pnpm test:e2e`, `pnpm build` pass on 2026-03-04 after owner CTA relocation/edit-entry gating rollout.
 - Iteration 37 check: `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm test:e2e`, `pnpm build` pass on 2026-03-05 after agent API + write-intent + SKILL rollout.
+- Iteration 38 check: `pnpm lint`, `pnpm typecheck`, `pnpm verify:docs-quality`, `pnpm verify:submission`, `pnpm test`, and `pnpm test:e2e` pass on 2026-03-05 after code-quality/docs lift rollout.
 - Added passing integrity coverage for canonical selection + duplicate guards (`tests/integration/canonical-resolution.test.ts`, `tests/integration/create-conflict-guards.test.ts`).
 - Added lifecycle hardening coverage (`tests/integration/edit-page-mutate.test.ts`, `tests/integration/create-page-repair.test.ts`).
 - Added visibility/realtime coverage (`tests/unit/visibility-access.test.ts`, `tests/e2e/private-visibility-routes.test.tsx`, `tests/e2e/use-arkiv-events.test.tsx`).
