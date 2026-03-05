@@ -37,7 +37,8 @@ describe('owner edit page CTA', () => {
       />
     )
 
-    expect(screen.getByRole('button', { name: 'Edit Page' })).toBeDisabled()
+    expect(screen.queryByRole('button', { name: 'Edit Page' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Edit Page' })).not.toBeInTheDocument()
     expect(screen.getByText('Connect the owner wallet to edit this page.')).toBeInTheDocument()
   })
 
@@ -53,7 +54,8 @@ describe('owner edit page CTA', () => {
       />
     )
 
-    expect(screen.getByRole('button', { name: 'Edit Page' })).toBeDisabled()
+    expect(screen.queryByRole('button', { name: 'Edit Page' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Edit Page' })).not.toBeInTheDocument()
     expect(screen.getByText('Verify Private Access to enable owner edit actions.')).toBeInTheDocument()
 
     rerender(

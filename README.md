@@ -7,7 +7,7 @@ Arklib is an Arkiv-first documentation app built for the Arkiv Builders Challeng
 
 ## Deployed Demo URL
 - Local/demo-first build: `http://localhost:3000`
-- Public deployment: `TBD` (replace with final hosted URL before submission)
+- Public deployment: `https://arklib.vercel.app/`
 
 ## Why This App Scores Well
 - Core domain data is stored in Arkiv entities (`kb.space`, `kb.page`, `kb.revision`, `kb.link`, `kb.presence`).
