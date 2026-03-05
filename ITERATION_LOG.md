@@ -424,3 +424,14 @@ Add one entry per merged iteration. Keep entries short and evidence-first.
   - demo step: open `/migrate/gitbook`, paste GitBook markdown, show converted output/preview, then paste into create/edit form and run one-click normalization.
   - notes/screenshots: migration tooling in `src/app/migrate/gitbook/page.tsx`, `src/app/_components/gitbook-migration-tool.tsx`, and `scripts/migrate-gitbook-markdown.ts`.
 - **Next bottleneck:** extend converter for multi-file GitBook exports (folder-aware link remapping) and add deterministic batch migration demo fixture.
+
+### 2026-03-04 — Iteration 36 (Owner CTA Relocation + Edit Entry Gating)
+- **Objective:** keep read routes free of owner-specific cards/CTAs for non-owner viewers and consolidate owner controls into the edit route.
+- **Implemented:** removed page lifecycle + page ownership transfer cards from `/spaces/[spaceSlug]/[pageSlug]`; moved those cards to `/spaces/[spaceSlug]/[pageSlug]/edit`; added owner-verified client CTA gate so `Edit Page` is disabled unless connected owner wallet + verified owner session are present.
+- **Rubric targets:** UX (`permission clarity`, primary) / integration (`ownership model visibility`, secondary) / functionality (`route-level action correctness`, secondary).
+- **Expected score delta:** medium-high.
+- **Evidence:**
+  - tests: added `tests/e2e/owner-edit-page-cta.test.tsx`; verification via `pnpm lint`, `pnpm typecheck`, `pnpm test:e2e`, `pnpm build`.
+  - demo step: open page route as non-owner/disconnected viewer and show no owner cards + disabled edit CTA; switch to owner verified session and show edit CTA enabled with lifecycle/transfer cards on edit route.
+  - notes/screenshots: gating and relocation in `src/app/spaces/[spaceSlug]/[pageSlug]/page.tsx`, `src/app/_components/owner-edit-page-cta.tsx`, and `src/app/spaces/[spaceSlug]/[pageSlug]/edit/page.tsx`.
+- **Next bottleneck:** refresh evidence capture script to explicitly include read-route non-owner CTA suppression and edit-route owner-card visibility.

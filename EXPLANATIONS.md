@@ -505,3 +505,18 @@ Iteration 35 adds a deterministic migration bridge from GitBook markdown to Arki
 - strengthens query/relationship quality because search tokenization and link extraction now operate on normalized markdown.
 
 **Scoring impact:** High uplift on functionality migration-readiness and medium-high uplift on integration depth via deterministic write-path compatibility.
+
+---
+
+## 35) Owner CTA Relocation + Edit Entry Gating (Iteration 36)
+Iteration 36 tightens owner-surface placement and eligibility:
+- moved page lifecycle + ownership-transfer cards from read page route to edit route,
+- added owner-verified edit CTA gate on page detail (`Edit Page` only enabled for connected owner + verified owner session),
+- removed owner-specific extension CTA surfaces from read page route to reduce non-owner clutter.
+
+**Why this matters:**
+- keeps read routes focused on public browsing (no owner action cards for non-owners),
+- makes owner actions discoverable in one deterministic workspace (edit route),
+- increases permission clarity by tying edit entry to connected owner wallet and verification state.
+
+**Scoring impact:** Medium-high uplift on UX permission clarity and medium uplift on ownership model demoability.

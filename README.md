@@ -142,6 +142,7 @@ const transfer = await walletClient.changeOwnership({
 - Private space reads require wallet-authenticated session verification (signed message challenge, HttpOnly cookie).
 - Canonical page edit and transfer are owner-gated; non-owners can browse page content but cannot submit edits.
 - Canonical page lifecycle actions are owner-gated:
+  - owner lifecycle/transfer cards render on the edit route (`/spaces/[spaceSlug]/[pageSlug]/edit`) only,
   - archive updates canonical page status to `archived` and appends a revision,
   - delete removes canonical `kb.page` and cleans dependent `kb.link`, `kb.presence`, and `kb.revision` entities.
 - Extension controls are owner-checked in UI and only enabled for near-expiry entities.

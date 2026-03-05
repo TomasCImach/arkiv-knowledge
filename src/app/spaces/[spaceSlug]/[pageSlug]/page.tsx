@@ -1,18 +1,15 @@
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
-import { ExtendEntityButton } from '@/app/_components/extend-entity-button'
+import { OwnerEditPageCta } from '@/app/_components/owner-edit-page-cta'
 import { PageTreeNav } from '@/app/_components/page-tree-nav'
-import { PageLifecycleForm } from '@/app/_components/page-lifecycle-form'
 import { PageMarkdown } from '@/app/_components/page-markdown'
 import { PresencePanel } from '@/app/_components/presence-panel'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
 import { RetryButton } from '@/app/_components/retry-button'
 import { RouteStateCard, RouteStateLinkAction } from '@/app/_components/route-state-card'
 import { TechnicalDetails } from '@/app/_components/technical-details'
-import { TransferOwnershipForm } from '@/app/_components/transfer-ownership-form'
 import {
-  fetchCurrentBlock,
   getPageBySlugInSpace,
   getSpaceBySlug,
   listBacklinks,
@@ -23,6 +20,7 @@ import {
 import type { ParsedPage } from '@/arkiv/types'
 import { getAuthenticatedViewerAddress } from '@/features/auth/session'
 import { buildAncestorChain } from '@/features/hierarchy/tree'
+import { equalAddress } from '@/features/ownership/permissions'
 import { canViewSpace } from '@/features/visibility/access'
 import { formatReadError } from '@/lib/wallet'
 
@@ -77,27 +75,25 @@ export default async function PageRoute({
     notFound()
   }
 
-  const [revisionsResult, backlinksResult, presenceResult, blockResult] = await Promise.allSettled([
+  const [revisionsResult, backlinksResult, presenceResult] = await Promise.allSettled([
     listRevisionsByPage(page.entityKey),
     listBacklinks(page.entityKey),
-    listPresenceForPage(page.entityKey),
-    fetchCurrentBlock()
+    listPresenceForPage(page.entityKey)
   ])
 
   const revisions = revisionsResult.status === 'fulfilled' ? revisionsResult.value : []
   const backlinks = backlinksResult.status === 'fulfilled' ? backlinksResult.value : []
   const activePresence = presenceResult.status === 'fulfilled' ? presenceResult.value : []
-  const currentBlock = blockResult.status === 'fulfilled' ? blockResult.value : undefined
 
   const queryErrors = [
     revisionsResult.status === 'rejected' ? revisionsResult.reason : null,
     backlinksResult.status === 'rejected' ? backlinksResult.reason : null,
-    presenceResult.status === 'rejected' ? presenceResult.reason : null,
-    blockResult.status === 'rejected' ? blockResult.reason : null
+    presenceResult.status === 'rejected' ? presenceResult.reason : null
   ]
     .filter(Boolean)
     .map((reason) => formatReadError(reason))
   const ancestors = buildAncestorChain(spacePages, page)
+  const isVerifiedOwnerSession = equalAddress(page.owner, viewer)
 
   return (
     <section className="doc-layout">
@@ -134,35 +130,15 @@ export default async function PageRoute({
 
           <p className="subtitle">{page.payload.summary}</p>
 
-          <div className="toolbar">
-            <Link href={`/spaces/${spaceSlug}/${pageSlug}/edit`} className="button">
-              Edit Page
-            </Link>
-          </div>
-          <p className="subtitle">Reading is open. To edit or transfer this page, switch to the owner wallet.</p>
+          <OwnerEditPageCta
+            href={`/spaces/${spaceSlug}/${pageSlug}/edit`}
+            owner={page.owner}
+            isVerifiedOwnerSession={isVerifiedOwnerSession}
+          />
+          <p className="subtitle">Reading is open for everyone.</p>
           <TechnicalDetails summary="Technical details (page entity)">
             <span className="badge">Canonical key: {page.entityKey}</span>
-            {currentBlock ? (
-              <ExtendEntityButton
-                entityKey={page.entityKey}
-                owner={page.owner}
-                expiresAtBlock={page.expiresAtBlock}
-                currentBlock={currentBlock}
-                kind="page"
-              />
-            ) : null}
           </TechnicalDetails>
-        </div>
-
-        <PageLifecycleForm page={page} viewer={viewer} />
-
-        <div className="card stack">
-          <h3 style={{ margin: 0 }}>Transfer Page Ownership</h3>
-          <p className="subtitle">Transfer this page to another wallet.</p>
-          <TechnicalDetails summary="Technical details (ownership transfer)">
-            <p className="subtitle">This action updates canonical `kb.page` ownership using Arkiv `changeOwnership`.</p>
-          </TechnicalDetails>
-          <TransferOwnershipForm entityKey={page.entityKey} entityOwner={page.owner} entityLabel="page" />
         </div>
         {queryErrors.length > 0 ? (
           <RouteStateCard
@@ -210,15 +186,6 @@ export default async function PageRoute({
                     <span className="badge">editor {revision.editor.slice(0, 10)}...</span>
                   </div>
                   <p className="subtitle">{revision.payload.editSummary}</p>
-                  {currentBlock ? (
-                    <ExtendEntityButton
-                      entityKey={revision.entityKey}
-                      owner={revision.owner}
-                      expiresAtBlock={revision.expiresAtBlock}
-                      currentBlock={currentBlock}
-                      kind="revision"
-                    />
-                  ) : null}
                 </div>
               ))
           )}

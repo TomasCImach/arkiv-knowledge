@@ -62,13 +62,13 @@ Prove this is a usable knowledge base **and** deeply Arkiv-native.
 - After save, use inline CTA (`Open page` / `Back to space`) instead of auto-redirect.
 - Show canonical page key stays constant while revision list grows.
 - Confirm page `createdAt` stays stable while only `updatedAt` changes.
-- On page detail, use **Archive Page** and show status transitions to `archived` with revision continuity.
-- On another page, use **Delete Page** with slug confirmation and show redirect back to `/spaces/[spaceSlug]`.
+- On edit page, use **Archive Page** and show status transitions to `archived` with revision continuity.
+- On another page edit route, use **Delete Page** with slug confirmation and show redirect back to `/spaces/[spaceSlug]`.
 - Mention delete cleanup policy: canonical page + links + presence + revisions are removed together.
 - Verbalize: “Saves use mutate flow: canonical update + append-only revision, reads are anchored to canonical space key, and revision numbers are monotonic.”
 
 ### 4) Ownership Handoff
-- On page detail route, use transfer form to transfer canonical page ownership.
+- On page edit route, use transfer form to transfer canonical page ownership.
 - Refresh and show old owner is blocked from edit/transfer while new owner regains controls after wallet switch.
 - Verbalize: “Ownership transfer uses Arkiv `changeOwnership` on canonical entities, not off-chain ACLs.”
 
