@@ -24,6 +24,33 @@ export type SpaceRouteProps = {
   searchParams: Promise<Record<string, string | string[] | undefined>>
 }
 
+function formatVisibilityLabel(visibility: string): string {
+  if (visibility === 'private') {
+    return 'Private'
+  }
+  if (visibility === 'unlisted') {
+    return 'Unlisted'
+  }
+  return 'Public'
+}
+
+function formatStatusLabel(status: string): string {
+  if (status.length === 0) {
+    return status
+  }
+  return `${status[0].toUpperCase()}${status.slice(1)}`
+}
+
+function formatUpdatedLabel(updatedAtMs: number): string {
+  const diffMs = Date.now() - updatedAtMs
+  const diffHours = Math.max(1, Math.floor(diffMs / (60 * 60 * 1000)))
+  if (diffHours < 24) {
+    return `${diffHours} hour${diffHours === 1 ? '' : 's'} ago`
+  }
+  const diffDays = Math.max(1, Math.floor(diffHours / 24))
+  return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`
+}
+
 export default async function SpacePage({ params, searchParams }: SpaceRouteProps) {
   const { spaceSlug } = await params
   const query = await searchParams
@@ -80,14 +107,14 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
       listPagesBySpaceKey(space.entityKey),
       hasActiveQuery
         ? searchPages({
-            spaceKey: space.entityKey,
-            spaceSlug,
-            q,
-            status: status || undefined,
-            parentMode,
-            owner,
-            sort
-          })
+          spaceKey: space.entityKey,
+          spaceSlug,
+          q,
+          status: status || undefined,
+          parentMode,
+          owner,
+          sort
+        })
         : Promise.resolve<ParsedPage[] | null>(null)
     ])
     currentBlock = block
@@ -112,128 +139,155 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
   })
 
   return (
-    <section className="space-view-layout">
+    <section className="space-workspace">
       <RealtimeRefresh spaceKey={space.entityKey} />
 
-      <aside className="card stack doc-aside space-left-aside">
-        <div className="toolbar dashboard-section-head">
-          <strong>Active Spaces</strong>
-          <span className="badge">{allPages.length} pages</span>
-        </div>
-        <PageTreeNav spaceSlug={spaceSlug} pages={allPages} />
-      </aside>
-
-      <div className="stack doc-column space-main-column">
-        <Breadcrumbs items={[{ href: '/', label: 'Knowledge Base' }, { label: space.payload.name }]} />
-
-        <div className="card stack space-hero-card">
-          <div className="toolbar dashboard-section-head">
-            <h1 className="title">{space.payload.name}</h1>
-            <span className="badge">{space.visibility}</span>
-          </div>
-          <p className="subtitle">{space.payload.description}</p>
-          <p className="subtitle">Browse without a wallet. To create pages or change settings, switch to the owner wallet.</p>
+      <main className="space-workspace-main">
+        <header className="space-workspace-header">
           <div className="toolbar">
-            <Link href={`/spaces/${spaceSlug}/new`} className="button">
-              New Page
-            </Link>
+            <h2 className="section-title">{space.payload.name}</h2>
+            <span className="badge">{formatVisibilityLabel(space.visibility)}</span>
+          </div>
+          <div className="toolbar">
             <Link href={`/spaces/${spaceSlug}/settings`} className="button secondary">
+              <span className="material-symbols-outlined" aria-hidden>
+                settings
+              </span>
               Space Settings
             </Link>
+            <Link href={`/spaces/${spaceSlug}/new`} className="button">
+              <span className="material-symbols-outlined" aria-hidden>
+                add_circle
+              </span>
+              New Page
+            </Link>
+            <span className="space-workspace-avatar" aria-hidden>
+              AR
+            </span>
           </div>
-          <TechnicalDetails summary="Technical details (space entity)">
-            <span className="badge">Space key: {space.entityKey}</span>
-            {currentBlock ? (
-              <ExtendEntityButton
-                entityKey={space.entityKey}
-                owner={space.owner}
-                expiresAtBlock={space.expiresAtBlock}
-                currentBlock={currentBlock}
-                kind="space"
-              />
-            ) : null}
-            <p className="subtitle">Retention controls and lifecycle metadata are shown here to keep browsing focused on content.</p>
-          </TechnicalDetails>
-        </div>
+        </header>
 
-        <SpaceSearchForm
-          initialQ={q}
-          initialStatus={status || undefined}
-          initialParentMode={parentMode}
-          initialOwner={ownerRaw}
-          initialSort={sort}
-        />
+        <div className="space-workspace-scroll">
+          <div className="space-workspace-content stack">
+            <Breadcrumbs items={[{ href: '/', label: 'Knowledge Base' }, { label: space.payload.name }]} />
 
-        <QueryDebugPanel
-          title="Space Query Debug"
-          summary={{
-            spaceKey: space.entityKey,
-            spaceSlug,
-            q: q || '(empty)',
-            status: status || '(any)',
-            parentMode,
-            owner: owner ?? '(any)',
-            sort
-          }}
-          predicates={activePredicates}
-        />
-
-        {queryError ? (
-          <RouteStateCard
-            tone="error"
-            title="Page query degraded"
-            message={queryError}
-            action={<RetryButton label="Retry page query" />}
-          />
-        ) : pages.length === 0 ? (
-          <RouteStateCard
-            title="No pages in this view"
-            message={
-              hasActiveQuery
-                ? `Showing 0 pages in ${space.payload.name} for the active filters.`
-                : `Showing 0 pages in ${space.payload.name}.`
-            }
-            action={<RouteStateLinkAction href={`/spaces/${spaceSlug}/new`} label="Create first page" />}
-          />
-        ) : (
-          <div className="card stack">
-            <div className="toolbar dashboard-section-head">
-              <h2 className="section-title">Pages</h2>
-              <span className="badge">{pages.length} results</span>
-            </div>
-            <p className="subtitle">
-              {hasActiveQuery
-                ? `Showing ${pages.length} page${pages.length === 1 ? '' : 's'} in ${space.payload.name} for the active filters.`
-                : `Showing all ${pages.length} page${pages.length === 1 ? '' : 's'} in ${space.payload.name}.`}
+            <p className="space-intro-copy">
+              {space.payload.description || 'Internal and external documentation for this space is shown below.'}
             </p>
-            <div className="space-card-grid">
-              {pages.map((page) => (
-                <Link key={page.entityKey} href={`/spaces/${spaceSlug}/${page.pageSlug}`} className="space-card">
-                  <div className="toolbar doc-list-head">
-                    <strong>{page.payload.title}</strong>
-                    <span className="badge">{page.status}</span>
-                  </div>
-                  <p className="subtitle">{page.payload.summary}</p>
-                  <div className="toolbar doc-list-meta">
-                    <span className="badge">slug: {page.pageSlug}</span>
-                    {page.parentPageKey ? <span className="badge">child</span> : <span className="badge">root</span>}
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
 
-      <aside className="card stack space-right-aside">
-        <h3 style={{ margin: 0 }}>Space Contents</h3>
-        <p className="subtitle">Quick tree navigation for this space.</p>
-        <PageTreeNav spaceSlug={spaceSlug} pages={allPages} />
-        <div className="notice">
-          <strong>Integration note</strong>
-          <p className="subtitle">Use migration tools to sync and validate imported structures from GitBook sources.</p>
+            <SpaceSearchForm
+              initialQ={q}
+              initialStatus={status || undefined}
+              initialParentMode={parentMode}
+              initialOwner={ownerRaw}
+              initialSort={sort}
+              resultCount={pages.length}
+            />
+
+            <TechnicalDetails summary="Technical details (space entity)">
+              <span className="badge">Space key: {space.entityKey}</span>
+              {currentBlock ? (
+                <ExtendEntityButton
+                  entityKey={space.entityKey}
+                  owner={space.owner}
+                  expiresAtBlock={space.expiresAtBlock}
+                  currentBlock={currentBlock}
+                  kind="space"
+                />
+              ) : null}
+              <p className="subtitle">
+                Browse without a wallet. To create pages or change settings, switch to the owner wallet.
+              </p>
+            </TechnicalDetails>
+
+            <QueryDebugPanel
+              title="Space Query Debug"
+              summary={{
+                spaceKey: space.entityKey,
+                spaceSlug,
+                q: q || '(empty)',
+                status: status || '(any)',
+                parentMode,
+                owner: owner ?? '(any)',
+                sort
+              }}
+              predicates={activePredicates}
+            />
+
+            {queryError ? (
+              <RouteStateCard
+                tone="error"
+                title="Page query degraded"
+                message={queryError}
+                action={<RetryButton label="Retry page query" />}
+              />
+            ) : pages.length === 0 ? (
+              <RouteStateCard
+                title="No pages in this view"
+                message={
+                  hasActiveQuery
+                    ? `Showing 0 pages in ${space.payload.name} for the active filters.`
+                    : `Showing 0 pages in ${space.payload.name}.`
+                }
+                action={<RouteStateLinkAction href={`/spaces/${spaceSlug}/new`} label="Create first page" />}
+              />
+            ) : (
+              <div className="space-pages-list">
+                <h3 className="space-pages-title">Pages</h3>
+                <p className="subtitle">
+                  {hasActiveQuery
+                    ? `Showing ${pages.length} page${pages.length === 1 ? '' : 's'} in ${space.payload.name} for the active filters.`
+                    : `Showing all ${pages.length} page${pages.length === 1 ? '' : 's'} in ${space.payload.name}.`}
+                </p>
+                <div className="space-pages-stack">
+                  {pages.map((page) => (
+                    <Link key={page.entityKey} href={`/spaces/${spaceSlug}/${page.pageSlug}`} className="space-page-item">
+                      <div className="space-page-item-top">
+                        <div className="toolbar">
+                          <span className="material-symbols-outlined space-page-icon" aria-hidden>
+                            {page.parentPageKey ? 'description' : 'menu_book'}
+                          </span>
+                          <h4 className="space-page-title">{page.payload.title}</h4>
+                        </div>
+                        <div className="toolbar">
+                          <span className={`space-pill status-${page.status}`}>{formatStatusLabel(page.status)}</span>
+                          <span className={`space-pill tone-${page.parentPageKey ? 'child' : 'root'}`}>
+                            {page.parentPageKey ? 'Child' : 'Root'}
+                          </span>
+                        </div>
+                      </div>
+                      <p className="subtitle">{page.payload.summary}</p>
+                      <div className="space-page-meta">
+                        <code>{`/${spaceSlug}/${page.pageSlug}`}</code>
+                        <span>
+                          <span className="material-symbols-outlined" aria-hidden>
+                            schedule
+                          </span>
+                          Updated {formatUpdatedLabel(page.updatedAtMs)}
+                        </span>
+                      </div>
+                    </Link>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <aside className="space-workspace-right">
+            <div className="space-right-panel">
+              <h3>Space Contents</h3>
+              <PageTreeNav spaceSlug={spaceSlug} pages={allPages} />
+            </div>
+            <div className="space-right-panel space-integrations-panel">
+              <h4>Integrations</h4>
+              <p>Sync this space automatically with your GitHub repository.</p>
+              <Link href="/migrate/gitbook" className="button secondary">
+                Configure Sync
+              </Link>
+            </div>
+          </aside>
         </div>
-      </aside>
+      </main>
     </section>
   )
 }

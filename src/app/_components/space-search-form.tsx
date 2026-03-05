@@ -37,13 +37,15 @@ export function SpaceSearchForm({
   initialStatus,
   initialParentMode = 'all',
   initialOwner = '',
-  initialSort = 'updated_desc'
+  initialSort = 'updated_desc',
+  resultCount
 }: {
   initialQ: string
   initialStatus?: string
   initialParentMode?: PageParentMode
   initialOwner?: string
   initialSort?: PageSortMode
+  resultCount?: number
 }) {
   const [q, setQ] = useState(initialQ)
   const [status, setStatus] = useState(initialStatus ?? '')
@@ -169,9 +171,15 @@ export function SpaceSearchForm({
   }
 
   return (
-    <form className="card stack search-form" onSubmit={onSubmit}>
-      <div className="search-basic">
+    <form className="card stack search-form space-search-shell" onSubmit={onSubmit}>
+      <div className="space-search-input-wrap">
+        <span className="material-symbols-outlined space-search-icon" aria-hidden>
+          search
+        </span>
         <input value={q} onChange={(event) => setQ(event.target.value)} placeholder="Search by indexed tokens" />
+      </div>
+
+      <div className="search-basic space-filter-row">
         <select value={status} onChange={(event) => setStatus(event.target.value)}>
           <option value="">Any status</option>
           <option value="published">Published</option>
@@ -184,10 +192,11 @@ export function SpaceSearchForm({
         <button type="submit" className="search-submit mobile-action-bar">
           Apply query
         </button>
+        {typeof resultCount === 'number' ? <span className="space-search-count">{resultCount} Pages found</span> : null}
       </div>
 
       {advancedOpen ? (
-        <div className="search-advanced">
+        <div className="search-advanced space-search-advanced">
           <select value={parentMode} onChange={(event) => setParentMode(event.target.value as PageParentMode)}>
             <option value="all">All pages</option>
             <option value="root">Root only</option>
