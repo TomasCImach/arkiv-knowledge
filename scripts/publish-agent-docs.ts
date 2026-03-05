@@ -1,5 +1,3 @@
-import { readFileSync } from 'node:fs'
-import path from 'node:path'
 import { createPublicClient, createWalletClient, http, chainFromName } from '@arkiv-network/sdk'
 import { privateKeyToAccount } from '@arkiv-network/sdk/accounts'
 import { kaolin } from '@arkiv-network/sdk/chains'
@@ -54,12 +52,7 @@ function parseArgs() {
   return parsed
 }
 
-function loadSkillBody(): string {
-  const skillPath = path.join(process.cwd(), 'SKILL.md')
-  return readFileSync(skillPath, 'utf8')
-}
-
-function buildPageBody(skillMarkdown: string): string {
+function buildPageBody(): string {
   return [
     '# Agent-Friendly API + Skill',
     '',
@@ -87,10 +80,11 @@ function buildPageBody(skillMarkdown: string): string {
     'Write routes return validated intents (`sdkCall` + optional `followUpCalls` + `postconditions`).',
     'Transactions remain wallet-signed by the caller; no server-custodied owner write path is used.',
     '',
-    '## Official SKILL.md',
-    '```markdown',
-    skillMarkdown,
-    '```',
+    '## Official SKILL.md access and usage',
+    '1. Fetch the official skill as raw markdown: `GET /skill.md`.',
+    '2. If working from the repository, read the root file directly: `SKILL.md`.',
+    '3. Follow the runbook sections in order: setup, wallet-session auth flow, deterministic reads, write intents, and error handling.',
+    '4. For automation/agent integrations, fetch `/skill.md` at runtime to stay aligned with the current runbook text.',
     ''
   ].join('\n')
 }
@@ -130,8 +124,7 @@ async function main() {
     throw new Error(`Space "${spaceSlug}" was not found.`)
   }
 
-  const skillMarkdown = loadSkillBody()
-  const bodyMarkdown = buildPageBody(skillMarkdown)
+  const bodyMarkdown = buildPageBody()
 
   const existing = await getPageBySlugInSpace(space.entityKey, pageSlug)
 
