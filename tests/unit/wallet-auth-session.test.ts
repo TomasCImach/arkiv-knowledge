@@ -6,7 +6,7 @@ const OWNER = '0x1111111111111111111111111111111111111111'
 describe('wallet auth session helpers', () => {
   it('builds deterministic wallet auth challenge text', () => {
     const message = buildWalletAuthMessage('abc123')
-    expect(message).toContain('Authenticate wallet for Arkiv Knowledge private reads.')
+    expect(message).toContain('Authenticate wallet for Arklib private reads.')
     expect(message).toContain('Nonce: abc123')
   })
 

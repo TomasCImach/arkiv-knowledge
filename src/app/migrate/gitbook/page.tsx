@@ -10,7 +10,7 @@ export default function GitBookMigrationRoute() {
       <div className="card stack">
         <h1 className="title">Migrate from GitBook Markdown</h1>
         <p className="subtitle">
-          This converter normalizes known GitBook markdown syntax so pages can be pasted directly into Arkiv Knowledge.
+          This converter normalizes known GitBook markdown syntax so pages can be pasted directly into Arklib.
         </p>
       </div>
       <GitBookMigrationTool />

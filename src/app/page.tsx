@@ -25,7 +25,7 @@ export default async function HomePage() {
       <Breadcrumbs items={[{ label: 'Knowledge Base' }]} />
       <div className="card stack">
         <h1 className="title">
-          Arkiv-First Knowledge Base
+          Arklib
         </h1>
         <p className="subtitle">
           Public browsing does not require a wallet. Wallet signatures are required only for writes.

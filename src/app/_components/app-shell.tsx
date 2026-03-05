@@ -100,9 +100,9 @@ export async function AppShell({ children }: { children: ReactNode }) {
         <nav className="app-header-inner">
           <div className="app-brand-block">
             <Link href="/" className="app-brand">
-              Arkiv Knowledge
+              Arklib
             </Link>
-            <span className="subtitle">BookStack-style Arkiv documentation workspace</span>
+            <span className="subtitle">BookStack-style documentation workspace on Arkiv</span>
           </div>
           <div className="toolbar app-toolbar">
             <MobileNavDrawer>{sidebarContent}</MobileNavDrawer>

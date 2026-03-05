@@ -24,7 +24,7 @@ function getAuthSecret(): string {
     throw new Error('Set ARKIV_AUTH_SECRET (or NEXTAUTH_SECRET) to enable wallet auth sessions in production.')
   }
 
-  return 'arkiv-knowledge-dev-auth-secret'
+  return 'arklib-dev-auth-secret'
 }
 
 function toBase64Url(value: string): string {
@@ -54,7 +54,7 @@ export function createWalletAuthNonce(): string {
 
 export function buildWalletAuthMessage(nonce: string): string {
   return [
-    'Authenticate wallet for Arkiv Knowledge private reads.',
+    'Authenticate wallet for Arklib private reads.',
     `Nonce: ${nonce}`,
     'This signature will not trigger a blockchain transaction.'
   ].join('\n')

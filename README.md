@@ -1,6 +1,6 @@
-# Arkiv-First Knowledge Base
+# Arklib
 
-Arkiv-first documentation app built for the Arkiv Builders Challenge.
+Arklib is an Arkiv-first documentation app built for the Arkiv Builders Challenge.
 
 ## Team Members
 - Tomas (solo builder)

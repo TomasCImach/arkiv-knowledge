@@ -15,8 +15,8 @@ const bodyFont = Noto_Serif({
 })
 
 export const metadata: Metadata = {
-  title: 'Arkiv Knowledge Base',
-  description: 'Arkiv-first knowledge base with lifecycle depth, relationships, and expiration-aware collaboration.'
+  title: 'Arklib',
+  description: 'Arklib is an Arkiv-first knowledge base with lifecycle depth, relationships, and expiration-aware collaboration.'
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
