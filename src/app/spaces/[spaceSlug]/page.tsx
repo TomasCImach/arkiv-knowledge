@@ -4,11 +4,12 @@ import type { Hex } from 'viem'
 import { isAddress } from 'viem'
 import { Breadcrumbs } from '@/app/_components/breadcrumbs'
 import { ExtendEntityButton } from '@/app/_components/extend-entity-button'
-import { PageTreeNav } from '@/app/_components/page-tree-nav'
 import { QueryDebugPanel } from '@/app/_components/query-debug-panel'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
 import { RetryButton } from '@/app/_components/retry-button'
 import { RouteStateCard, RouteStateLinkAction } from '@/app/_components/route-state-card'
+import { SpaceContentsPanel, type SpaceContentsPanelSection } from '@/app/_components/space-contents-panel'
+import { SpaceOwnerActions } from '@/app/_components/space-owner-actions'
 import { SpaceSearchForm } from '@/app/_components/space-search-form'
 import { TechnicalDetails } from '@/app/_components/technical-details'
 import { buildPageSearchPredicates, fetchCurrentBlock, getSpaceBySlug, listPagesBySpaceKey, searchPages } from '@/arkiv/queries'
@@ -49,6 +50,30 @@ function formatUpdatedLabel(updatedAtMs: number): string {
   }
   const diffDays = Math.max(1, Math.floor(diffHours / 24))
   return `${diffDays} day${diffDays === 1 ? '' : 's'} ago`
+}
+
+function buildSpaceContentsSections(pages: ParsedPage[]): Array<{ root: ParsedPage; children: ParsedPage[] }> {
+  const childrenByParent = new Map<string, ParsedPage[]>()
+
+  for (const page of pages) {
+    if (!page.parentPageKey) {
+      continue
+    }
+    const currentChildren = childrenByParent.get(page.parentPageKey) ?? []
+    currentChildren.push(page)
+    childrenByParent.set(page.parentPageKey, currentChildren)
+  }
+
+  return pages
+    .filter((page) => !page.parentPageKey)
+    .slice()
+    .sort((a, b) => a.payload.title.localeCompare(b.payload.title))
+    .map((root) => ({
+      root,
+      children: (childrenByParent.get(root.entityKey) ?? [])
+        .slice()
+        .sort((a, b) => a.payload.title.localeCompare(b.payload.title))
+    }))
 }
 
 export default async function SpacePage({ params, searchParams }: SpaceRouteProps) {
@@ -137,6 +162,31 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
     owner,
     sort
   })
+  const contentSections = buildSpaceContentsSections(allPages).slice(0, 4)
+  const expandedSectionKey = contentSections.find((section) => section.children.length > 0)?.root.entityKey ?? contentSections[0]?.root.entityKey
+  const previewFallback = contentSections
+    .filter((entry) => entry.root.entityKey !== expandedSectionKey)
+    .map((entry) => entry.root)
+    .slice(0, 3)
+  const spaceContentsSections: SpaceContentsPanelSection[] = contentSections.map((section) => {
+    const sectionChildren =
+      section.children.length > 0
+        ? section.children
+        : section.root.entityKey === expandedSectionKey
+          ? previewFallback
+          : []
+
+    return {
+      id: section.root.entityKey,
+      title: section.root.payload.title,
+      href: `/spaces/${spaceSlug}/${section.root.pageSlug}`,
+      children: sectionChildren.map((entry) => ({
+        id: entry.entityKey,
+        title: entry.payload.title,
+        href: `/spaces/${spaceSlug}/${entry.pageSlug}`
+      }))
+    }
+  })
 
   return (
     <section className="space-workspace">
@@ -148,23 +198,7 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
             <h2 className="section-title">{space.payload.name}</h2>
             <span className="badge">{formatVisibilityLabel(space.visibility)}</span>
           </div>
-          <div className="toolbar">
-            <Link href={`/spaces/${spaceSlug}/settings`} className="button secondary">
-              <span className="material-symbols-outlined" aria-hidden>
-                settings
-              </span>
-              Space Settings
-            </Link>
-            <Link href={`/spaces/${spaceSlug}/new`} className="button">
-              <span className="material-symbols-outlined" aria-hidden>
-                add_circle
-              </span>
-              New Page
-            </Link>
-            <span className="space-workspace-avatar" aria-hidden>
-              AR
-            </span>
-          </div>
+          <SpaceOwnerActions spaceSlug={spaceSlug} owner={space.owner} />
         </header>
 
         <div className="space-workspace-scroll">
@@ -274,16 +308,13 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
           </div>
 
           <aside className="space-workspace-right">
-            <div className="space-right-panel">
-              <h3>Space Contents</h3>
-              <PageTreeNav spaceSlug={spaceSlug} pages={allPages} />
-            </div>
-            <div className="space-right-panel space-integrations-panel">
-              <h4>Integrations</h4>
-              <p>Sync this space automatically with your GitHub repository.</p>
-              <Link href="/migrate/gitbook" className="button secondary">
-                Configure Sync
-              </Link>
+            <div className="space-contents-shell">
+              <h3 className="space-contents-heading">Space Contents</h3>
+              {spaceContentsSections.length === 0 ? (
+                <p className="subtitle">No pages in this space yet.</p>
+              ) : (
+                <SpaceContentsPanel sections={spaceContentsSections} initialExpandedId={expandedSectionKey} />
+              )}
             </div>
           </aside>
         </div>
