@@ -82,6 +82,10 @@ ARKIV_PRESENCE_PRIVATE_KEY=<0x...>
 
 ARKIV_CHAIN=kaolin
 ARKIV_RPC_URL=https://kaolin.hoodi.arkiv.network/rpc
+
+# Show/hide all "Technical details" UI blocks (details accordions + query debug panels)
+# Set to true to display in UI.
+NEXT_PUBLIC_ARKIV_SHOW_TECHNICAL_DETAILS_UI=false
 ```
 
 ## Entity Schema

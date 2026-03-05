@@ -1,4 +1,5 @@
 import type { Predicate } from '@arkiv-network/sdk/query'
+import { isTechnicalDetailsUiEnabled } from '@/lib/ui-flags'
 
 type QueryDebugPanelProps = {
   title: string
@@ -6,18 +7,8 @@ type QueryDebugPanelProps = {
   predicates: Predicate[]
 }
 
-function isQueryDebugEnabled() {
-  const rawValue = process.env.ARKIV_QUERY_DEBUG ?? process.env.NEXT_PUBLIC_ARKIV_QUERY_DEBUG
-  if (!rawValue) {
-    return false
-  }
-
-  const normalized = rawValue.trim().toLowerCase()
-  return normalized === '1' || normalized === 'true' || normalized === 'yes' || normalized === 'on'
-}
-
 export function QueryDebugPanel({ title, summary, predicates }: QueryDebugPanelProps) {
-  if (!isQueryDebugEnabled()) {
+  if (!isTechnicalDetailsUiEnabled()) {
     return null
   }
 
