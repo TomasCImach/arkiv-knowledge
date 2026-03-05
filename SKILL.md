@@ -9,7 +9,8 @@ description: Use this skill when an AI agent needs deterministic read access and
 1. Install dependencies: `pnpm install`
 2. Start app: `pnpm dev`
 3. Base URL: `http://localhost:3000`
-4. Inspect API spec: `GET /api/agent/v1/openapi`
+4. Fetch this skill as raw markdown: `GET /skill.md`
+5. Inspect API spec: `GET /api/agent/v1/openapi`
 
 ## Wallet Session Challenge Flow
 Use existing wallet-auth endpoints to establish a private-read/write-intent session.

@@ -203,6 +203,7 @@ Intent responses return serialized `AgentWriteIntent` objects (`sdkCall` + optio
 
 ## Official Agent Skill
 - Root skill file: `SKILL.md`
+- Bot-readable raw path: `GET /skill.md`
 - Covers setup, wallet challenge/session flow, read usage, write-intent execution, and error semantics.
 
 ## Testing

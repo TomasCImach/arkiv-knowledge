@@ -68,6 +68,7 @@ function buildPageBody(skillMarkdown: string): string {
     '## What was added',
     '- Versioned REST API at `/api/agent/v1`',
     '- OpenAPI document at `/api/agent/v1/openapi`',
+    '- Raw skill markdown endpoint at `/skill.md` for bot fetch/discovery',
     '- Wallet-session-authenticated write intent endpoints',
     '- Presence wrappers with viewer/session consistency checks',
     '- In-app execution helper: `executeAgentIntent`',
