@@ -8,6 +8,7 @@ import { PresencePanel } from '@/app/_components/presence-panel'
 import { RealtimeRefresh } from '@/app/_components/realtime-refresh'
 import { RetryButton } from '@/app/_components/retry-button'
 import { RouteStateCard, RouteStateLinkAction } from '@/app/_components/route-state-card'
+import { SpaceOwnerActions } from '@/app/_components/space-owner-actions'
 import { TechnicalDetails } from '@/app/_components/technical-details'
 import {
   getPageBySlugInSpace,
@@ -96,103 +97,162 @@ export default async function PageRoute({
   const isVerifiedOwnerSession = equalAddress(page.owner, viewer)
 
   return (
-    <section className="doc-layout">
+    <section className="space-workspace page-workspace">
       <RealtimeRefresh spaceKey={space.entityKey} pageKey={page.entityKey} />
 
-      <aside className="card stack doc-aside">
-        <div className="toolbar" style={{ justifyContent: 'space-between' }}>
-          <strong>{space.payload.name}</strong>
-          <Link href={`/spaces/${spaceSlug}/new`} className="badge">
-            New Page
-          </Link>
-        </div>
-        <PageTreeNav spaceSlug={spaceSlug} pages={spacePages} activePageSlug={pageSlug} />
-      </aside>
+      <main className="space-workspace-main">
+        <header className="space-workspace-header">
+          <div className="toolbar">
+            <h2 className="section-title">{space.payload.name}</h2>
+            <span className="badge">{page.parentPageKey ? 'Child Page' : 'Root Page'}</span>
+          </div>
+          <SpaceOwnerActions spaceSlug={spaceSlug} owner={space.owner} />
+        </header>
 
-      <div className="stack doc-column">
-        <Breadcrumbs
-          items={[
-            { href: '/', label: 'Knowledge Base' },
-            { href: `/spaces/${spaceSlug}`, label: space.payload.name },
-            ...ancestors.map((ancestor) => ({
-              href: `/spaces/${spaceSlug}/${ancestor.pageSlug}`,
-              label: ancestor.payload.title
-            })),
-            { label: page.payload.title }
-          ]}
-        />
+        <div className="space-workspace-scroll">
+          <div className="space-workspace-content stack page-workspace-content">
+            <Breadcrumbs
+              items={[
+                { href: '/', label: 'Knowledge Base' },
+                { href: `/spaces/${spaceSlug}`, label: space.payload.name },
+                ...ancestors.map((ancestor) => ({
+                  href: `/spaces/${spaceSlug}/${ancestor.pageSlug}`,
+                  label: ancestor.payload.title
+                })),
+                { label: page.payload.title }
+              ]}
+            />
 
-        <div className="card stack">
-          <div className="toolbar" style={{ justifyContent: 'space-between' }}>
-            <h1 className="title">{page.payload.title}</h1>
-            <span className="badge">{page.status}</span>
+            <article className="card stack page-hero-card">
+              <div className="toolbar dashboard-section-head">
+                <h1 className="title">{page.payload.title}</h1>
+                <span className="badge">{page.status}</span>
+              </div>
+
+              <p className="subtitle">{page.payload.summary}</p>
+              <div className="toolbar page-meta-bar">
+                <span className="badge">space: {space.spaceSlug}</span>
+                <span className="badge">slug: {page.pageSlug}</span>
+                <span className="badge">{page.parentPageKey ? 'child page' : 'root page'}</span>
+              </div>
+
+              <OwnerEditPageCta
+                href={`/spaces/${spaceSlug}/${pageSlug}/edit`}
+                owner={page.owner}
+                isVerifiedOwnerSession={isVerifiedOwnerSession}
+              />
+              <p className="subtitle">Reading is open for everyone.</p>
+              <TechnicalDetails summary="Technical details (page entity)">
+                <span className="badge">Canonical key: {page.entityKey}</span>
+              </TechnicalDetails>
+            </article>
+
+            {queryErrors.length > 0 ? (
+              <RouteStateCard
+                tone="error"
+                title="Some live panels are degraded"
+                message="Arkiv relationship, revision, or presence reads are temporarily unavailable."
+                action={<RetryButton label="Retry live panels" />}
+              />
+            ) : null}
+
+            <section id="article-content">
+              <PageMarkdown markdown={page.payload.bodyMarkdown} />
+            </section>
+
+            <section id="space-pages" className="card stack">
+              <h3 className="space-pages-title">Space Pages</h3>
+              <p className="subtitle">Browse every page in this space from the current page context.</p>
+              <PageTreeNav spaceSlug={spaceSlug} pages={spacePages} activePageSlug={pageSlug} />
+            </section>
+
+            <section id="backlinks" className="card stack">
+              <h3 className="section-title">Backlinks</h3>
+              <TechnicalDetails summary="Technical details (link index)">
+                <p className="subtitle">Backlinks are derived from `kb.link` relationship entities.</p>
+              </TechnicalDetails>
+              {backlinks.length === 0 ? (
+                <p className="subtitle">No backlinks currently indexed.</p>
+              ) : (
+                backlinks.map((link) => (
+                  <Link key={link.entityKey} href={`/spaces/${spaceSlug}/${link.payload.sourceSlug}`} className="doc-list-item">
+                    <div className="toolbar doc-list-head">
+                      <strong>{link.payload.sourceSlug}</strong>
+                      <span className="badge">backlink</span>
+                    </div>
+                    <span className="subtitle">edge {link.entityKey.slice(0, 10)}...</span>
+                  </Link>
+                ))
+              )}
+            </section>
+
+            <section id="revision-log" className="card stack">
+              <h3 className="section-title">Revision Log</h3>
+              {revisions.length === 0 ? (
+                <p className="subtitle">No revisions found.</p>
+              ) : (
+                revisions
+                  .slice()
+                  .reverse()
+                  .map((revision) => (
+                    <div key={revision.entityKey} className="doc-list-item">
+                      <div className="toolbar doc-list-head">
+                        <strong>Revision #{revision.revisionNo}</strong>
+                        <span className="badge">editor {revision.editor.slice(0, 10)}...</span>
+                      </div>
+                      <p className="subtitle">{revision.payload.editSummary}</p>
+                    </div>
+                  ))
+              )}
+            </section>
+
+            <section id="live-presence">
+              <PresencePanel spaceKey={space.entityKey} pageKey={page.entityKey} records={activePresence} />
+            </section>
           </div>
 
-          <p className="subtitle">{page.payload.summary}</p>
-
-          <OwnerEditPageCta
-            href={`/spaces/${spaceSlug}/${pageSlug}/edit`}
-            owner={page.owner}
-            isVerifiedOwnerSession={isVerifiedOwnerSession}
-          />
-          <p className="subtitle">Reading is open for everyone.</p>
-          <TechnicalDetails summary="Technical details (page entity)">
-            <span className="badge">Canonical key: {page.entityKey}</span>
-          </TechnicalDetails>
-        </div>
-        {queryErrors.length > 0 ? (
-          <RouteStateCard
-            tone="error"
-            title="Some live panels are degraded"
-            message="Arkiv relationship, revision, or presence reads are temporarily unavailable."
-            action={<RetryButton label="Retry live panels" />}
-          />
-        ) : null}
-
-        <PageMarkdown markdown={page.payload.bodyMarkdown} />
-
-        <div className="card stack">
-          <h3 style={{ margin: 0 }}>Backlinks</h3>
-          <TechnicalDetails summary="Technical details (link index)">
-            <p className="subtitle">Backlinks are derived from `kb.link` relationship entities.</p>
-          </TechnicalDetails>
-          {backlinks.length === 0 ? (
-            <p className="subtitle">No backlinks currently indexed.</p>
-          ) : (
-            backlinks.map((link) => (
-              <Link key={link.entityKey} href={`/spaces/${spaceSlug}/${link.payload.sourceSlug}`} className="doc-list-item">
-                <div className="toolbar doc-list-head">
-                  <strong>{link.payload.sourceSlug}</strong>
-                  <span className="badge">backlink</span>
-                </div>
-                <span className="subtitle">edge {link.entityKey.slice(0, 10)}...</span>
-              </Link>
-            ))
-          )}
-        </div>
-
-        <div className="card stack">
-          <h3 style={{ margin: 0 }}>Revision Log</h3>
-          {revisions.length === 0 ? (
-            <p className="subtitle">No revisions found.</p>
-          ) : (
-            revisions
-              .slice()
-              .reverse()
-              .map((revision) => (
-                <div key={revision.entityKey} className="doc-list-item">
-                  <div className="toolbar doc-list-head">
-                    <strong>Revision #{revision.revisionNo}</strong>
-                    <span className="badge">editor {revision.editor.slice(0, 10)}...</span>
+          <aside className="space-workspace-right page-workspace-right">
+            <div className="space-contents-shell page-outline-shell">
+              <h3 className="space-contents-heading">On this page</h3>
+              <div className="space-contents-groups page-outline-groups">
+                <section className="space-contents-group expanded">
+                  <div className="space-contents-group-row">
+                    <a href="#article-content" className="page-outline-section-link">
+                      <span>Page Content</span>
+                    </a>
                   </div>
-                  <p className="subtitle">{revision.payload.editSummary}</p>
-                </div>
-              ))
-          )}
-        </div>
+                </section>
 
-        <PresencePanel spaceKey={space.entityKey} pageKey={page.entityKey} records={activePresence} />
-      </div>
+                <section className="space-contents-group expanded">
+                  <div className="space-contents-group-row">
+                    <a href="#space-pages" className="page-outline-section-link">
+                      <span>Knowledge Panels</span>
+                    </a>
+                  </div>
+                  <div className="space-contents-children">
+                    <a href="#space-pages" className="space-contents-child-link">
+                      Space Pages
+                    </a>
+                    <a href="#backlinks" className="space-contents-child-link">
+                      Backlinks
+                    </a>
+                    <a href="#revision-log" className="space-contents-child-link">
+                      Revision Log
+                    </a>
+                    <a href="#live-presence" className="space-contents-child-link">
+                      Live Presence
+                    </a>
+                  </div>
+                </section>
+              </div>
+              <div className="notice page-help-note">
+                <strong>Need help?</strong>
+                <p className="subtitle">Owner wallet signatures are required for edit, lifecycle, and ownership updates.</p>
+              </div>
+            </div>
+          </aside>
+        </div>
+      </main>
     </section>
   )
 }

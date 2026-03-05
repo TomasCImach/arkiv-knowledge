@@ -41,48 +41,69 @@ export async function AppShell({ children }: { children: ReactNode }) {
   const navError = navErrors.join(' ')
   const sidebarContent = (
     <div className="card stack sidebar-panel">
-      <div className="toolbar" style={{ justifyContent: 'space-between' }}>
-        <strong>Navigation</strong>
-        <div className="toolbar" style={{ gap: '0.35rem' }}>
-          <Link href="/" className="badge">
-            Home
+      <div className="stack" style={{ gap: '0.7rem' }}>
+        <span className="sidebar-kicker">Navigation</span>
+        <nav className="sidebar-nav-list">
+          <Link href="/" className="sidebar-nav-item">
+            <span className="material-symbols-outlined" aria-hidden>
+              home
+            </span>
+            <span>Home</span>
           </Link>
-          <Link href="/my/spaces" className="badge">
-            My Spaces
+          <Link href="/my/spaces" className="sidebar-nav-item">
+            <span className="material-symbols-outlined" aria-hidden>
+              layers
+            </span>
+            <span>My Spaces</span>
           </Link>
-          <Link href="/migrate/gitbook" className="badge">
-            GitBook Migration
+          <Link href="/migrate/gitbook" className="sidebar-nav-item">
+            <span className="material-symbols-outlined" aria-hidden>
+              cloud_sync
+            </span>
+            <span>GitBook Migration</span>
+          </Link>
+          <Link href="/new/space" className="sidebar-nav-item">
+            <span className="material-symbols-outlined" aria-hidden>
+              add_circle
+            </span>
+            <span>New Space</span>
+          </Link>
+        </nav>
+      </div>
+
+      <div className="stack sidebar-space-groups">
+        <div className="toolbar" style={{ justifyContent: 'space-between' }}>
+          <span className="sidebar-label">Spaces</span>
+          <Link href="/new/space" className="badge">
+            + Add
           </Link>
         </div>
-      </div>
-      <div className="stack sidebar-space-groups" style={{ gap: '0.4rem' }}>
-        <span className="sidebar-label">Spaces</span>
         {navError ? <p className="notice">Sidebar degraded: {navError}</p> : null}
         {!hasOwnedSection && !hasPublicSection ? (
           <p className="subtitle">No spaces yet.</p>
         ) : (
           <>
             {hasOwnedSection ? (
-              <div className="stack sidebar-space-section" style={{ gap: '0.35rem' }}>
+              <div className="stack sidebar-space-section" style={{ gap: '0.4rem' }}>
                 {showSectionSubtitles ? <span className="sidebar-subtitle">Owned</span> : null}
                 <div className="nav-tree">
                   {ownedSpaces.map((space) => (
                     <Link key={space.entityKey} href={`/spaces/${space.spaceSlug}`} className="nav-tree-item">
                       <span>{space.payload.name}</span>
-                      <span className="nav-tree-meta">{space.spaceSlug}</span>
+                      <span className="nav-tree-meta">slug: {space.spaceSlug}</span>
                     </Link>
                   ))}
                 </div>
               </div>
             ) : null}
             {hasPublicSection ? (
-              <div className="stack sidebar-space-section" style={{ gap: '0.35rem' }}>
+              <div className="stack sidebar-space-section" style={{ gap: '0.4rem' }}>
                 {showSectionSubtitles ? <span className="sidebar-subtitle">Public</span> : null}
                 <div className="nav-tree">
                   {visiblePublicSpaces.map((space) => (
                     <Link key={space.entityKey} href={`/spaces/${space.spaceSlug}`} className="nav-tree-item">
                       <span>{space.payload.name}</span>
-                      <span className="nav-tree-meta">{space.spaceSlug}</span>
+                      <span className="nav-tree-meta">slug: {space.spaceSlug}</span>
                     </Link>
                   ))}
                 </div>
@@ -100,23 +121,28 @@ export async function AppShell({ children }: { children: ReactNode }) {
         <nav className="app-header-inner">
           <div className="app-brand-block">
             <Link href="/" className="app-brand">
-              Arklib
+              <span className="app-brand-mark">Arklib</span>
+              <span className="app-brand-kicker">Arkiv Knowledge Base</span>
             </Link>
-            <span className="subtitle">BookStack-style documentation workspace on Arkiv</span>
+            <div className="toolbar app-primary-nav">
+              <Link href="/my/spaces" className="desktop-nav-action">
+                My Spaces
+              </Link>
+              <Link href="/migrate/gitbook" className="desktop-nav-action">
+                Migrate GitBook
+              </Link>
+              <Link href="/new/space" className="desktop-nav-action">
+                New Space
+              </Link>
+            </div>
           </div>
           <div className="toolbar app-toolbar">
             <MobileNavDrawer>{sidebarContent}</MobileNavDrawer>
-            <Link href="/search/pages" className="button secondary desktop-nav-action">
-              Search Pages
-            </Link>
-            <Link href="/my/spaces" className="button secondary desktop-nav-action">
-              My Spaces
-            </Link>
-            <Link href="/migrate/gitbook" className="button secondary desktop-nav-action">
-              Migrate GitBook
-            </Link>
-            <Link href="/new/space" className="button secondary desktop-nav-action">
-              New Space
+            <Link href="/search/pages" className="search-shell desktop-nav-action" aria-label="Search pages">
+              <span className="material-symbols-outlined" aria-hidden>
+                search
+              </span>
+              <span>Search documentation...</span>
             </Link>
             <WalletStatus />
           </div>

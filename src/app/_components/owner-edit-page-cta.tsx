@@ -22,11 +22,7 @@ export function OwnerEditPageCta({ href, owner, isVerifiedOwnerSession }: OwnerE
         <Link href={href} className="button">
           Edit Page
         </Link>
-      ) : (
-        <button type="button" className="button" disabled>
-          Edit Page
-        </button>
-      )}
+      ) : null}
       {!isConnected ? <p className="subtitle">Connect the owner wallet to edit this page.</p> : null}
       {isConnected && !isConnectedOwner ? <p className="subtitle">Switch to the owner wallet to edit this page.</p> : null}
       {isConnectedOwner && !isVerifiedOwnerSession ? (
