@@ -168,12 +168,15 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
     .filter((entry) => entry.root.entityKey !== expandedSectionKey)
     .map((entry) => entry.root)
     .slice(0, 3)
+  const isSparseContents = allPages.length <= 2
   const spaceContentsSections: SpaceContentsPanelSection[] = contentSections.map((section) => {
     const sectionChildren =
       section.children.length > 0
         ? section.children
         : section.root.entityKey === expandedSectionKey
-          ? previewFallback
+          ? previewFallback.length > 0
+            ? previewFallback
+            : [section.root]
           : []
 
     return {
@@ -182,7 +185,7 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
       href: `/spaces/${spaceSlug}/${section.root.pageSlug}`,
       children: sectionChildren.map((entry) => ({
         id: entry.entityKey,
-        title: entry.payload.title,
+        title: entry.entityKey === section.root.entityKey ? 'Overview' : entry.payload.title,
         href: `/spaces/${spaceSlug}/${entry.pageSlug}`
       }))
     }
@@ -315,6 +318,12 @@ export default async function SpacePage({ params, searchParams }: SpaceRouteProp
               ) : (
                 <SpaceContentsPanel sections={spaceContentsSections} initialExpandedId={expandedSectionKey} />
               )}
+              {isSparseContents ? (
+                <div className="space-contents-empty-state">
+                  <strong>Build Structure</strong>
+                  <p className="subtitle">Add more root/child pages to mirror the richer multi-section navigation layout.</p>
+                </div>
+              ) : null}
             </div>
           </aside>
         </div>
